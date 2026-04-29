@@ -7,6 +7,11 @@ import { Menu, ArrowDownToLine, Plus, Trash2, FileUp, FileDown } from "lucide-re
 
 
 function Toolbar() {
+  const handleConfig = () => {
+    
+  };
+
+
   return (
     <>
       <div className="grid grid-row-1 gap-4 grid-cols-4 p-4">
@@ -39,14 +44,14 @@ function Toolbar() {
           </DropdownMenu>
         </div>
 
-        <div class="col-span-1 flex justify-end">
+        <div className="col-span-1 flex justify-end">
           <Button>
             Création
           </Button>
         </div>
 
-        <div class="col-span-1 flex justify-start">
-          <Button>
+        <div className="col-span-1 flex justify-start">
+          <Button onClick={handleConfig}>
             Configuration
           </Button>
         </div>
