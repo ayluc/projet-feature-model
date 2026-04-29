@@ -1,0 +1,44 @@
+{
+    "feature_model_name": "Test",
+    "root": {
+        "name": "Noeud racine",
+        "id": "root",
+        "type": "feature",
+        "children": [
+            {
+                "name": "Feature1",
+                "id": "feature1",
+                "type": "feature",
+                "mandatory": true,
+                "parent": "root",
+                "children": [
+                    {
+                        "name": "SubFeature1",
+                        "id": "subfeature1",
+                        "type": "feature",
+                        "mandatory": false,
+                        "parent": "feature1",
+                        "children": []
+                    }
+                ]
+            },
+            {
+                "name": "Feature2",
+                "id": "feature2",
+                "type": "feature",
+                "mandatory": true,
+                "parent": "root",
+                "children": [
+                    {
+                        "name": "SubFeature3",
+                        "id": "subfeature3",
+                        "type": "contrainte",
+                        "mandatory": false,
+                        "parent": "feature2",
+                        "children": []
+                    }
+                ]
+            }
+        ]
+    }
+}

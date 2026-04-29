@@ -1,0 +1,139 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://example.com/feature-model.schema.json",
+    "title": "Feature Model Schema",
+    "description": "Schema du feature model",
+    "type": "object",
+    "required": [
+        "feature_model_name",
+        "root"
+    ],
+    "properties": {
+        "feature_model_name": {
+            "type": "string",
+            "description": "Nom du feature model"
+        },
+        "root": {
+            "description": "Noeud racine du feature model",
+            "$ref": "#/$defs/root_node"
+        }
+    },
+    "$defs": {
+        "root_node": {
+            "type": "object",
+            "required": [
+                "name",
+                "id"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Nom du noeud"
+                },
+                "id": {
+                    "type": "string",
+                    "description": "Identifiant du noeud"
+                },
+                "children": {
+                    "type": "array",
+                    "description": "Enfants du noeud",
+                    "items": {
+                        "$ref": "#/$defs/node"
+                    }
+                }
+            }
+        },
+        "node": {
+            "type": "object",
+            "required": [
+                "name",
+                "id",
+                "type",
+                "mandatory",
+                "parent"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Nom du noeud"
+                },
+                "id": {
+                    "type": "string",
+                    "description": "Identifiant du noeud"
+                },
+                "type": {
+                    "enum": [
+                        "feature",
+                        "xor",
+                        "or",
+                        "combination"
+                    ],
+                    "description": "Type du noeud"
+                },
+                "combination_attributes": {
+                    "type": "object",
+                    "description": "Champ à remplir si type = combination",
+                    "properties": {
+                        "min": {
+                            "type": "integer",
+                            "description": "Nombre minimum de fils à sélectionner"
+                        },
+                        "max": {
+                            "type": "integer",
+                            "description": "Nombre maximum de fils à sélectionner"
+                        }
+                    },
+                    "oneOf": [
+                        {
+                            "required": [
+                                "min"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "max"
+                            ]
+                        }
+                    ]
+                },
+                "mandatory": {
+                    "type": "boolean",
+                    "description": "Indique si le noeud est obligatoire ou non"
+                },
+                "parent": {
+                    "type": "string",
+                    "description": "ID du noeud parent"
+                },
+                "children": {
+                    "type": "array",
+                    "description": "Enfants du noeud",
+                    "items": {
+                        "$ref": "#/$defs/node"
+                    }
+                }
+            },
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "combination"
+                    }
+                },
+                "required": [
+                    "type"
+                ]
+            },
+            "then": {
+                "required": [
+                    "combination_attributes"
+                ]
+            },
+            "else": {
+                "not": {
+                    "required": [
+                        "combination_attributes"
+                    ]
+                }
+            }
+        }
+    }
+}
