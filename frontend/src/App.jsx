@@ -30,14 +30,7 @@ const nodeTypes = {
   combinaison: NodeCombinaison
 };
 
-const initialNodes = [
-  {
-    id: '1',
-    type: 'feature',
-    data: { value: 123 },
-    position: { x: 250, y: 5 },
-  },
-];
+const initialNodes = [];
 
 let id = 0;
 const getId = () => `dndnode_${id++}`;
@@ -47,27 +40,29 @@ const DnDFlow = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [menu, setMenu] = useState(null);
+  const [popup, setPopup] = useState(null);
   const { screenToFlowPosition } = useReactFlow();
   const [type] = useDnD();
-  const ref = useRef(null);
+  const isDragging = useRef(false); // 👈 ajout
 
-  const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), []);
+  const onConnect = useCallback(
+    (params) => setEdges((eds) => addEdge(params, eds)),
+    []
+  );
 
   const onDragOver = useCallback((event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   }, []);
 
-  const OFFSET = 10; // pixels d'écart
+  const OFFSET = 10;
 
   const onNodeContextMenu = useCallback(
     (event, node) => {
       event.preventDefault();
-
-      const pane = ref.current.getBoundingClientRect();
+      const pane = reactFlowWrapper.current.getBoundingClientRect();
       const x = event.clientX - pane.left + OFFSET;
       const y = event.clientY - pane.top + OFFSET;
-
       setMenu({
         id: node.id,
         top: y < pane.height - 200 ? y : undefined,
@@ -76,46 +71,44 @@ const DnDFlow = () => {
         bottom: y >= pane.height - 200 ? pane.height - y : undefined,
       });
     },
-    [setMenu],
+    [setMenu]
   );
-  // Close the context menu if it's open whenever the window is clicked.
-  const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
+
+  const onPaneClick = useCallback(() => {
+    if (isDragging.current) {
+      isDragging.current = false;
+      return;
+    }
+
+    // Ne ferme pas le popup si on vient juste de drag
+    if (popup) return;
+
+    setMenu(null);
+  }, [popup]);
+
 
   const onDrop = useCallback(
-    (event) => {
-      event.preventDefault();
+  (event) => {
+    event.preventDefault();
+    if (!type) return;
 
-      // check if the dropped element is valid
-      if (!type) {
-        return;
-      }
+    const position = screenToFlowPosition({
+      x: event.clientX,
+      y: event.clientY,
+    });
 
-      // project was renamed to screenToFlowPosition
-      // and you don't need to subtract the reactFlowBounds.left/top anymore
-      // details: https://reactflow.dev/whats-new/2023-11-10
-      const position = screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
-      const newNode = {
-        id: getId(),
-        type,
-        position,
-        data: { label: `${type} node` },
-      };
+    const newNode = {
+      id: getId(),
+      type,
+      position,
+      data: { label: `${type} node` },
+    };
 
-      setNodes((nds) => nds.concat(newNode));
-    },
-    [screenToFlowPosition, type],
-  );
-
-  const onDragStart = (event, nodeType) => {
-    setType(nodeType);
-    event.dataTransfer.setData('text/plain', nodeType);
-    event.dataTransfer.effectAllowed = 'move';
-  };
-
-
+    setNodes((nds) => nds.concat(newNode));
+    setPopup({ node: newNode }); 
+  },
+  [screenToFlowPosition, type]
+);
 
   return (
     <>
@@ -125,7 +118,6 @@ const DnDFlow = () => {
           <Sidebar />
           <div className="reactflow-wrapper" ref={reactFlowWrapper}>
             <ReactFlow
-              ref={ref}
               nodes={nodes}
               edges={edges}
               nodeTypes={nodeTypes}
@@ -133,7 +125,6 @@ const DnDFlow = () => {
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
               onDrop={onDrop}
-              onDragStart={onDragStart}
               onDragOver={onDragOver}
               onPaneClick={onPaneClick}
               onNodeContextMenu={onNodeContextMenu}
@@ -143,11 +134,40 @@ const DnDFlow = () => {
               <Background />
               {menu && <ContextMenu onClick={onPaneClick} {...menu} />}
             </ReactFlow>
-          </div>
 
+            {popup && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  background: 'white',
+                  border: '1px solid #ddd',
+                  borderRadius: 8,
+                  padding: 16,
+                  zIndex: 1000,
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+                }}
+              >
+                <strong>{popup.node.data.label}</strong>
+                <input type="text" id="nodeName" required name="Nom du noeud" placeholder="Nom du noeud" />
+                <div>
+                  <div>
+                  <input type="radio" id="isMandatory" name="isMandatory" value="true"/>
+                  <label htmlFor="isMandatory">Obligatoire</label>
+                  </div>
+                  <div>
+                  <input type="radio" id="isOptional" name="isMandatory" value="false" />
+                  <label htmlFor="isOptional">Optionnel</label>
+                  </div>
+                </div>
+                <button onClick={() => setPopup(null)}>✕ Fermer</button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
     </>
   );
 };
