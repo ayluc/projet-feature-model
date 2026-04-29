@@ -7,7 +7,7 @@ export function NodeXOR(props) {
   }, []);
  
   return (
-    <div className="text-updater-node">
+    <div className="node-xor">
       <div>
         <label>XOR</label>
         <Handle type="source" position={Position.Top} />

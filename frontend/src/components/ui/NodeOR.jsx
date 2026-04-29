@@ -7,7 +7,7 @@ export function NodeOR(props) {
   }, []);
  
   return (
-    <div className="text-updater-node">
+    <div className="node-or">
       <div>
         <label>OR</label>
         <Handle type="source" position={Position.Top} />
