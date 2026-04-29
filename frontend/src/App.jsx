@@ -1,4 +1,4 @@
-import Toolbar from "@/components/ui/Toolbar";
+import Toolbar from "@/components/Toolbar";
 import React, { useRef, useCallback, useState } from 'react';
 import {
   ReactFlow,
@@ -13,13 +13,13 @@ import {
 
 import '@xyflow/react/dist/style.css';
 
-import Sidebar from '@/components/ui/SidebarReact';
-import { DnDProvider, useDnD } from '@/components/ui/DnDContext';
+import Sidebar from '@/components/SidebarReact';
+import { DnDProvider, useDnD } from '@/components/DnDContext';
 
-import { NodeFeature } from "./components/ui/NodeFeature";
-import { NodeXOR } from "@/components/ui/NodeXOR";
-import { NodeOR } from "@/components/ui/NodeOR";
-import { NodeCombinaison } from "@/components/ui/NodeCombinaison";
+import { NodeFeature } from "./components/nodes/NodeFeature";
+import { NodeXOR } from "@/components/nodes/NodeXOR";
+import { NodeOR } from "@/components/nodes/NodeOR";
+import { NodeCombinaison } from "@/components/nodes/NodeCombinaison";
 
 import ContextMenu from '@/components/ui/ContextMenu';
 
