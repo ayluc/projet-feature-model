@@ -16,10 +16,7 @@ import '@xyflow/react/dist/style.css';
 import Sidebar from '@/components/SidebarReact';
 import { DnDProvider, useDnD } from '@/components/DnDContext';
 
-import { NodeFeature } from "./components/nodes/NodeFeature";
-import { NodeXOR } from "@/components/nodes/NodeXOR";
-import { NodeOR } from "@/components/nodes/NodeOR";
-import { NodeCombinaison } from "@/components/nodes/NodeCombinaison";
+import { NodeFeature, NodeXOR, NodeOR, NodeCombinaison } from "@/components/nodes";
 
 import ContextMenu from '@/components/ContextMenu';
 
