@@ -21,7 +21,7 @@ import { NodeXOR } from "@/components/nodes/NodeXOR";
 import { NodeOR } from "@/components/nodes/NodeOR";
 import { NodeCombinaison } from "@/components/nodes/NodeCombinaison";
 
-import ContextMenu from '@/components/ui/ContextMenu';
+import ContextMenu from '@/components/ContextMenu';
 
 const nodeTypes = {
   feature: NodeFeature,
