@@ -7,7 +7,7 @@ export function NodeCombinaison(props) {
   }, []);
  
   return (
-    <div className="text-updater-node">
+    <div className="node-combinaison">
       <div>
         <label>Combinaison</label>
         <Handle type="source" position={Position.Top} />

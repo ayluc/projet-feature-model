@@ -7,7 +7,7 @@ export function NodeFeature(props) {
   }, []);
  
   return (
-    <div className="text-updater-node">
+    <div className="node-feature">
       <div>
         <label></label>
         <Handle type="source" position={Position.Top} />
