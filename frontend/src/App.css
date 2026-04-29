@@ -221,6 +221,94 @@ body {
   }
 }
 
-.node-operator {
+.dndflow .dndnode {
+
+height: 60px;
+
+padding: 4px;
+
+border: 3px solid #1a192b;
+
+background-color: #fff;
+
+color: #1a192b;
+
+border-radius: 5px;
+
+margin-bottom: 10px;
+
+display: flex;
+
+justify-content: center;
+
+align-items: center;
+
+cursor: grab;
+
+}
+
+  
+
+.dndflow .dndnode.feature {
+
+height: 60px;
+
+padding: 4px;
+
+border: 3px solid #e2cc51;
+
+background-color: #fff;
+
+color: #1a192b;
+
+border-radius: 5px;
+
+margin-bottom: 10px;
+
+display: flex;
+
+justify-content: center;
+
+align-items: center;
+
+cursor: grab;
+
+}
+
+.context-menu {
+
+background: white;
+
+border-style: solid;
+
+box-shadow: 10px 19px 20px rgba(0, 0, 0, 10%);
+
+position: absolute;
+
+z-index: 10;
+
+}
+
+  
+
+.context-menu button {
+
+border: none;
+
+display: block;
+
+padding: 0.5em;
+
+text-align: left;
+
+width: 100%;
+
+}
+
+  
+
+.context-menu button:hover {
+
+background: white;
 
 }

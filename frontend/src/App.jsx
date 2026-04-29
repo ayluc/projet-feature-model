@@ -1,5 +1,5 @@
 import Toolbar from "@/components/ui/Toolbar";
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -17,9 +17,11 @@ import Sidebar from '@/components/ui/SidebarReact';
 import { DnDProvider, useDnD } from '@/components/ui/DnDContext';
 
 import { NodeFeature } from "./components/ui/NodeFeature";
-import {NodeXOR} from "@/components/ui/NodeXOR";
-import {NodeOR} from "@/components/ui/NodeOR";
-import {NodeCombinaison} from "@/components/ui/NodeCombinaison";
+import { NodeXOR } from "@/components/ui/NodeXOR";
+import { NodeOR } from "@/components/ui/NodeOR";
+import { NodeCombinaison } from "@/components/ui/NodeCombinaison";
+
+import ContextMenu from '@/components/ui/ContextMenu';
 
 const nodeTypes = {
   feature: NodeFeature,
@@ -44,8 +46,10 @@ const DnDFlow = () => {
   const reactFlowWrapper = useRef(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [menu, setMenu] = useState(null);
   const { screenToFlowPosition } = useReactFlow();
   const [type] = useDnD();
+  const ref = useRef(null);
 
   const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), []);
 
@@ -53,6 +57,29 @@ const DnDFlow = () => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   }, []);
+
+  const OFFSET = 10; // pixels d'écart
+
+  const onNodeContextMenu = useCallback(
+    (event, node) => {
+      event.preventDefault();
+
+      const pane = ref.current.getBoundingClientRect();
+      const x = event.clientX - pane.left + OFFSET;
+      const y = event.clientY - pane.top + OFFSET;
+
+      setMenu({
+        id: node.id,
+        top: y < pane.height - 200 ? y : undefined,
+        left: x < pane.width - 200 ? x : undefined,
+        right: x >= pane.width - 200 ? pane.width - x : undefined,
+        bottom: y >= pane.height - 200 ? pane.height - y : undefined,
+      });
+    },
+    [setMenu],
+  );
+  // Close the context menu if it's open whenever the window is clicked.
+  const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
 
   const onDrop = useCallback(
     (event) => {
@@ -98,6 +125,7 @@ const DnDFlow = () => {
           <Sidebar />
           <div className="reactflow-wrapper" ref={reactFlowWrapper}>
             <ReactFlow
+              ref={ref}
               nodes={nodes}
               edges={edges}
               nodeTypes={nodeTypes}
@@ -107,10 +135,13 @@ const DnDFlow = () => {
               onDrop={onDrop}
               onDragStart={onDragStart}
               onDragOver={onDragOver}
+              onPaneClick={onPaneClick}
+              onNodeContextMenu={onNodeContextMenu}
               fitView
             >
               <Controls position="top-right" />
               <Background />
+              {menu && <ContextMenu onClick={onPaneClick} {...menu} />}
             </ReactFlow>
           </div>
 
