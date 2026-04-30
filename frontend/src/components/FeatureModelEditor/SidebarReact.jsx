@@ -1,5 +1,9 @@
 import React from 'react';
 import { useDnD } from '@/components/DnDContext';
+import { Button } from "@/components/ui/button";
+import { useGraph } from '@/components/GraphContext';
+import { getLayoutedElements } from '@/components/utils/layout';
+
 
 export default () => {
   const [_, setType] = useDnD();
@@ -7,6 +11,16 @@ export default () => {
   const onDragStart = (event, nodeType) => {
     setType(nodeType);
     event.dataTransfer.effectAllowed = 'move';
+  };
+
+  const { 
+    nodes, setNodes, onNodesChange, 
+    edges
+  } = useGraph();
+
+  const handleNoeuds = () => {
+    const { layoutedNodes } = getLayoutedElements(nodes, edges);
+    setNodes(layoutedNodes);
   };
 
   return (
@@ -24,6 +38,7 @@ export default () => {
       <div className="dndnode" onDragStart={(event) => onDragStart(event, 'combinaison')} draggable>
         COMBINAISON
       </div>
+      <Button variant="outline" onClick={handleNoeuds}>Réorganiser les noeuds</Button>
     </aside>
   );
 };
