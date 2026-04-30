@@ -13,12 +13,12 @@ import {
 
 import '@xyflow/react/dist/style.css';
 
-import Sidebar from '@/components/SidebarReact';
 import { DnDProvider, useDnD } from '@/components/DnDContext';
 
 import { NodeFeature, NodeXOR, NodeOR, NodeCombinaison } from "@/components/nodes";
 
-import ContextMenu from '@/components/ContextMenu';
+import { FeatureModelEditor}  from "@/components/FeatureModelEditor/FeatureModelEditor";
+
 
 const nodeTypes = {
   feature: NodeFeature,
@@ -40,7 +40,7 @@ const DnDFlow = () => {
   const [popup, setPopup] = useState(null);
   const { screenToFlowPosition } = useReactFlow();
   const [type] = useDnD();
-  const isDragging = useRef(false); // 👈 ajout
+  const isDragging = useRef(false); 
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
@@ -111,59 +111,21 @@ const DnDFlow = () => {
     <>
       <div className="grid grid-row-2 gap-4 grid-cols-1 p-4">
         <Toolbar />
-        <div className="dndflow">
-          <Sidebar />
-          <div className="reactflow-wrapper" ref={reactFlowWrapper}>
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              nodeTypes={nodeTypes}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              onDrop={onDrop}
-              onDragOver={onDragOver}
-              onPaneClick={onPaneClick}
-              onNodeContextMenu={onNodeContextMenu}
-              fitView
-            >
-              <Controls position="top-right" />
-              <Background />
-              {menu && <ContextMenu onClick={onPaneClick} {...menu} />}
-            </ReactFlow>
-
-            {popup && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  background: 'white',
-                  border: '1px solid #ddd',
-                  borderRadius: 8,
-                  padding: 16,
-                  zIndex: 1000,
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
-                }}
-              >
-                <strong>{popup.node.data.label}</strong>
-                <input type="text" id="nodeName" required name="Nom du noeud" placeholder="Nom du noeud" />
-                <div>
-                  <div>
-                  <input type="radio" id="isMandatory" name="isMandatory" value="true"/>
-                  <label htmlFor="isMandatory">Obligatoire</label>
-                  </div>
-                  <div>
-                  <input type="radio" id="isOptional" name="isMandatory" value="false" />
-                  <label htmlFor="isOptional">Optionnel</label>
-                  </div>
-                </div>
-                <button onClick={() => setPopup(null)}>✕ Fermer</button>
-              </div>
-            )}
-          </div>
-        </div>
+        <FeatureModelEditor
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          onPaneClick={onPaneClick}
+          onNodeContextMenu={onNodeContextMenu}
+          popup={popup}
+          setPopup={setPopup}
+          menu={menu}
+        />
       </div>
     </>
   );
