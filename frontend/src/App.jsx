@@ -57,15 +57,10 @@ const DnDFlow = () => {
   const onNodeContextMenu = useCallback(
     (event, node) => {
       event.preventDefault();
-      const pane = reactFlowWrapper.current.getBoundingClientRect();
-      const x = event.clientX - pane.left + OFFSET;
-      const y = event.clientY - pane.top + OFFSET;
       setMenu({
         id: node.id,
-        top: y < pane.height - 200 ? y : undefined,
-        left: x < pane.width - 200 ? x : undefined,
-        right: x >= pane.width - 200 ? pane.width - x : undefined,
-        bottom: y >= pane.height - 200 ? pane.height - y : undefined,
+        top: event.clientY,
+        left: event.clientX,
       });
     },
     [setMenu]
