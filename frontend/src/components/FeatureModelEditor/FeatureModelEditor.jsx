@@ -16,7 +16,7 @@ const nodeTypes = {
 };
 
 let id = 0;
-const getId = () => `dndnode_${id++}`;
+const getId = () => `node_${id++}`;
 
 function FeatureModelEditor({isReadOnly=false}) {
   const reactFlowWrapper = useRef(null);
@@ -35,6 +35,7 @@ function FeatureModelEditor({isReadOnly=false}) {
   const isDragging = useRef(false);
 
   const onDragOver = useCallback((event) => {
+    console.log("Drag over event:", event);
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   }, []);
@@ -83,7 +84,6 @@ function FeatureModelEditor({isReadOnly=false}) {
         data: { label: `${type} node` },
       };
 
-      setNodes((nds) => nds.concat(newNode));
       setPopup({ node: newNode });
     },
     [screenToFlowPosition, type, setNodes, isReadOnly]
@@ -112,7 +112,23 @@ function FeatureModelEditor({isReadOnly=false}) {
         {menu && <ContextMenu {...menu} onClick={onPaneClick} />}
       </ReactFlow>
 
-      <NodeCreationPopup popup={popup} onClose={() => setPopup(null)} />
+      <NodeCreationPopup
+        popup={popup}
+        onClose={() => setPopup(null)}
+        onConfirm={(nodeData) => {
+          const newNode = {
+            ...popup.node,
+            data: {
+              ...popup.node.data,
+              label: nodeData.nodeName,
+              isMandatory: nodeData.isMandatory === "true",
+            },
+          };
+          console.log("Données du popup :", nodeData);
+          setNodes((nds) => nds.concat(newNode));
+          setPopup(null);
+        }}
+      />
     </div>
   );
 }
