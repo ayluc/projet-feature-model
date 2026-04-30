@@ -1,6 +1,8 @@
 import React, { useCallback } from 'react';
 import { useReactFlow } from '@xyflow/react';
 
+import { CopyPlus, Trash2 } from 'lucide-react';
+
 export default function ContextMenu({
   id,
   top,
@@ -38,10 +40,16 @@ export default function ContextMenu({
       {...props}
     >
       <p style={{ margin: '0.5em' }}>
-        <small>node: {id}</small>
+        <small>Noeud : {id}</small>
       </p>
-      <button onClick={duplicateNode}>duplicate</button>
-      <button onClick={deleteNode}>delete</button>
+      <button onClick={duplicateNode} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <CopyPlus/>
+        <span>Dupliquer</span>
+      </button>
+      <button onClick={deleteNode} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Trash2/>
+        <span>Supprimer</span>
+      </button>
     </div>
   );
 }
