@@ -1,9 +1,13 @@
 import React from 'react';
 
+import FeatureModelEditor from '@/components/FeatureModelEditor/FeatureModelEditor';
+
 function Configuration() {
   return (
     <div>
-      <h1>Mode Configuration</h1>
+        <div className="dndflow">
+            <FeatureModelEditor/>
+        </div>
     </div>
   );
 }
