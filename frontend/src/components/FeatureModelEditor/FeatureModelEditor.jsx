@@ -48,16 +48,20 @@ export function FeatureModelEditor() {
     event.dataTransfer.dropEffect = 'move';
   }, []);
 
+  const OFFSET_TOP = 100;
+    const OFFSET_LEFT = 200;
+
+
   const onNodeContextMenu = useCallback(
     (event, node) => {
       event.preventDefault();
       setMenu({
         id: node.id,
-        top: event.clientY,
-        left: event.clientX,
+        top: event.clientY-OFFSET_TOP,
+        left: event.clientX-OFFSET_LEFT,
       });
     },
-    []
+    [setMenu]
   );
 
   const onPaneClick = useCallback(() => {

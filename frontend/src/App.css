@@ -50,18 +50,54 @@ body {
   margin-bottom: 10px;
 }
 
-.dndflow .dndnode {
+
+.dndflow .dndnode.feature {
   height: 60px;
   padding: 4px;
-  border: 1px solid #1a192b;
-  background-color: #1a192b;
-  color: #fff;
+  border: 2px solid #185fa5;
+  background-color: #e6f1fb;
+  color: #185fa5;
   border-radius: 5px;
   margin-bottom: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: grab;
+}
+
+.dndflow .dndnode {
+  height: 60px;
+  padding: 4px;
+  border: 2px solid #b4b2a9;
+  background-color: #f1efe8;
+  color: #6e6d68;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: grab;
+}
+
+.context-menu {
+  background: rgb(255,255,255,0.95);
+  border-style: solid;
+  border-radius: 5px;
+  box-shadow: 10px 19px 20px rgba(0, 0, 0, 10%);
+  position: absolute;
+  z-index: 10;
+}
+
+.context-menu button {
+  border-top: 0.2px solid #b4b2a9;
+  display: block;
+  padding: 0.5em;
+  text-align: left;
+  width: 100%;
+}
+
+.context-menu button:hover {
+background: #f0f0f0;
 }
 
 .dndflow .selectall {
@@ -219,96 +255,4 @@ body {
   html {
     @apply font-sans;
   }
-}
-
-.dndflow .dndnode {
-
-height: 60px;
-
-padding: 4px;
-
-border: 3px solid #1a192b;
-
-background-color: #fff;
-
-color: #1a192b;
-
-border-radius: 5px;
-
-margin-bottom: 10px;
-
-display: flex;
-
-justify-content: center;
-
-align-items: center;
-
-cursor: grab;
-
-}
-
-  
-
-.dndflow .dndnode.feature {
-
-height: 60px;
-
-padding: 4px;
-
-border: 3px solid #e2cc51;
-
-background-color: #fff;
-
-color: #1a192b;
-
-border-radius: 5px;
-
-margin-bottom: 10px;
-
-display: flex;
-
-justify-content: center;
-
-align-items: center;
-
-cursor: grab;
-
-}
-
-.context-menu {
-
-background: white;
-
-border-style: solid;
-
-box-shadow: 10px 19px 20px rgba(0, 0, 0, 10%);
-
-position: absolute;
-
-z-index: 10;
-
-}
-
-  
-
-.context-menu button {
-
-border: none;
-
-display: block;
-
-padding: 0.5em;
-
-text-align: left;
-
-width: 100%;
-
-}
-
-  
-
-.context-menu button:hover {
-
-background: white;
-
 }
