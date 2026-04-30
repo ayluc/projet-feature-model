@@ -4,7 +4,7 @@ import { DnDProvider } from '@/components/DnDContext';
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import Toolbar from "@/components/Toolbar";
-import { FeatureModelEditor } from "@/components/FeatureModelEditor/FeatureModelEditor";
+import Creation from './pages/Creation';
 import Configuration from './pages/Configuration';
 
 import '@xyflow/react/dist/style.css';
@@ -15,7 +15,7 @@ function Page () {
       <Toolbar />
       <Routes>
         <Route path="/" element={<Navigate to="/creation" replace />}></Route>
-        <Route path="/creation" element={<FeatureModelEditor/>}></Route>
+        <Route path="/creation" element={<Creation/>}></Route>
         <Route path="/configuration" element={<Configuration/>}></Route>
       </Routes>
     </div>

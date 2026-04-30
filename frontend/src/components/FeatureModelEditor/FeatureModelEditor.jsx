@@ -27,7 +27,7 @@ const initialNodes = [];
 let id = 0;
 const getId = () => `dndnode_${id++}`;
 
-export function FeatureModelEditor() {
+function FeatureModelEditor() {
   const reactFlowWrapper = useRef(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -120,3 +120,5 @@ export function FeatureModelEditor() {
     </div>
   );
 }
+
+export default FeatureModelEditor;
