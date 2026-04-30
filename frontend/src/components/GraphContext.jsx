@@ -32,14 +32,15 @@ export function GraphProvider({ children }) {
         [setNodes, setEdges]
     );
 
-    const onDelete = useCallback(() => {
-        setTimeout(() => {
-            const freshNodes = getNodes();
-            const freshEdges = getEdges();
+    const onDelete = useCallback(
+        () => {
+            setTimeout(() => {
+                const freshNodes = getNodes();
+                const freshEdges = getEdges();
 
-            const { layoutedNodes } = getLayoutedElements(freshNodes, freshEdges);
-            setNodes(layoutedNodes);
-        }, 10);
+                const { layoutedNodes } = getLayoutedElements(freshNodes, freshEdges);
+                setNodes(layoutedNodes);
+            }, 10);
         }, 
         [getNodes, getEdges, setNodes]
     );
