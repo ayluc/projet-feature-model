@@ -1,3 +1,4 @@
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuGroup,
@@ -7,10 +8,8 @@ import { Menu, ArrowDownToLine, Plus, Trash2, FileUp, FileDown } from "lucide-re
 
 
 function Toolbar() {
-  const handleConfig = () => {
-    
-  };
-
+  const navigate = useNavigate();
+  const location = useLocation();
 
   return (
     <>
@@ -45,13 +44,15 @@ function Toolbar() {
         </div>
 
         <div className="col-span-1 flex justify-end">
-          <Button>
+          <Button variant={location.pathname === "/creation" ? "default" : "outline"}
+          onClick={() => navigate("/creation")}>
             Création
           </Button>
         </div>
 
         <div className="col-span-1 flex justify-start">
-          <Button onClick={handleConfig}>
+          <Button variant={location.pathname === "/configuration" ? "default" : "outline"}
+          onClick={() => navigate("/configuration")}>
             Configuration
           </Button>
         </div>
