@@ -5,6 +5,7 @@ import { CopyPlus, Trash2 } from 'lucide-react';
 
 export default function ContextMenu({
   id,
+  label,
   top,
   left,
   right,
@@ -40,7 +41,7 @@ export default function ContextMenu({
       {...props}
     >
       <p style={{ margin: '0.5em' }}>
-        <small>Noeud : {id}</small>
+        <small>Noeud : {label}</small>
       </p>
       <button onClick={duplicateNode} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <CopyPlus/>

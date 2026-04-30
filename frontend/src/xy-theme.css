@@ -131,24 +131,9 @@
 }
 
 /* Override du style des noeuds du graphe*/
-.react-flow__node-xor, .react-flow__node-combinaison {
+.react-flow__node-or, .react-flow__node-xor, .react-flow__node-combinaison {
   box-shadow: var(--xy-node-boxshadow-default);
-  border: 1px solid #b4b2a9;
-  border-radius: var(--xy-node-border-radius-default);
-  background-color: #f1efe8;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 10px;
-  font-size: 12px;
-  flex-direction: column;
-  color: var(--xy-node-color, var(--xy-node-color-default));
-}
-
-.react-flow__node-or {
-  box-shadow: var(--xy-node-boxshadow-default);
-  border: 1px dotted #b4b2a9;
+  border-color: #b4b2a9;
   border-radius: var(--xy-node-border-radius-default);
   background-color: #f1efe8;
   display: flex;
@@ -162,16 +147,21 @@
 }
 
 .react-flow__node-feature {
-  box-shadow: var(--xy-node-boxshadow-default);
-  border: 1px dotted #185fa5;
-  border-radius: var(--xy-node-border-radius-default);
   background-color: #e6f1fb;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
   padding: 10px;
   font-size: 12px;
+  border-radius: var(--xy-node-border-radius-default);
+  box-shadow: var(--xy-node-boxshadow-default);
+  display: flex;
   flex-direction: column;
-  color: var(--xy-node-color, var(--xy-node-color-default));
+  align-items: center;
+  text-align: center;
+}
+
+.react-flow__node-feature.mandatory {
+  border: 1px solid #185fa5;
+}
+
+.react-flow__node-feature.optionnal {
+  border: 1px dotted #185fa5;
 }

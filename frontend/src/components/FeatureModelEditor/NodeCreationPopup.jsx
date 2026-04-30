@@ -1,20 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function NodeCreationPopup({ popup, onClose, onConfirm }) {
   const [isMandatory, setIsMandatory] = useState(null);
   const [nodeName, setNodeName] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (popup) {
+      setNodeName("");
+      setIsMandatory(null);
+      setError("");
+    }
+  }, [popup]);
+
 
   if (!popup) return null;
 
   const handleSubmit = () => {
-    console.log("Nom :", nodeName);
-    console.log("Obligatoire :", isMandatory); 
-    onConfirm({nodeName, isMandatory});
+    if (!nodeName.trim() || isMandatory === null) {
+      setError("Veuillez remplir tous les champs avant de valider.");
+      return;
+    }
+    setError("");
+    onConfirm({ nodeName, isMandatory });
     onClose();
   };
 
   const onCancel = () => {
-
     onClose();
   };
 
@@ -27,44 +39,81 @@ export default function NodeCreationPopup({ popup, onClose, onConfirm }) {
         transform: "translate(-50%, -50%)",
         background: "white",
         border: "1px solid #ddd",
-        borderRadius: 8,
-        padding: 16,
+        borderRadius: 10,
+        padding: 24,
         zIndex: 1000,
         boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "16px",
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-        <strong >{popup.node.data.label}</strong>
+      <div style={{ textAlign: "center" }}>
+        <strong style={{ fontSize: "1.25rem", fontWeight: "bold" }}>
+          {popup.nodeType}
+        </strong>
         <hr className="border-t border-gray-300 w-full p-2" />
 
       </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingBottom: '4px' }}>
-        <p>Nom du noeud : </p>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingBottom: "4px", whiteSpace: "nowrap" }}>
+        <span>Nom du nœud :</span>
         <input
           type="text"
           placeholder="Saisir le nom"
           className="border border-solid"
           value={nodeName}
           onChange={(e) => setNodeName(e.target.value)}
+          style={{
+            padding: "6px 8px",
+            borderRadius: 4,
+            border: "1px solid #ccc",
+            flex: 1
+          }}
         />
       </div>
 
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingBottom: '4px' }}>
+
+
+      <div style={{ display: 'flex', gap: '4px', flexDirection: 'column' }}>
         <label>
           <input type="radio" name="isMandatory" value="true"
             onChange={(e) => setIsMandatory(e.target.value)} />
-          Obligatoire
+          {" "}Obligatoire
         </label>
         <label>
           <input type="radio" name="isMandatory" value="false"
             onChange={(e) => setIsMandatory(e.target.value)} />
-          Optionnel
+          {" "}Optionnel
         </label>
       </div>
-      <button onClick={handleSubmit}>✓ Valider</button>
-      <button onClick={onCancel}>✕ Annuler</button>
+
+      {error && (
+        <p style={{ color: "red", fontSize: "0.85rem", marginTop: "-8px" }}>
+          {error}
+        </p>
+      )}
+
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
+        <button onClick={handleSubmit}
+          style={{
+            padding: "6px 12px",
+            background: "#4CAF50",
+            color: "white",
+            border: "none",
+            borderRadius: 4,
+            cursor: "pointer",
+          }}>✓ Valider</button>
+        <button onClick={onCancel}
+          style={{
+            padding: "6px 12px",
+            background: "#d9534f",
+            color: "white",
+            border: "none",
+            borderRadius: 4,
+            cursor: "pointer",
+          }}>✕ Annuler</button>
+      </div>
     </div>
   );
 }
