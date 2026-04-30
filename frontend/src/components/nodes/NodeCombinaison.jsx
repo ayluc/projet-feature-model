@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { Position, Handle } from '@xyflow/react';
 
-export function NodeCombinaison(props) {
+export function NodeCombinaison({isConnectable}) {
   const onChange = useCallback((evt) => {
     console.log(evt.target.value);
   }, []);
@@ -10,8 +10,8 @@ export function NodeCombinaison(props) {
     <div className="node-combinaison">
       <div>
         <label>Combinaison</label>
-        <Handle type="source" position={Position.Top} />
-        <Handle type="target" position={Position.Bottom} />
+        <Handle type="source" position={Position.Top} isConnectable={isConnectable}/>
+        <Handle type="target" position={Position.Bottom} isConnectable={isConnectable}/>
       </div>
     </div>
   );

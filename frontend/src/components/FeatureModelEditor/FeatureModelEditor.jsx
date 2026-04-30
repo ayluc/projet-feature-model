@@ -18,7 +18,7 @@ const nodeTypes = {
 let id = 0;
 const getId = () => `dndnode_${id++}`;
 
-function FeatureModelEditor() {
+function FeatureModelEditor({isReadOnly=false}) {
   const reactFlowWrapper = useRef(null);
   
   const { 
@@ -45,13 +45,16 @@ function FeatureModelEditor() {
   const onNodeContextMenu = useCallback(
     (event, node) => {
       event.preventDefault();
+
+      if (isReadOnly) return;
+
       setMenu({
         id: node.id,
         top: event.clientY-OFFSET_TOP,
         left: event.clientX-OFFSET_LEFT,
       });
     },
-    [setMenu]
+    [setMenu, isReadOnly]
   );
 
   const onPaneClick = useCallback(() => {
@@ -66,7 +69,7 @@ function FeatureModelEditor() {
   const onDrop = useCallback(
     (event) => {
       event.preventDefault();
-      if (!type) return;
+      if (!type || isReadOnly) return;
 
       const position = screenToFlowPosition({
         x: event.clientX,
@@ -83,7 +86,7 @@ function FeatureModelEditor() {
       setNodes((nds) => nds.concat(newNode));
       setPopup({ node: newNode });
     },
-    [screenToFlowPosition, type, setNodes]
+    [screenToFlowPosition, type, setNodes, isReadOnly]
   );
 
   return (
@@ -92,16 +95,19 @@ function FeatureModelEditor() {
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
+        onNodesChange={isReadOnly ? undefined : onNodesChange}
+        onEdgesChange={isReadOnly ? undefined : onEdgesChange}
+        onConnect={isReadOnly ? undefined : onConnect}
         onDrop={onDrop}
         onDragOver={onDragOver}
         onPaneClick={onPaneClick}
         onNodeContextMenu={onNodeContextMenu}
         fitView
+        nodesDraggable={!isReadOnly}
+        nodesConnectable={!isReadOnly}
+        elementsSelectable={true}
       >
-        <Controls position="top-right" />
+        <Controls position="top-right" showInteractive={!isReadOnly}/>
         <Background />
         {menu && <ContextMenu {...menu} onClick={onPaneClick} />}
       </ReactFlow>

@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { Position, Handle } from '@xyflow/react';
 
-export function NodeFeature(props) {
+export function NodeFeature({isConnectable}) {
   const onChange = useCallback((evt) => {
     console.log(evt.target.value);
   }, []);
@@ -10,8 +10,8 @@ export function NodeFeature(props) {
     <div className="node-feature">
       <div>
         <label></label>
-        <Handle type="source" position={Position.Top} />
-        <Handle type="target" position={Position.Bottom} />
+        <Handle type="source" position={Position.Top} isConnectable={isConnectable}/>
+        <Handle type="target" position={Position.Bottom} isConnectable={isConnectable}/>
       </div>
     </div>
   );

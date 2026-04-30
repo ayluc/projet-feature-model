@@ -6,7 +6,7 @@ function Configuration() {
   return (
     <div>
         <div className="dndflow">
-            <FeatureModelEditor/>
+            <FeatureModelEditor isReadOnly={true}/>
         </div>
     </div>
   );
