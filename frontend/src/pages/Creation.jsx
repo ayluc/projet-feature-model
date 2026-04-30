@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Sidebar from '@/components/Sidebar';
+import Sidebar from '@/components/FeatureModelEditor/SidebarReact';
 import FeatureModelEditor from '@/components/FeatureModelEditor/FeatureModelEditor';
 
 function Creation() {
