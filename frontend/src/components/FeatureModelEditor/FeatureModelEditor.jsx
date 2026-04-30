@@ -24,7 +24,7 @@ function FeatureModelEditor({isReadOnly=false}) {
   const { 
     nodes, setNodes, onNodesChange, 
     edges, setEdges, onEdgesChange, 
-    onConnect 
+    onConnect, onDelete
   } = useGraph();
 
   const [menu, setMenu] = useState(null);
@@ -106,6 +106,7 @@ function FeatureModelEditor({isReadOnly=false}) {
         nodesDraggable={!isReadOnly}
         nodesConnectable={!isReadOnly}
         elementsSelectable={true}
+        onDelete={isReadOnly ? undefined : onDelete}
       >
         <Controls position="top-right" showInteractive={!isReadOnly}/>
         <Background />
