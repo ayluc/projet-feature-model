@@ -10,8 +10,8 @@ export function NodeXOR({isConnectable}) {
     <div className="node-xor">
       <div>
         <label>XOR</label>
-        <Handle type="source" position={Position.Top} isConnectable={isConnectable}/>
-        <Handle type="target" position={Position.Bottom} isConnectable={isConnectable}/>
+        <Handle type="source" position={Position.Bottom} isConnectable={isConnectable}/>
+        <Handle type="target" position={Position.Top} isConnectable={isConnectable}/>
       </div>
     </div>
   );

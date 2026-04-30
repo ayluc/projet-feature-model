@@ -10,8 +10,8 @@ export function NodeFeature({isConnectable}) {
     <div className="node-feature">
       <div>
         <label></label>
-        <Handle type="source" position={Position.Top} isConnectable={isConnectable}/>
-        <Handle type="target" position={Position.Bottom} isConnectable={isConnectable}/>
+        <Handle type="source" position={Position.Bottom} isConnectable={isConnectable}/>
+        <Handle type="target" position={Position.Top} isConnectable={isConnectable}/>
       </div>
     </div>
   );
