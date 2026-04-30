@@ -1,7 +1,10 @@
 import React from 'react';
 import { ReactFlowProvider } from '@xyflow/react';
-import { DnDProvider } from '@/components/DnDContext';
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
+
+import { DnDProvider } from '@/components/DnDContext';
+import { GraphProvider } from '@/components/GraphContext'; 
 
 import Toolbar from "@/components/Toolbar";
 import Creation from './pages/Creation';
@@ -27,7 +30,9 @@ function App() {
     <Router>
       <ReactFlowProvider>
         <DnDProvider>
-          <Page />
+          <GraphProvider>
+            <Page />
+          </GraphProvider>
         </DnDProvider>
       </ReactFlowProvider>
     </Router>

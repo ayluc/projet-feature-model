@@ -1,20 +1,12 @@
 import React, { useRef, useCallback, useState } from "react";
-import {
-  ReactFlow,
-  Controls,
-  Background,
-  addEdge,
-  useNodesState,
-  useEdgesState,
-  useReactFlow
-} from "@xyflow/react";
+import { ReactFlow, Controls, Background, useReactFlow } from "@xyflow/react";
 
 import { useDnD } from '@/components/DnDContext';
+import { useGraph } from '@/components/GraphContext';
 import { NodeFeature, NodeXOR, NodeOR, NodeCombinaison } from "@/components/nodes";
 
 import NodeCreationPopup from "./NodeCreationPopup";
 import ContextMenu from "./ContextMenu";
-import Sidebar from './SidebarReact';
 
 const nodeTypes = {
   feature: NodeFeature,
@@ -23,14 +15,18 @@ const nodeTypes = {
   combinaison: NodeCombinaison
 };
 
-const initialNodes = [];
 let id = 0;
 const getId = () => `dndnode_${id++}`;
 
 function FeatureModelEditor() {
   const reactFlowWrapper = useRef(null);
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  
+  const { 
+    nodes, setNodes, onNodesChange, 
+    edges, setEdges, onEdgesChange, 
+    onConnect 
+  } = useGraph();
+
   const [menu, setMenu] = useState(null);
   const [popup, setPopup] = useState(null);
   
@@ -38,19 +34,13 @@ function FeatureModelEditor() {
   const [type] = useDnD();
   const isDragging = useRef(false);
 
-  const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
-  );
-
   const onDragOver = useCallback((event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   }, []);
 
   const OFFSET_TOP = 100;
-    const OFFSET_LEFT = 200;
-
+  const OFFSET_LEFT = 200;
 
   const onNodeContextMenu = useCallback(
     (event, node) => {
