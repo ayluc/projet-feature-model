@@ -18,18 +18,18 @@ const nodeTypes = {
 let id = 0;
 const getId = () => `node_${id++}`;
 
-function FeatureModelEditor({isReadOnly=false}) {
+function FeatureModelEditor({ isReadOnly = false }) {
   const reactFlowWrapper = useRef(null);
-  
-  const { 
-    nodes, setNodes, onNodesChange, 
-    edges, setEdges, onEdgesChange, 
+
+  const {
+    nodes, setNodes, onNodesChange,
+    edges, setEdges, onEdgesChange,
     onConnect, onDelete
   } = useGraph();
 
   const [menu, setMenu] = useState(null);
   const [popup, setPopup] = useState(null);
-  
+
   const { screenToFlowPosition } = useReactFlow();
   const [type] = useDnD();
   const isDragging = useRef(false);
@@ -51,8 +51,9 @@ function FeatureModelEditor({isReadOnly=false}) {
 
       setMenu({
         id: node.id,
-        top: event.clientY-OFFSET_TOP,
-        left: event.clientX-OFFSET_LEFT,
+        label: node.data?.label ?? node.id,
+        top: event.clientY - OFFSET_TOP,
+        left: event.clientX - OFFSET_LEFT,
       });
     },
     [setMenu, isReadOnly]
@@ -77,20 +78,26 @@ function FeatureModelEditor({isReadOnly=false}) {
         y: event.clientY,
       });
 
-      const newNode = {
-        id: getId(),
-        type,
-        position,
-        data: { label: `${type} node` },
-      };
-
-      setPopup({ node: newNode });
+      if (type === "feature" || type === "combinaison") {
+        setPopup({
+          pendingNode: { id: getId(), type, position },
+          nodeType: type,
+        });
+      } else {
+        const newNode = {
+          id: getId(),
+          type,
+          position,
+          data: { label: type.toUpperCase() },
+        };
+        setNodes((nds) => nds.concat(newNode));
+      }
     },
     [screenToFlowPosition, type, setNodes, isReadOnly]
   );
 
   return (
-    <div className="reactflow-wrapper" ref={reactFlowWrapper} style={{width:"100%", height:"calc(100vh - 80px)"}}>
+    <div className="reactflow-wrapper" ref={reactFlowWrapper} style={{ width: "100%", height: "calc(100vh - 80px)" }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -108,7 +115,7 @@ function FeatureModelEditor({isReadOnly=false}) {
         elementsSelectable={true}
         onDelete={isReadOnly ? undefined : onDelete}
       >
-        <Controls position="top-right" showInteractive={!isReadOnly}/>
+        <Controls position="top-right" showInteractive={!isReadOnly} />
         <Background />
         {menu && <ContextMenu {...menu} onClick={onPaneClick} />}
       </ReactFlow>
@@ -117,15 +124,19 @@ function FeatureModelEditor({isReadOnly=false}) {
         popup={popup}
         onClose={() => setPopup(null)}
         onConfirm={(nodeData) => {
+          if (!popup?.pendingNode) return;
+
+          const isMandatory = nodeData.isMandatory === "true";
+
           const newNode = {
-            ...popup.node,
+            ...popup.pendingNode,
             data: {
-              ...popup.node.data,
               label: nodeData.nodeName,
-              isMandatory: nodeData.isMandatory === "true",
+              isMandatory,
             },
+            className: isMandatory ? "mandatory" : "optionnal", // ← ici
           };
-          console.log("Données du popup :", nodeData);
+
           setNodes((nds) => nds.concat(newNode));
           setPopup(null);
         }}
