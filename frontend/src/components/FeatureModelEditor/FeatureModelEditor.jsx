@@ -1,5 +1,6 @@
 import React, { useRef, useCallback, useState } from "react";
-import { ReactFlow, Controls, Background, useReactFlow } from "@xyflow/react";
+import { ReactFlow, Controls, Background, useReactFlow, ControlButton } from "@xyflow/react";
+import { Undo2, Redo2 } from "lucide-react";
 
 import { useDnD } from '@/components/DnDContext';
 import { useGraph } from '@/components/GraphContext';
@@ -115,7 +116,14 @@ function FeatureModelEditor({ isReadOnly = false }) {
         elementsSelectable={true}
         onDelete={isReadOnly ? undefined : onDelete}
       >
-        <Controls position="top-right" showInteractive={!isReadOnly} />
+        <Controls position="top-right" showInteractive={!isReadOnly}>
+          <ControlButton className="undo-redo-button">
+            <Undo2/>
+          </ControlButton>
+          <ControlButton className="undo-redo-button">
+            <Redo2/>
+          </ControlButton>
+        </Controls>
         <Background />
         {menu && <ContextMenu {...menu} onClick={onPaneClick} />}
       </ReactFlow>

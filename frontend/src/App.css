@@ -130,6 +130,11 @@ background: #f0f0f0;
 }
 
 
+.react-flow__controls-button.undo-redo-button svg {
+  fill: none !important;
+  stroke: currentColor;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 
