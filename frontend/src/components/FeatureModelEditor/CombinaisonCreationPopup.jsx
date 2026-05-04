@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
 
-export default function NodeCreationPopup({ popup, onClose, onConfirm }) {
+export default function CombinaisonCreationPopup({ popup, onClose, onConfirm }) {
   const [isMandatory, setIsMandatory] = useState(null);
   const [nodeName, setNodeName] = useState("");
+  const [combinaisonMin, setCombinaisonMin] = useState("");
+  const [combinaisonMax, setCombinaisonMax] = useState(""); 
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (popup) {
       setNodeName("");
+      setCombinaisonMin("");
+      setCombinaisonMax("");
       setIsMandatory(null);
       setError("");
     }
@@ -53,46 +57,48 @@ export default function NodeCreationPopup({ popup, onClose, onConfirm }) {
           {popup.nodeType}
         </strong>
         <hr className="border-t border-gray-300 w-full p-2" />
-
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingBottom: "4px", whiteSpace: "nowrap" }}>
-        <span>Nom du nœud :</span>
-        <input
-          type="text"
-          placeholder="Saisir le nom"
-          className="border border-solid"
-          value={nodeName}
-          onChange={(e) => setNodeName(e.target.value)}
-          style={{
-            padding: "6px 8px",
-            borderRadius: 4,
-            border: "1px solid #ccc",
-            flex: 1
-          }}
-        />
-      </div>
-
-
-
-
-      <div style={{ display: 'flex', gap: '4px', flexDirection: 'column' }}>
-        <label>
-          <input type="radio" name="isMandatory" value="true"
-            onChange={(e) => setIsMandatory(e.target.value)} />
-          {" "}Obligatoire
-        </label>
-        <label>
-          <input type="radio" name="isMandatory" value="false"
-            onChange={(e) => setIsMandatory(e.target.value)} />
-          {" "}Optionnel
-        </label>
-      </div>
-
+      
       {error && (
         <p style={{ color: "red", fontSize: "0.85rem", marginTop: "-8px" }}>
           {error}
         </p>
       )}
+      
+
+        <div>
+          <span>Choisir le nombre de caractéristiques minimal et maximal à sélectionner :</span>
+
+        
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingBottom: "4px", whiteSpace: "nowrap" }}>
+          <input
+            type="integer"
+            placeholder="Minimum"
+            className="border border-solid"
+            value={combinaisonMin}
+            onChange={(e) => setCombinaisonMin(e.target.value)}
+            style={{
+              padding: "6px 8px",
+              borderRadius: 4,
+              border: "1px solid #ccc",
+              flex: 1
+            }}
+          />
+          <input
+            type="integer"
+            placeholder="Maximum"
+            className="border border-solid"
+            value={combinaisonMax}
+            onChange={(e) => setCombinaisonMax(e.target.value)}
+            style={{
+              padding: "6px 8px",
+              borderRadius: 4,
+              border: "1px solid #ccc",
+              flex: 1
+            }}
+          />
+        </div>
+        </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
         <button onClick={handleSubmit}
