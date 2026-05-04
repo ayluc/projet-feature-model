@@ -1,8 +1,8 @@
 import React from 'react';
 import { useDnD } from '@/components/DnDContext';
 import { Button } from "@/components/ui/button";
-import { useGraph } from '@/components/GraphContext';
 import { getLayoutedElements } from '@/components/utils/layout';
+import { useGraphStore } from '@/components/GraphStore';
 
 
 export default () => {
@@ -13,10 +13,9 @@ export default () => {
     event.dataTransfer.effectAllowed = 'move';
   };
 
-  const { 
-    nodes, setNodes, onNodesChange, 
-    edges
-  } = useGraph();
+  const nodes = useGraphStore((state) => state.nodes);
+  const setNodes = useGraphStore((state) => state.setNodes);
+  const edges = useGraphStore((state) => state.edges);
 
   const handleNoeuds = () => {
     const { layoutedNodes } = getLayoutedElements(nodes, edges);

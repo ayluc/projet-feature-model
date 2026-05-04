@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 
 
 import { DnDProvider } from '@/components/DnDContext';
-import { GraphProvider } from '@/components/GraphContext'; 
 
 import Toolbar from "@/components/Toolbar";
 import Creation from './pages/Creation';
@@ -30,9 +29,7 @@ function App() {
     <Router>
       <ReactFlowProvider>
         <DnDProvider>
-          <GraphProvider>
             <Page />
-          </GraphProvider>
         </DnDProvider>
       </ReactFlowProvider>
     </Router>
