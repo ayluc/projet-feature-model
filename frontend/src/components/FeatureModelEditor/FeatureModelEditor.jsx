@@ -6,7 +6,8 @@ import { useDnD } from '@/components/DnDContext';
 import { useGraph } from '@/components/GraphContext';
 import { NodeFeature, NodeXOR, NodeOR, NodeCombinaison } from "@/components/nodes";
 
-import NodeCreationPopup from "./NodeCreationPopup";
+import FeatureCreationPopup from "./FeatureCreationPopup";
+import CombinaisonCreationPopup from "./CombinaisonCreationPopup";
 import ContextMenu from "./ContextMenu";
 
 const nodeTypes = {
@@ -31,7 +32,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
   const [menu, setMenu] = useState(null);
   const [popup, setPopup] = useState(null);
 
-  const { screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition, getNode } = useReactFlow();
   const [type] = useDnD();
   const isDragging = useRef(false);
 
@@ -125,24 +126,61 @@ function FeatureModelEditor({ isReadOnly = false }) {
           </ControlButton>
         </Controls>
         <Background />
-        {menu && <ContextMenu {...menu} onClick={onPaneClick} />}
+        {menu && <ContextMenu {...menu} onClick={onPaneClick}
+          onOpenPopup={(popupData) => {
+            const node = getNode(popupData.nodeId); // récupère le nœud complet
+            setMenu(null);
+            setPopup({
+              ...popupData,
+              isMandatory: node?.data?.isMandatory, // ← ajoute isMandatory
+            });
+          }} />}
       </ReactFlow>
 
-      <NodeCreationPopup
-        popup={popup}
+      <FeatureCreationPopup
+        popup={popup && popup.nodeType === "feature" ? popup : null}
+        onClose={() => setPopup(null)}
+        onConfirm={(nodeData) => {
+          const isMandatory = nodeData.isMandatory === "true";
+
+          // Cas modification (nodeId présent, pas de pendingNode)
+          if (popup?.nodeId && !popup?.pendingNode) {
+            setNodes((nds) =>
+              nds.map((n) =>
+                n.id === popup.nodeId
+                  ? { ...n, data: { ...n.data, label: nodeData.nodeName, isMandatory }, className: isMandatory ? "mandatory" : "optionnal" }
+                  : n
+              )
+            );
+            setPopup(null);
+            return;
+          }
+
+          // Cas création (existant)
+          if (!popup?.pendingNode) return;
+          const newNode = {
+            ...popup.pendingNode,
+            data: { label: nodeData.nodeName, isMandatory },
+            className: isMandatory ? "mandatory" : "optionnal",
+          };
+          setNodes((nds) => nds.concat(newNode));
+          setPopup(null);
+        }}
+      />
+
+      <CombinaisonCreationPopup
+        popup={popup && popup.nodeType === "combinaison" ? popup : null}
         onClose={() => setPopup(null)}
         onConfirm={(nodeData) => {
           if (!popup?.pendingNode) return;
-
-          const isMandatory = nodeData.isMandatory === "true";
 
           const newNode = {
             ...popup.pendingNode,
             data: {
               label: nodeData.nodeName,
-              isMandatory,
+              combinaisonMin: parseInt(nodeData.combinaisonMin),
+              combinaisonMax: parseInt(nodeData.combinaisonMax),
             },
-            className: isMandatory ? "mandatory" : "optionnal", // ← ici
           };
 
           setNodes((nds) => nds.concat(newNode));

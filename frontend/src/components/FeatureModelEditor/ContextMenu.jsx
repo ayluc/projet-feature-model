@@ -1,7 +1,8 @@
 import React, { useCallback } from 'react';
 import { useReactFlow } from '@xyflow/react';
 
-import { CopyPlus, Trash2 } from 'lucide-react';
+import { CopyPlus, Trash2, Pencil } from 'lucide-react';
+import FeatureCreationPopup from './FeatureCreationPopup'; 
 
 export default function ContextMenu({
   id,
@@ -34,6 +35,19 @@ export default function ContextMenu({
     setEdges((edges) => edges.filter((edge) => edge.source !== id));
   }, [id, setNodes, setEdges]);
 
+  const onModify = useCallback(() => {
+    const node = getNode(id);
+    const label = node.data?.label || node.id;
+    const type = node.type || "feature"; // Default to "feature" if type is not defined
+
+    props.onOpenPopup({
+      nodeId: id,
+      nodeType: type,
+      label,
+    });
+  }, [id, getNode, props]); 
+
+
   return (
     <div
       style={{ top, left, right, bottom }}
@@ -43,6 +57,10 @@ export default function ContextMenu({
       <p style={{ margin: '0.5em' }}>
         <small>Noeud : {label}</small>
       </p>
+      <button onClick={onModify} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Pencil />
+        <span>Modifier</span>
+      </button>
       <button onClick={duplicateNode} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <CopyPlus/>
         <span>Dupliquer</span>
