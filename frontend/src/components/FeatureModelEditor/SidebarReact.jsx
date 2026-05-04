@@ -24,7 +24,7 @@ export default () => {
 
   return (
     <aside>
-      <div className="description">You can drag these nodes to the pane on the right.</div>
+      <div className="description">Faire glisser les noeuds à ajouter au modèle</div>
       <div className="dndnode feature" onDragStart={(event) => onDragStart(event, 'feature')} draggable>
         Feature
       </div>
@@ -38,6 +38,8 @@ export default () => {
         COMBINAISON
       </div>
       <Button variant="outline" onClick={handleNoeuds}>Réorganiser les noeuds</Button>
+      <hr class="dotted" />
+    
     </aside>
   );
 };

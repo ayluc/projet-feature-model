@@ -143,6 +143,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
       >
         <Controls position="top-right" showInteractive={!isReadOnly}>
           <ControlButton 
+          title="Annuler"
             className="undo-redo-button" 
             onClick={() => undo()}
             disabled={pastStates.length === 0}
@@ -152,6 +153,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
           </ControlButton>
 
           <ControlButton 
+          title="Rétablir"
             className="undo-redo-button" 
             onClick={() => redo()}
             disabled={futureStates.length === 0}
