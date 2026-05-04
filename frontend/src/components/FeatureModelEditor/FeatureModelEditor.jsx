@@ -3,7 +3,7 @@ import { ReactFlow, Controls, Background, useReactFlow, ControlButton } from "@x
 import { Undo2, Redo2 } from "lucide-react";
 
 import { useDnD } from '@/components/DnDContext';
-import { useGraph } from '@/components/GraphContext';
+import { useGraphStore, useTemporalStore } from '@/components/GraphStore';
 import { NodeFeature, NodeXOR, NodeOR, NodeCombinaison } from "@/components/nodes";
 
 import FeatureCreationPopup from "./FeatureCreationPopup";
@@ -23,11 +23,21 @@ const getId = () => `node_${id++}`;
 function FeatureModelEditor({ isReadOnly = false }) {
   const reactFlowWrapper = useRef(null);
 
-  const {
-    nodes, setNodes, onNodesChange,
-    edges, setEdges, onEdgesChange,
-    onConnect, onDelete
-  } = useGraph();
+  const nodes = useGraphStore((state) => state.nodes);
+  const setNodes = useGraphStore((state) => state.setNodes);
+  const onNodesChange = useGraphStore((state) => state.onNodesChange);
+  const edges = useGraphStore((state) => state.edges);
+  const setEdges = useGraphStore((state) => state.setEdges);
+  const onEdgesChange = useGraphStore((state) => state.onEdgesChange);
+  const onConnect = useGraphStore((state) => state.onConnect);
+  const onDelete = useGraphStore((state) => state.onDelete);
+
+  const undo = useTemporalStore((state) => state.undo);
+  const redo = useTemporalStore((state) => state.redo);
+  const pastStates = useTemporalStore((state) => state.pastStates);
+  const futureStates = useTemporalStore((state) => state.futureStates);
+  const pause = useTemporalStore((state) => state.pause);
+  const resume = useTemporalStore((state) => state.resume);
 
   const [menu, setMenu] = useState(null);
   const [popup, setPopup] = useState(null);
@@ -111,6 +121,8 @@ function FeatureModelEditor({ isReadOnly = false }) {
         onDragOver={onDragOver}
         onPaneClick={onPaneClick}
         onNodeContextMenu={onNodeContextMenu}
+        onNodeDragStart={() => pause()}
+        onNodeDragStop={() => resume()}
         fitView
         nodesDraggable={!isReadOnly}
         nodesConnectable={!isReadOnly}
@@ -118,10 +130,21 @@ function FeatureModelEditor({ isReadOnly = false }) {
         onDelete={isReadOnly ? undefined : onDelete}
       >
         <Controls position="top-right" showInteractive={!isReadOnly}>
-          <ControlButton className="undo-redo-button">
+          <ControlButton 
+            className="undo-redo-button" 
+            onClick={() => undo()}
+            disabled={pastStates.length === 0}
+            style={{ opacity: pastStates.length === 0 ? 0.5 : 1, cursor: pastStates.length === 0 ? 'not-allowed' : 'pointer' }}
+          >
             <Undo2/>
           </ControlButton>
-          <ControlButton className="undo-redo-button">
+
+          <ControlButton 
+            className="undo-redo-button" 
+            onClick={() => redo()}
+            disabled={futureStates.length === 0}
+            style={{ opacity: futureStates.length === 0 ? 0.5 : 1, cursor: futureStates.length === 0 ? 'not-allowed' : 'pointer' }}
+          >
             <Redo2/>
           </ControlButton>
         </Controls>
