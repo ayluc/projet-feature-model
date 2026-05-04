@@ -7,26 +7,24 @@ export default function CombinaisonCreationPopup({ popup, onClose, onConfirm }) 
   const [combinaisonMax, setCombinaisonMax] = useState(""); 
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (popup) {
-      setNodeName("");
-      setCombinaisonMin("");
-      setCombinaisonMax("");
-      setIsMandatory(null);
-      setError("");
-    }
-  }, [popup]);
+useEffect(() => {
+  if (popup) {
+    setCombinaisonMin(popup.data?.combinaisonMin ?? "");
+    setCombinaisonMax(popup.data?.combinaisonMax ?? "");
+    setError("");
+  }
+}, [popup]);
 
 
   if (!popup) return null;
 
   const handleSubmit = () => {
-    if (!nodeName.trim() || isMandatory === null) {
+    if (combinaisonMin === "" || combinaisonMax === "") {
       setError("Veuillez remplir tous les champs avant de valider.");
       return;
     }
     setError("");
-    onConfirm({ nodeName, isMandatory });
+    onConfirm({ combinaisonMax, combinaisonMin });
     onClose();
   };
 
