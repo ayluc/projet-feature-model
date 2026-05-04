@@ -119,20 +119,21 @@ function FeatureModelEditor({ isReadOnly = false }) {
       >
         <Controls position="top-right" showInteractive={!isReadOnly}>
           <ControlButton className="undo-redo-button">
-            <Undo2/>
+            <Undo2 />
           </ControlButton>
           <ControlButton className="undo-redo-button">
-            <Redo2/>
+            <Redo2 />
           </ControlButton>
         </Controls>
         <Background />
         {menu && <ContextMenu {...menu} onClick={onPaneClick}
           onOpenPopup={(popupData) => {
-            const node = getNode(popupData.nodeId); // récupère le nœud complet
+            const node = getNode(popupData.nodeId);
             setMenu(null);
             setPopup({
               ...popupData,
-              isMandatory: node?.data?.isMandatory, // ← ajoute isMandatory
+              nodeType: node?.type,
+              data: node?.data, // ← ajoute ça pour pré-remplir le popup
             });
           }} />}
       </ReactFlow>
@@ -172,17 +173,38 @@ function FeatureModelEditor({ isReadOnly = false }) {
         popup={popup && popup.nodeType === "combinaison" ? popup : null}
         onClose={() => setPopup(null)}
         onConfirm={(nodeData) => {
-          if (!popup?.pendingNode) return;
 
+          // Cas modification
+          if (popup?.nodeId && !popup?.pendingNode) {
+            setNodes((nds) =>
+              nds.map((n) =>
+                n.id === popup.nodeId
+                  ? {
+                    ...n,
+                    data: {
+                      ...n.data,
+                      label: `[${nodeData.combinaisonMin}..${nodeData.combinaisonMax}]`,
+                      combinaisonMin: parseInt(nodeData.combinaisonMin),
+                      combinaisonMax: parseInt(nodeData.combinaisonMax),
+                    },
+                  }
+                  : n
+              )
+            );
+            setPopup(null);
+            return;
+          }
+
+          // Cas création
+          if (!popup?.pendingNode) return;
           const newNode = {
             ...popup.pendingNode,
             data: {
-              label: nodeData.nodeName,
+              label: `[${nodeData.combinaisonMin}..${nodeData.combinaisonMax}]`,
               combinaisonMin: parseInt(nodeData.combinaisonMin),
               combinaisonMax: parseInt(nodeData.combinaisonMax),
             },
           };
-
           setNodes((nds) => nds.concat(newNode));
           setPopup(null);
         }}

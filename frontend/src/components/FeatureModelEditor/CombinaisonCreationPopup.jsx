@@ -15,7 +15,6 @@ useEffect(() => {
   }
 }, [popup]);
 
-
   if (!popup) return null;
 
   const handleSubmit = () => {
