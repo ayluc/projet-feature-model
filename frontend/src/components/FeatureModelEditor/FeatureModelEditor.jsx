@@ -147,7 +147,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
             className="undo-redo-button" 
             onClick={() => undo()}
             disabled={pastStates.length === 0}
-            style={{ opacity: pastStates.length === 0 ? 0.5 : 1, cursor: pastStates.length === 0 ? 'not-allowed' : 'pointer' }}
+            style={{ opacity: pastStates.length === 0 ? 0.5 : 1, cursor: pastStates.length === 0 ? 'not-allowed' : 'pointer', display: isReadOnly ? "none" : "block"}}
           >
             <Undo2/>
           </ControlButton>
@@ -157,7 +157,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
             className="undo-redo-button" 
             onClick={() => redo()}
             disabled={futureStates.length === 0}
-            style={{ opacity: futureStates.length === 0 ? 0.5 : 1, cursor: futureStates.length === 0 ? 'not-allowed' : 'pointer' }}
+            style={{ opacity: futureStates.length === 0 ? 0.5 : 1, cursor: futureStates.length === 0 ? 'not-allowed' : 'pointer', display: isReadOnly ? "none" : "block"}}
           >
             <Redo2/>
           </ControlButton>
