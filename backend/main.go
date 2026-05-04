@@ -26,21 +26,40 @@ type Arc struct {
 	TargetId string `json:"target"`
 }
 
+type ValidateRequest struct {
+	Nodes []Node `json:"nodes"`
+	Arcs  []Arc  `json:"arcs"`
+}
+
 func main() {
 	router := gin.Default()
 
-	router.POST("/validate", func (c *gin.Context) {
-		c.IndentedJSON(http.StatusBadRequest, nil)
-	})
-
-	router.Run("localhost:8080")
-
-	solver, err := minizinc.FindSolver("or-tools")
-	if (err != nil) {
+	// For the library to find the solver a minizinc solver config file must
+	// be created at ~/.minizinc/solvers/<your_solver_config>.msc
+	// XDG standard is not supported :(
+	solver, err := minizinc.FindSolver("Gecode")
+	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("%s\n", solver.Description)
+	fmt.Printf("Solver loaded: %s\n", solver.Name)
 
-	fmt.Printf("Hello world!")
+	router.POST("/validate", func(c *gin.Context) {
+		var req ValidateRequest
+		err := c.ShouldBindJSON(&req)
+		if err != nil {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// TODO: validate the feature model using the solver
+
+		c.IndentedJSON(http.StatusOK, gin.H{
+			"valid":     true,
+			"nodeCount": len(req.Nodes),
+			"arcCount":  len(req.Arcs),
+		})
+	})
+
+	router.Run("localhost:8080")
 }
