@@ -108,13 +108,25 @@ function FeatureModelEditor({ isReadOnly = false }) {
     [screenToFlowPosition, type, setNodes, isReadOnly]
   );
 
+  const handleNodesChange = useCallback((changes) => {
+    const isMinorChange = changes.every(
+      (c) => c.type === 'select' || c.type === 'dimensions'
+    );
+
+    if (isMinorChange) pause(); 
+    
+    onNodesChange(changes);
+    
+    if (isMinorChange) resume();
+  }, [onNodesChange, pause, resume]);
+
   return (
     <div className="reactflow-wrapper" ref={reactFlowWrapper} style={{ width: "100%", height: "calc(100vh - 80px)" }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
-        onNodesChange={isReadOnly ? undefined : onNodesChange}
+        onNodesChange={isReadOnly ? undefined : handleNodesChange}
         onEdgesChange={isReadOnly ? undefined : onEdgesChange}
         onConnect={isReadOnly ? undefined : onConnect}
         onDrop={onDrop}
