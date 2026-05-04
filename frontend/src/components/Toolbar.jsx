@@ -14,6 +14,7 @@ function Toolbar() {
   const location = useLocation();
   const { toObject, setViewport } = useReactFlow();
   const setNodes = useGraphStore((state) => state.setNodes);
+  const nodes = useGraphStore((state) => state.nodes);
   const setEdges = useGraphStore((state) => state.setEdges);
   const fileInputRef = useRef(null);
 
@@ -35,28 +36,38 @@ function Toolbar() {
     }, 100);
   };
 
+  const handleClear = () => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer votre feature model actuel ?")) {
+      setNodes([]);
+      setEdges([]);
+      setViewport({ x: 0, y: 0, zoom: 1 });
+    }
+  };
+
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (!file) return;
+    if (nodes.length> 0 && window.confirm("Êtes-vous sûr de vouloir écraser votre feature model actuel ?") || nodes.length === 0 ) {
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const flow = JSON.parse(e.target.result);
-        setNodes([]);
-        setEdges([]);
-        setTimeout(() => {
-          if (flow.nodes) setNodes(flow.nodes);
-          if (flow.edges) setEdges(flow.edges);
-          if (flow.viewport) setViewport(flow.viewport);
-        }, 50);
-      } catch (err) {
-        console.error("Fichier JSON invalide :", err);
-        alert("Le fichier sélectionné n'est pas un JSON valide.");
-      }
-    };
-    reader.readAsText(file);
-    event.target.value = "";
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const flow = JSON.parse(e.target.result);
+          setNodes([]);
+          setEdges([]);
+          setTimeout(() => {
+            if (flow.nodes) setNodes(flow.nodes);
+            if (flow.edges) setEdges(flow.edges);
+            if (flow.viewport) setViewport(flow.viewport);
+          }, 50);
+        } catch (err) {
+          console.error("Fichier JSON invalide :", err);
+          alert("Le fichier sélectionné n'est pas un JSON valide.");
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = "";
+    }
   };
 
   return (
@@ -78,13 +89,9 @@ function Toolbar() {
             <DropdownMenuContent>
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Feature model</DropdownMenuLabel>
-                <DropdownMenuItem>
-                  <Plus className="mr-2 h-4 w-4" />
-                  <span>Nouveau</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onSelect={handleClear}>
                   <Trash2 className="mr-2 h-4 w-4" />
-                  <span>Supprimer</span>
+                  <span>Effacer</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={handleImportClick}>
                   <FileUp className="mr-2 h-4 w-4" />
