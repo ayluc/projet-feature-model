@@ -20,6 +20,10 @@ useEffect(() => {
       setError("Veuillez remplir tous les champs avant de valider.");
       return;
     }
+    if(cardinaliteMax < cardinaliteMin){
+      setError("Le maximum doit est supérieur au minimum")
+      return;
+    }
     setError("");
     onConfirm({ cardinaliteMax, cardinaliteMin });
     onClose();
