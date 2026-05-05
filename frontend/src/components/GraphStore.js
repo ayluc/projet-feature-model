@@ -8,6 +8,7 @@ export const useGraphStore = create()(
     (set, get) => ({
       nodes: [],
       edges: [],
+      isLayoutAuto: true,
 
       setNodes: (update) => {
         const nextNodes = typeof update === 'function' ? update(get().nodes) : update;
@@ -17,6 +18,10 @@ export const useGraphStore = create()(
       setEdges: (update) => {
         const nextEdges = typeof update === 'function' ? update(get().edges) : update;
         set({ edges: nextEdges });
+      },
+
+      setLayout: (update) => {
+        set({isLayoutAuto: update})
       },
 
       onNodesChange: (changes) => {
@@ -30,17 +35,27 @@ export const useGraphStore = create()(
       onConnect: (connection) => {
         const newEdges = addEdge(connection, get().edges);
         
-        setTimeout(() => {
-          const { layoutedNodes } = getLayoutedElements(get().nodes, newEdges);
-          set({ nodes: layoutedNodes, edges: newEdges });
-        }, 10);
+        if(get().isLayoutAuto)
+        {
+          setTimeout(() => {
+            const { layoutedNodes } = getLayoutedElements(get().nodes, newEdges);
+            set({ nodes: layoutedNodes, edges: newEdges });
+          }, 10);
+        }  
+        else
+        {
+          set({edges: newEdges});
+        }
       },
 
       onDelete: () => {
-        setTimeout(() => {
-          const { layoutedNodes } = getLayoutedElements(get().nodes, get().edges);
-          set({ nodes: layoutedNodes });
-        }, 10);
+        if(get().isLayoutAuto)
+        {
+          setTimeout(() => {
+            const { layoutedNodes } = getLayoutedElements(get().nodes, get().edges);
+            set({ nodes: layoutedNodes });
+          }, 10);
+        }
       }
     }),
     {

@@ -17,6 +17,9 @@ export default () => {
   const setNodes = useGraphStore((state) => state.setNodes);
   const edges = useGraphStore((state) => state.edges);
 
+  const isLayoutAuto = useGraphStore((state) => state.isLayoutAuto);
+  const setLayout = useGraphStore((state) => state.setLayout);
+
   const handleNoeuds = () => {
     const { layoutedNodes } = getLayoutedElements(nodes, edges);
     setNodes(layoutedNodes);
@@ -37,7 +40,13 @@ export default () => {
       <div className="dndnode" onDragStart={(event) => onDragStart(event, 'cardinalite')} draggable>
         CARDINALITÉ
       </div>
-      <Button variant="outline" onClick={handleNoeuds}>Réorganiser les noeuds</Button>
+      <div>
+        <Button variant="outline" onClick={handleNoeuds}>Réorganiser les noeuds</Button>
+      </div>
+      <div>
+        <label>Disposition du graphe automatique </label>
+        <input type="checkbox" defaultChecked={isLayoutAuto} onChange={() => setLayout(!isLayoutAuto)}></input>
+      </div>
       <hr class="dotted" />
     
     </aside>
