@@ -1,4 +1,4 @@
-module feature-model
+module feature-model-backend
 
 go 1.26.2
 
