@@ -2,7 +2,7 @@
 `go run .`
 
 # Frontend
-`cd frontend && npm run dev`
+`cd frontend && npm install && npm run dev`
 
 # Docker
 `docker-compose up --build`
