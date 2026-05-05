@@ -9,15 +9,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Position struct {
-	x, y int
-}
+type NodeType string
+const (
+	type_cardinality NodeType = "combinaison"
+	type_feature     NodeType = "feature"
+	type_xor         NodeType = "xor"
+	type_or          NodeType = "or"
+)
 
 type Node struct {
-	Id       string   `json:"id"`
-	Type     string   `json:"type"`
-	Data     string   `json:"label"`
-	Position Position `json:"position"`
+	Id   string `json:"id"`
+	Type NodeType `json:"type"`
 }
 
 type Arc struct {
@@ -26,9 +28,9 @@ type Arc struct {
 	TargetId string `json:"target"`
 }
 
-type ValidateRequest struct {
+type FeatureModel struct {
 	Nodes []Node `json:"nodes"`
-	Arcs  []Arc  `json:"arcs"`
+	Arcs  []Arc  `json:"edges"`
 }
 
 func main() {
@@ -44,8 +46,12 @@ func main() {
 
 	fmt.Printf("Solver loaded: %s\n", solver.Name)
 
-	router.POST("/validate", func(c *gin.Context) {
-		var req ValidateRequest
+	router.GET("/", func(c *gin.Context) {
+		c.Data(http.StatusOK, "text/plain", []byte("Hello there!"))
+	})
+
+	router.POST("/validate-creation", func(c *gin.Context) {
+		var req FeatureModel
 		err := c.ShouldBindJSON(&req)
 		if err != nil {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -61,5 +67,6 @@ func main() {
 		})
 	})
 
+	// TODO: Read the url from the CLI
 	router.Run("localhost:8080")
 }

@@ -1,34 +1,65 @@
-#!/bin/bash
-BASE="http://localhost:8080"
+#!/bin/sh
 
-echo "=== Test 1: Valid request ==="
-curl -s -X POST "$BASE/validate" \
+# TODO: The url should be passed as paramater
+
+url="http://localhost:8080"
+
+if ! curl -o /dev/null -s "$url"; then
+	echo "ERROR:"
+	printf "The backend service is not running or cannot be reached at %s\n\n" "$url"
+	echo "Please make sure that you have started the backend and that it is reachable at %s" "$url"
+	exit 1
+fi
+
+endpoint="$url/validate-creation"
+
+printf "=== Test 1: Valid request ===\n"
+
+curl -s -X POST "$endpoint" \
   -H "Content-Type: application/json" \
-  -d '{
+  -d '
+  {
     "nodes": [
-      {"id": "1", "type": "feature",  "label": "Car",    "position": {"x": 0, "y": 0}},
-      {"id": "2", "type": "feature",  "label": "Engine", "position": {"x": 100, "y": 100}},
-      {"id": "3", "type": "feature",  "label": "Wheels", "position": {"x": 200, "y": 100}}
+      { "id": "1", "type": "feature" },
+      { "id": "2", "type": "or"      },
+      { "id": "3", "type": "xor"     }
     ],
     "arcs": [
-      {"id": "a1", "source": "1", "target": "2"},
-      {"id": "a2", "source": "1", "target": "3"}
+      { "id": "a1", "source": "1", "target": "2" },
+      { "id": "a2", "source": "1", "target": "3" }
     ]
   }'
-echo
 
-echo "=== Test 2: Empty model ==="
-curl -s -X POST "$BASE/validate" \
+printf "\n\n=== Test 2: Empty model ===\n"
+
+curl -s -X POST "$endpoint" \
   -H "Content-Type: application/json" \
   -d '{"nodes": [], "arcs": []}'
-echo
 
-echo "=== Test 3: Bad JSON ==="
-curl -s -X POST "$BASE/validate" \
+printf "\n\n=== Test 3: Bad JSON ===\n"
+
+# Clearly not JSON
+curl -s -X POST "$endpoint" \
   -H "Content-Type: application/json" \
   -d 'not json'
+
 echo
 
-echo "=== Test 4: Missing body ==="
-curl -s -X POST "$BASE/validate"
-echo
+# Incorrect type
+curl -s -X POST "$endpoint" \
+	-H "Content-Type: application/json" \
+	-d '
+	{
+		"nodes": [
+			{ "id": "1", "type": "bad_type" },
+			{ "id": "2", "type": "feature" }
+		],
+		"arcs": [
+			{ "id": "a1", "source": "1", "target": "2" }
+		]
+	}
+	'
+
+printf "\n\n=== Test 4: Missing body ===\n"
+
+curl -s -X POST "$endpoint"
