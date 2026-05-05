@@ -11,27 +11,30 @@ body {
   font-family: sans-serif;
   box-sizing: border-box;
   height: 100%;
-  overflow: hidden; /* déjà présent ✓ */
+  overflow: hidden;
+  /* déjà présent ✓ */
 }
 
 #app {
   width: 100vw;
   height: 100vh;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 .dndflow {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 .dndflow .reactflow-wrapper {
   flex-grow: 1;
-  height: calc(100vh - 80px); /* 80px = hauteur approximative de ta Toolbar */  width: 100%;
+  height: calc(100vh - 80px);
+  /* 80px = hauteur approximative de ta Toolbar */
+  width: 100%;
   min-height: 0;
-  max-height: 100%; 
+  max-height: 100%;
   position: relative;
 }
 
@@ -41,9 +44,12 @@ body {
   padding: 15px 10px;
   font-size: 12px;
   background: #fcfcfc;
-  overflow: hidden; /* déjà présent ✓ */
-  max-height: 100vh; /* ajouter */
-  box-sizing: border-box; /* ajouter */
+  overflow: hidden;
+  /* déjà présent ✓ */
+  max-height: 100vh;
+  /* ajouter */
+  box-sizing: border-box;
+  /* ajouter */
 }
 
 .dndflow aside .description {
@@ -51,22 +57,8 @@ body {
 }
 
 
-.dndflow .dndnode.feature {
-  height: 60px;
-  padding: 4px;
-  border: 2px solid #185fa5;
-  background-color: #e6f1fb;
-  color: #185fa5;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: grab;
-}
-
 .dndflow .dndnode {
-  height: 60px;
+  height: 40px;
   padding: 4px;
   border: 2px solid #b4b2a9;
   background-color: #f1efe8;
@@ -77,10 +69,17 @@ body {
   justify-content: center;
   align-items: center;
   cursor: grab;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 10%);
+}
+
+.dndflow .dndnode.feature {
+  border: 2px solid #185fa5;
+  background-color: #e6f1fb;
+  color: #185fa5;
 }
 
 .context-menu {
-  background: rgb(255,255,255,0.95);
+  background: rgb(255, 255, 255, 0.95);
   border-style: solid;
   border-radius: 5px;
   box-shadow: 10px 19px 20px rgba(0, 0, 0, 10%);
@@ -97,7 +96,7 @@ body {
 }
 
 .context-menu button:hover {
-background: #f0f0f0;
+  background: #f0f0f0;
 }
 
 .dndflow .selectall {
@@ -254,10 +253,149 @@ background: #f0f0f0;
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     @apply font-sans;
   }
 }
+
+.legende {}
+
+.feature-legende-item {
+  height: 30px;
+  display: flex;
+  height: 30px;
+  align-items: center;
+  margin-bottom: 5px;
+  background: #e6f1fb;
+  border: solid 2px #185fa5;
+  border-radius: 5px;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 10%);
+  padding: 10px;
+  z-index: 10;
+}
+
+
+.operator-legende-item {
+  display: flex;
+  height: 30px;
+  align-items: center;
+  margin-bottom: 5px;
+  background: #f1efe8;
+  border: solid 2px #b4b2a9;
+  border-radius: 5px;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 10%);
+  padding: 10px;
+  z-index: 10;
+}
+
+.mandatory-legende-item {
+  display: flex; 
+  flex-direction: column; 
+  margin-bottom: 5px;
+  align-items: flex-start;
+  background: rgb(255, 255, 255, 0);
+  padding-left: 10px;
+  padding-right: 10px;
+  z-index: 10;
+  border: solid 2px rgb(255, 255, 255, 0);
+  border-radius: 5px;
+}
+
+.line-solid {
+  border: none;
+  border-top: 3px solid #b1b1b7;
+  margin: 4px 0 0 0;
+
+}
+
+.optionnal-legende-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: rgb(255, 255, 255, 0);
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-bottom: 5px;
+  z-index: 10;
+  border: solid 2px rgb(255, 255, 255, 0);
+  border-radius: 5px;
+}
+
+.line-dotted {
+  border: none;
+  border-top: 3px dashed #b1b1b7;
+  margin: 4px 0 0 0;
+}
+
+.line-solid, .line-dotted {
+  width: 100%;
+}
+
+.reorganize-button {
+  height: auto !important;
+  white-space: normal;
+  
+}
+
+.toggle-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.toggle-label {
+  font-size: 13px;
+  color: #6e6d68;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background-color: #b4b2a9;
+  border-radius: 20px;
+  transition: background-color 0.2s ease;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: 3px;
+  top: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background-color: #185fa5;
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(16px);
+}
+
