@@ -150,18 +150,11 @@
   background-color: #e6f1fb;
   padding: 10px;
   font-size: 12px;
+  border: 1px solid #185fa5;
   border-radius: var(--xy-node-border-radius-default);
   box-shadow: var(--xy-node-boxshadow-default);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-}
-
-.react-flow__node-feature.mandatory {
-  border: 1px solid #185fa5;
-}
-
-.react-flow__node-feature.optionnal {
-  border: 1px dotted #185fa5;
 }

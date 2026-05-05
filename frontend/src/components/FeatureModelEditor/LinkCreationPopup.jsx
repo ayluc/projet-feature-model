@@ -1,20 +1,17 @@
 import { useState, useEffect } from "react";
 
-export default function FeatureCreationPopup({ popup, onClose, onConfirm }) {
-  // const [isMandatory, setIsMandatory] = useState(null);
-  const [nodeName, setNodeName] = useState("");
+export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
+  const [isMandatory, setIsMandatory] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (popup) {
       // Mode modification : pré-remplir avec les données existantes
-      if (popup.nodeId) {
-        setNodeName(popup.label || "");
-        // setIsMandatory(popup.isMandatory !== undefined ? String(popup.isMandatory) : null);
+      if (popup.linkId) {
+        setIsMandatory(popup.isMandatory !== undefined ? String(popup.isMandatory) : null);
       } else {
         // Mode création : champs vides
-        setNodeName("");
-        // setIsMandatory(null);
+        setIsMandatory(null);
       }
       setError("");
     }
@@ -24,12 +21,12 @@ export default function FeatureCreationPopup({ popup, onClose, onConfirm }) {
   if (!popup) return null;
 
   const handleSubmit = () => {
-    if (!nodeName.trim() /*|| isMandatory === null*/) {
+    if (isMandatory === null) {
       setError("Veuillez remplir tous les champs avant de valider.");
       return;
     }
     setError("");
-    onConfirm({ nodeName/*, isMandatory*/ });
+    onConfirm({isMandatory });
     onClose();
   };
 
@@ -63,24 +60,8 @@ export default function FeatureCreationPopup({ popup, onClose, onConfirm }) {
       </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "8px", paddingBottom: "4px", whiteSpace: "nowrap" }}>
-          <span>Nom du nœud :</span>
-          <input
-            type="text"
-            placeholder="Saisir le nom"
-            className="border border-solid"
-            value={nodeName}
-            onChange={(e) => setNodeName(e.target.value)}
-            style={{
-              padding: "6px 8px",
-              borderRadius: 4,
-              border: "1px solid #ccc",
-              flex: 1
-            }}
-          />
 
-
-
-          {/* <div style={{ display: 'flex', gap: '4px', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', gap: '4px', flexDirection: 'column' }}>
             <label>
               <input type="radio" name="isMandatory" value="true"
                 checked={isMandatory === "true"}
@@ -93,7 +74,7 @@ export default function FeatureCreationPopup({ popup, onClose, onConfirm }) {
                 onChange={(e) => setIsMandatory(e.target.value)} />
               {" "}Optionnel
             </label>
-          </div> */}
+          </div>
 
           {error && (
             <p style={{ color: "red", fontSize: "0.85rem", marginTop: "-8px" }}>

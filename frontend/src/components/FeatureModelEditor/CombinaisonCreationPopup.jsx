@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 
 export default function CombinaisonCreationPopup({ popup, onClose, onConfirm }) {
-  const [isMandatory, setIsMandatory] = useState(null);
-  const [nodeName, setNodeName] = useState("");
   const [combinaisonMin, setCombinaisonMin] = useState("");
   const [combinaisonMax, setCombinaisonMax] = useState(""); 
   const [error, setError] = useState("");

@@ -8,6 +8,7 @@ import { NodeFeature, NodeXOR, NodeOR, NodeCombinaison } from "@/components/node
 
 import FeatureCreationPopup from "./FeatureCreationPopup";
 import CombinaisonCreationPopup from "./CombinaisonCreationPopup";
+import LinkCreationPopup from "./LinkCreationPopup";
 import ContextMenu from "./ContextMenu";
 
 const nodeTypes = {
@@ -42,33 +43,66 @@ function FeatureModelEditor({ isReadOnly = false }) {
   const [menu, setMenu] = useState(null);
   const [popup, setPopup] = useState(null);
 
-  const { screenToFlowPosition, getNode } = useReactFlow();
+  const { screenToFlowPosition, getNode, getEdge } = useReactFlow();
   const [type] = useDnD();
   const isDragging = useRef(false);
-
-  const onDragOver = useCallback((event) => {
-    console.log("Drag over event:", event);
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
-  }, []);
 
   const OFFSET_TOP = 100;
   const OFFSET_LEFT = 200;
 
+  const onDragOver = useCallback((event) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  // Clic droit sur un nœud
   const onNodeContextMenu = useCallback(
     (event, node) => {
       event.preventDefault();
-
       if (isReadOnly) return;
 
       setMenu({
         id: node.id,
         label: node.data?.label ?? node.id,
+        type: "node",
         top: event.clientY - OFFSET_TOP,
         left: event.clientX - OFFSET_LEFT,
       });
     },
-    [setMenu, isReadOnly]
+    [isReadOnly]
+  );
+
+  // Clic droit sur un lien
+  const onEdgeContextMenu = useCallback(
+    (event, edge) => {
+      event.preventDefault();
+      if (isReadOnly) return;
+
+      setMenu({
+        id: edge.id,
+        label: `Lien ${edge.source} → ${edge.target}`,
+        type: "edge",
+        top: event.clientY - OFFSET_TOP,
+        left: event.clientX - OFFSET_LEFT,
+      });
+    },
+    [isReadOnly]
+  );
+
+  // Nouvelle connexion entre deux nœuds → ouvre le popup de lien
+  const onConnection = useCallback(
+    (connection) => {
+      if (isReadOnly) return;
+
+      setPopup({
+        nodeType: "link",
+        linkSource: connection.source,
+        linkTarget: connection.target,
+        pendingConnection: connection,
+      });
+      setMenu(null);
+    },
+    [isReadOnly]
   );
 
   const onPaneClick = useCallback(() => {
@@ -112,11 +146,8 @@ function FeatureModelEditor({ isReadOnly = false }) {
     const isMinorChange = changes.every(
       (c) => c.type === 'select' || c.type === 'dimensions'
     );
-
-    if (isMinorChange) pause(); 
-    
+    if (isMinorChange) pause();
     onNodesChange(changes);
-    
     if (isMinorChange) resume();
   }, [onNodesChange, pause, resume]);
 
@@ -128,11 +159,12 @@ function FeatureModelEditor({ isReadOnly = false }) {
         nodeTypes={nodeTypes}
         onNodesChange={isReadOnly ? undefined : handleNodesChange}
         onEdgesChange={isReadOnly ? undefined : onEdgesChange}
-        onConnect={isReadOnly ? undefined : onConnect}
+        onConnect={onConnection}
         onDrop={onDrop}
         onDragOver={onDragOver}
         onPaneClick={onPaneClick}
         onNodeContextMenu={onNodeContextMenu}
+        onEdgeContextMenu={onEdgeContextMenu}
         onNodeDragStart={() => pause()}
         onNodeDragStop={() => resume()}
         fitView
@@ -142,64 +174,78 @@ function FeatureModelEditor({ isReadOnly = false }) {
         onDelete={isReadOnly ? undefined : onDelete}
       >
         <Controls position="top-right" showInteractive={!isReadOnly}>
-          <ControlButton 
-          title="Annuler"
-            className="undo-redo-button" 
+          <ControlButton
+            title="Annuler"
+            className="undo-redo-button"
             onClick={() => undo()}
             disabled={pastStates.length === 0}
-            style={{ opacity: pastStates.length === 0 ? 0.5 : 1, cursor: pastStates.length === 0 ? 'not-allowed' : 'pointer', display: isReadOnly ? "none" : "block"}}
+            style={{ opacity: pastStates.length === 0 ? 0.5 : 1, cursor: pastStates.length === 0 ? 'not-allowed' : 'pointer', display: isReadOnly ? "none" : "block" }}
           >
-            <Undo2/>
+            <Undo2 />
           </ControlButton>
-
-          <ControlButton 
-          title="Rétablir"
-            className="undo-redo-button" 
+          <ControlButton
+            title="Rétablir"
+            className="undo-redo-button"
             onClick={() => redo()}
             disabled={futureStates.length === 0}
-            style={{ opacity: futureStates.length === 0 ? 0.5 : 1, cursor: futureStates.length === 0 ? 'not-allowed' : 'pointer', display: isReadOnly ? "none" : "block"}}
+            style={{ opacity: futureStates.length === 0 ? 0.5 : 1, cursor: futureStates.length === 0 ? 'not-allowed' : 'pointer', display: isReadOnly ? "none" : "block" }}
           >
-            <Redo2/>
+            <Redo2 />
           </ControlButton>
         </Controls>
         <Background />
-        {menu && <ContextMenu {...menu} onClick={onPaneClick}
-          onOpenPopup={(popupData) => {
-            const node = getNode(popupData.nodeId);
-            setMenu(null);
-            setPopup({
-              ...popupData,
-              nodeType: node?.type,
-              data: node?.data, // ← ajoute ça pour pré-remplir le popup
-            });
-          }} />}
+
+        {menu && (
+          <ContextMenu
+            {...menu}
+            onClick={onPaneClick}
+            onOpenPopup={(popupData) => {
+              setMenu(null);
+
+              // Clic droit sur un lien
+              if (menu.type === "edge") {
+                const edge = getEdge(popupData.edgeId ?? menu.id);
+                setPopup({
+                  nodeType: "link",
+                  linkId: edge?.id,
+                  linkSource: edge?.source,
+                  linkTarget: edge?.target,
+                  data: edge?.data,
+                });
+                return;
+              }
+
+              // Clic droit sur un nœud (comportement existant)
+              const node = getNode(popupData.nodeId);
+              setPopup({
+                ...popupData,
+                nodeType: node?.type,
+                data: node?.data,
+              });
+            }}
+          />
+        )}
       </ReactFlow>
 
       <FeatureCreationPopup
         popup={popup && popup.nodeType === "feature" ? popup : null}
         onClose={() => setPopup(null)}
         onConfirm={(nodeData) => {
-          const isMandatory = nodeData.isMandatory === "true";
-
-          // Cas modification (nodeId présent, pas de pendingNode)
           if (popup?.nodeId && !popup?.pendingNode) {
             setNodes((nds) =>
               nds.map((n) =>
                 n.id === popup.nodeId
-                  ? { ...n, data: { ...n.data, label: nodeData.nodeName, isMandatory }, className: isMandatory ? "mandatory" : "optionnal" }
+                  ? { ...n, data: { ...n.data, label: nodeData.nodeName } }
                   : n
               )
             );
             setPopup(null);
             return;
           }
-
-          // Cas création (existant)
           if (!popup?.pendingNode) return;
           const newNode = {
             ...popup.pendingNode,
-            data: { label: nodeData.nodeName, isMandatory },
-            className: isMandatory ? "mandatory" : "optionnal",
+            data: { label: nodeData.nodeName },
           };
           setNodes((nds) => nds.concat(newNode));
           setPopup(null);
@@ -210,8 +256,6 @@ function FeatureModelEditor({ isReadOnly = false }) {
         popup={popup && popup.nodeType === "combinaison" ? popup : null}
         onClose={() => setPopup(null)}
         onConfirm={(nodeData) => {
-
-          // Cas modification
           if (popup?.nodeId && !popup?.pendingNode) {
             setNodes((nds) =>
               nds.map((n) =>
@@ -231,8 +275,6 @@ function FeatureModelEditor({ isReadOnly = false }) {
             setPopup(null);
             return;
           }
-
-          // Cas création
           if (!popup?.pendingNode) return;
           const newNode = {
             ...popup.pendingNode,
@@ -243,6 +285,47 @@ function FeatureModelEditor({ isReadOnly = false }) {
             },
           };
           setNodes((nds) => nds.concat(newNode));
+          setPopup(null);
+        }}
+      />
+
+      <LinkCreationPopup
+        popup={popup && popup.nodeType === "link" ? popup : null}
+        onClose={() => setPopup(null)}
+        onConfirm={(linkData) => {
+          const isMandatory = linkData.isMandatory === "true";
+
+          // Cas modification via clic droit
+          if (popup?.linkId && !popup?.pendingConnection) {
+            setEdges((eds) =>
+              eds.map((e) =>
+                e.id === popup.linkId
+                  ? {
+                    ...e,
+                    data: { ...e.data, isMandatory },
+                    style: {
+                      strokeWidth: isMandatory ? 2.5 : 2,
+                      strokeDasharray: isMandatory ? "none" : "6 3",
+                    },
+                  }
+                  : e
+              )
+            );
+            setPopup(null);
+            return;
+          }
+
+          // Cas création via drag de connexion
+          if (!popup?.pendingConnection) return;
+          // Dans onConfirm de LinkCreationPopup
+          onConnect({
+            ...popup.pendingConnection,
+            data: { isMandatory },
+            style: {
+              strokeWidth: isMandatory ? 2.5 : 2,
+              strokeDasharray: isMandatory ? "none" : "6 3",
+            },
+          });
           setPopup(null);
         }}
       />

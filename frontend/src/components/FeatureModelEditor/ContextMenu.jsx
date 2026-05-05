@@ -1,12 +1,11 @@
 import React, { useCallback } from 'react';
 import { useReactFlow } from '@xyflow/react';
-
 import { CopyPlus, Trash2, Pencil } from 'lucide-react';
-import FeatureCreationPopup from './FeatureCreationPopup'; 
 
 export default function ContextMenu({
   id,
   label,
+  type, // "node" ou "edge"
   top,
   left,
   right,
@@ -14,13 +13,14 @@ export default function ContextMenu({
   ...props
 }) {
   const { getNode, setNodes, addNodes, setEdges } = useReactFlow();
+
+  // --- Actions nœud ---
   const duplicateNode = useCallback(() => {
     const node = getNode(id);
     const position = {
       x: node.position.x + 50,
       y: node.position.y + 50,
     };
-
     addNodes({
       ...node,
       selected: false,
@@ -32,22 +32,52 @@ export default function ContextMenu({
 
   const deleteNode = useCallback(() => {
     setNodes((nodes) => nodes.filter((node) => node.id !== id));
-    setEdges((edges) => edges.filter((edge) => edge.source !== id));
+    setEdges((edges) => edges.filter((edge) => edge.source !== id && edge.target !== id));
   }, [id, setNodes, setEdges]);
 
-  const onModify = useCallback(() => {
+  const onModifyNode = useCallback(() => {
     const node = getNode(id);
-    const label = node.data?.label || node.id;
-    const type = node.type || "feature"; // Default to "feature" if type is not defined
-
+    const nodeType = node.type || "feature";
     props.onOpenPopup({
       nodeId: id,
-      nodeType: type,
-      label,
+      nodeType,
+      label: node.data?.label ?? id,
     });
-  }, [id, getNode, props]); 
+  }, [id, getNode, props]);
 
+  // --- Actions lien ---
+  const deleteEdge = useCallback(() => {
+    setEdges((edges) => edges.filter((edge) => edge.id !== id));
+  }, [id, setEdges]);
 
+  const onModifyEdge = useCallback(() => {
+    props.onOpenPopup({ edgeId: id });
+  }, [id, props]);
+
+  // --- Rendu selon le type ---
+  if (type === "edge") {
+    return (
+      <div
+        style={{ top, left, right, bottom }}
+        className="context-menu"
+        {...props}
+      >
+        <p style={{ margin: '0.5em' }}>
+          <small>Lien : {label}</small>
+        </p>
+        <button onClick={onModifyEdge} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Pencil />
+          <span>Modifier</span>
+        </button>
+        <button onClick={deleteEdge} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Trash2 />
+          <span>Supprimer</span>
+        </button>
+      </div>
+    );
+  }
+
+  // type === "node" (défaut)
   return (
     <div
       style={{ top, left, right, bottom }}
@@ -57,16 +87,16 @@ export default function ContextMenu({
       <p style={{ margin: '0.5em' }}>
         <small>Noeud : {label}</small>
       </p>
-      <button onClick={onModify} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <button onClick={onModifyNode} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <Pencil />
         <span>Modifier</span>
       </button>
       <button onClick={duplicateNode} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <CopyPlus/>
+        <CopyPlus />
         <span>Dupliquer</span>
       </button>
       <button onClick={deleteNode} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <Trash2/>
+        <Trash2 />
         <span>Supprimer</span>
       </button>
     </div>
