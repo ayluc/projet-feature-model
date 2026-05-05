@@ -5,16 +5,18 @@ import { CopyPlus, Trash2, Pencil } from 'lucide-react';
 export default function ContextMenu({
   id,
   label,
-  type, // "node" ou "edge"
+  type,
+  isEditable = true,
   top,
   left,
   right,
   bottom,
-  ...props
+  onOpenPopup,
+  onClick,
+  ...rest
 }) {
   const { getNode, setNodes, addNodes, setEdges } = useReactFlow();
 
-  // --- Actions nœud ---
   const duplicateNode = useCallback(() => {
     const node = getNode(id);
     const position = {
@@ -38,34 +40,36 @@ export default function ContextMenu({
   const onModifyNode = useCallback(() => {
     const node = getNode(id);
     const nodeType = node.type || "feature";
-    props.onOpenPopup({
+    onOpenPopup({
       nodeId: id,
       nodeType,
       label: node.data?.label ?? id,
     });
-  }, [id, getNode, props]);
+  }, [id, getNode, rest]);
 
-  // --- Actions lien ---
   const deleteEdge = useCallback(() => {
     setEdges((edges) => edges.filter((edge) => edge.id !== id));
   }, [id, setEdges]);
 
   const onModifyEdge = useCallback(() => {
-    props.onOpenPopup({ edgeId: id });
-  }, [id, props]);
+    onOpenPopup({ edgeId: id });
+  }, [id, rest]);
 
-  // --- Rendu selon le type ---
   if (type === "edge") {
     return (
-      <div
-        style={{ top, left, right, bottom }}
-        className="context-menu"
-        {...props}
-      >
+      <div style={{ top, left, right, bottom }} className="context-menu" {...rest}>
         <p style={{ margin: '0.5em' }}>
-          <small>Lien : {label}</small>
+          <small>{label}</small>
         </p>
-        <button onClick={onModifyEdge} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <button
+          onClick={onModifyEdge}
+          disabled={!isEditable}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            opacity: isEditable ? 1 : 0.4,
+            cursor: isEditable ? 'pointer' : 'not-allowed'
+          }}
+        >
           <Pencil />
           <span>Modifier</span>
         </button>
@@ -77,13 +81,8 @@ export default function ContextMenu({
     );
   }
 
-  // type === "node" (défaut)
   return (
-    <div
-      style={{ top, left, right, bottom }}
-      className="context-menu"
-      {...props}
-    >
+    <div style={{ top, left, right, bottom }} className="context-menu" {...rest}>
       <p style={{ margin: '0.5em' }}>
         <small>Noeud : {label}</small>
       </p>

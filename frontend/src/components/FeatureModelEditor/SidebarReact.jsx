@@ -34,8 +34,8 @@ export default () => {
       <div className="dndnode" onDragStart={(event) => onDragStart(event, 'xor')} draggable>
         XOR
       </div>
-      <div className="dndnode" onDragStart={(event) => onDragStart(event, 'combinaison')} draggable>
-        COMBINAISON
+      <div className="dndnode" onDragStart={(event) => onDragStart(event, 'cardinalite')} draggable>
+        CARDINALITÉ
       </div>
       <Button variant="outline" onClick={handleNoeuds}>Réorganiser les noeuds</Button>
       <hr class="dotted" />

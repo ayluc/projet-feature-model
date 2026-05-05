@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 
-export default function CombinaisonCreationPopup({ popup, onClose, onConfirm }) {
-  const [combinaisonMin, setCombinaisonMin] = useState("");
-  const [combinaisonMax, setCombinaisonMax] = useState(""); 
+export default function CardinaliteCreationPopup({ popup, onClose, onConfirm }) {
+  const [cardinaliteMin, setCardinaliteMin] = useState("");
+  const [cardinaliteMax, setCardinaliteMax] = useState(""); 
   const [error, setError] = useState("");
 
 useEffect(() => {
   if (popup) {
-    setCombinaisonMin(popup.data?.combinaisonMin ?? "");
-    setCombinaisonMax(popup.data?.combinaisonMax ?? "");
+    setCardinaliteMin(popup.data?.cardinaliteMin ?? "");
+    setCardinaliteMax(popup.data?.cardinaliteMax ?? "");
     setError("");
   }
 }, [popup]);
@@ -16,12 +16,12 @@ useEffect(() => {
   if (!popup) return null;
 
   const handleSubmit = () => {
-    if (combinaisonMin === "" || combinaisonMax === "") {
+    if (cardinaliteMin === "" || cardinaliteMax === "") {
       setError("Veuillez remplir tous les champs avant de valider.");
       return;
     }
     setError("");
-    onConfirm({ combinaisonMax, combinaisonMin });
+    onConfirm({ cardinaliteMax, cardinaliteMin });
     onClose();
   };
 
@@ -70,8 +70,8 @@ useEffect(() => {
             type="integer"
             placeholder="Minimum"
             className="border border-solid"
-            value={combinaisonMin}
-            onChange={(e) => setCombinaisonMin(e.target.value)}
+            value={cardinaliteMin}
+            onChange={(e) => setCardinaliteMin(e.target.value)}
             style={{
               padding: "6px 8px",
               borderRadius: 4,
@@ -83,8 +83,8 @@ useEffect(() => {
             type="integer"
             placeholder="Maximum"
             className="border border-solid"
-            value={combinaisonMax}
-            onChange={(e) => setCombinaisonMax(e.target.value)}
+            value={cardinaliteMax}
+            onChange={(e) => setCardinaliteMax(e.target.value)}
             style={{
               padding: "6px 8px",
               borderRadius: 4,

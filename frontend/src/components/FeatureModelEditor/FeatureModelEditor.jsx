@@ -4,10 +4,10 @@ import { Undo2, Redo2 } from "lucide-react";
 
 import { useDnD } from '@/components/DnDContext';
 import { useGraphStore, useTemporalStore } from '@/components/GraphStore';
-import { NodeFeature, NodeXOR, NodeOR, NodeCombinaison } from "@/components/nodes";
+import { NodeFeature, NodeXOR, NodeOR, NodeCardinalite } from "@/components/nodes";
 
 import FeatureCreationPopup from "./FeatureCreationPopup";
-import CombinaisonCreationPopup from "./CombinaisonCreationPopup";
+import CardinaliteCreationPopup from "./CardinaliteCreationPopup";
 import LinkCreationPopup from "./LinkCreationPopup";
 import ContextMenu from "./ContextMenu";
 
@@ -15,7 +15,7 @@ const nodeTypes = {
   feature: NodeFeature,
   xor: NodeXOR,
   or: NodeOR,
-  combinaison: NodeCombinaison
+  cardinalite: NodeCardinalite
 };
 
 let id = 0;
@@ -55,7 +55,6 @@ function FeatureModelEditor({ isReadOnly = false }) {
     event.dataTransfer.dropEffect = 'move';
   }, []);
 
-  // Clic droit sur un nœud
   const onNodeContextMenu = useCallback(
     (event, node) => {
       event.preventDefault();
@@ -72,28 +71,52 @@ function FeatureModelEditor({ isReadOnly = false }) {
     [isReadOnly]
   );
 
-  // Clic droit sur un lien
+  // Dans setMenu pour les edges :
   const onEdgeContextMenu = useCallback(
     (event, edge) => {
       event.preventDefault();
       if (isReadOnly) return;
 
+      const restrictedTypes = ["xor", "or", "cardinalite"];
+      const sourceNode = nodes.find(n => n.id === edge.source);
+      const targetNode = nodes.find(n => n.id === edge.target);
+      const isEditable = !restrictedTypes.includes(sourceNode?.type) && !restrictedTypes.includes(targetNode?.type);
+      console.log("Noeuds :", sourceNode, targetNode, sourceNode.data?.label, targetNode.data?.label)
       setMenu({
         id: edge.id,
-        label: `Lien ${edge.source} → ${edge.target}`,
+        label: `Lien ${sourceNode.data?.label} → ${targetNode.data?.label}`,
         type: "edge",
+        isEditable, // ← transmis au ContextMenu
         top: event.clientY - OFFSET_TOP,
         left: event.clientX - OFFSET_LEFT,
       });
     },
-    [isReadOnly]
+    [isReadOnly, nodes]
   );
 
-  // Nouvelle connexion entre deux nœuds → ouvre le popup de lien
   const onConnection = useCallback(
     (connection) => {
       if (isReadOnly) return;
 
+      const sourceNode = nodes.find(n => n.id === connection.source);
+      const targetNode = nodes.find(n => n.id === connection.target);
+
+      const restrictedTypes = ["xor", "or", "cardinalite"];
+
+      // Si source ou target est un nœud restreint → création directe en optional, sans popup
+      if (restrictedTypes.includes(sourceNode?.type) || restrictedTypes.includes(targetNode?.type)) {
+        onConnect({
+          ...connection,
+          data: { isMandatory: false },
+          style: {
+            strokeWidth: 2,
+            strokeDasharray: "6 3",
+          },
+        });
+        return;
+      }
+
+      // Sinon → popup normal
       setPopup({
         nodeType: "link",
         linkSource: connection.source,
@@ -102,7 +125,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
       });
       setMenu(null);
     },
-    [isReadOnly]
+    [isReadOnly, nodes, onConnect]
   );
 
   const onPaneClick = useCallback(() => {
@@ -124,7 +147,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         y: event.clientY,
       });
 
-      if (type === "feature" || type === "combinaison") {
+      if (type === "feature" || type === "cardinalite") {
         setPopup({
           pendingNode: { id: getId(), type, position },
           nodeType: type,
@@ -205,6 +228,16 @@ function FeatureModelEditor({ isReadOnly = false }) {
               // Clic droit sur un lien
               if (menu.type === "edge") {
                 const edge = getEdge(popupData.edgeId ?? menu.id);
+
+                const restrictedTypes = ["xor", "or", "cardinalite"];
+                const sourceNode = nodes.find(n => n.id === edge?.source);
+                const targetNode = nodes.find(n => n.id === edge?.target);
+
+                // Bloque l'ouverture du popup si source ou target est restreint
+                if (restrictedTypes.includes(sourceNode?.type) || restrictedTypes.includes(targetNode?.type)) {
+                  return;
+                }
+
                 setPopup({
                   nodeType: "link",
                   linkId: edge?.id,
@@ -252,8 +285,8 @@ function FeatureModelEditor({ isReadOnly = false }) {
         }}
       />
 
-      <CombinaisonCreationPopup
-        popup={popup && popup.nodeType === "combinaison" ? popup : null}
+      <CardinaliteCreationPopup
+        popup={popup && popup.nodeType === "cardinalite" ? popup : null}
         onClose={() => setPopup(null)}
         onConfirm={(nodeData) => {
           if (popup?.nodeId && !popup?.pendingNode) {
@@ -264,9 +297,9 @@ function FeatureModelEditor({ isReadOnly = false }) {
                     ...n,
                     data: {
                       ...n.data,
-                      label: `[${nodeData.combinaisonMin}..${nodeData.combinaisonMax}]`,
-                      combinaisonMin: parseInt(nodeData.combinaisonMin),
-                      combinaisonMax: parseInt(nodeData.combinaisonMax),
+                      label: `[${nodeData.cardinaliteMin}..${nodeData.cardinaliteMax}]`,
+                      cardinaliteMin: parseInt(nodeData.cardinaliteMin),
+                      cardinaliteMax: parseInt(nodeData.cardinaliteMax),
                     },
                   }
                   : n
@@ -279,9 +312,9 @@ function FeatureModelEditor({ isReadOnly = false }) {
           const newNode = {
             ...popup.pendingNode,
             data: {
-              label: `[${nodeData.combinaisonMin}..${nodeData.combinaisonMax}]`,
-              combinaisonMin: parseInt(nodeData.combinaisonMin),
-              combinaisonMax: parseInt(nodeData.combinaisonMax),
+              label: `[${nodeData.cardinaliteMin}..${nodeData.cardinaliteMax}]`,
+              cardinaliteMin: parseInt(nodeData.cardinaliteMin),
+              cardinaliteMax: parseInt(nodeData.cardinaliteMax),
             },
           };
           setNodes((nds) => nds.concat(newNode));
@@ -317,7 +350,6 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
           // Cas création via drag de connexion
           if (!popup?.pendingConnection) return;
-          // Dans onConfirm de LinkCreationPopup
           onConnect({
             ...popup.pendingConnection,
             data: { isMandatory },

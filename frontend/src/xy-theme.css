@@ -131,7 +131,7 @@
 }
 
 /* Override du style des noeuds du graphe*/
-.react-flow__node-or, .react-flow__node-xor, .react-flow__node-combinaison {
+.react-flow__node-or, .react-flow__node-xor, .react-flow__node-cardinalite {
   box-shadow: var(--xy-node-boxshadow-default);
   border-color: #b4b2a9;
   border-radius: var(--xy-node-border-radius-default);
