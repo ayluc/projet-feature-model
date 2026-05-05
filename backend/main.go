@@ -18,19 +18,19 @@ const (
 )
 
 type Node struct {
-	Id   string   `json:"id"`
-	Type NodeType `json:"type"`
+	Id   string   `json:"id"   binding:"required"`
+	Type NodeType `json:"type" binding:"required,oneof=combinaison feature xor or"`
 }
 
 type Arc struct {
-	Id       string `json:"id"`
-	SourceId string `json:"source"`
-	TargetId string `json:"target"`
+	Id       string `json:"id"     binding:"required"`
+	SourceId string `json:"source" binding:"required"`
+	TargetId string `json:"target" binding:"required"`
 }
 
 type FeatureModel struct {
-	Nodes []Node `json:"nodes"`
-	Arcs  []Arc  `json:"edges"`
+	Nodes []Node `json:"nodes" binding:"required,dive"`
+	Arcs  []Arc  `json:"edges" binding:"required,dive"`
 }
 
 const (
