@@ -18,9 +18,6 @@ const nodeTypes = {
   cardinalite: NodeCardinalite
 };
 
-let id = 0;
-const getId = () => `node_${id++}`;
-
 function FeatureModelEditor({ isReadOnly = false }) {
   const reactFlowWrapper = useRef(null);
 
@@ -149,12 +146,12 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
       if (type === "feature" || type === "cardinalite") {
         setPopup({
-          pendingNode: { id: getId(), type, position },
+          pendingNode: { id: crypto.randomUUID(), type, position },
           nodeType: type,
         });
       } else {
         const newNode = {
-          id: getId(),
+          id: crypto.randomUUID(),
           type,
           position,
           data: { label: type.toUpperCase() },
