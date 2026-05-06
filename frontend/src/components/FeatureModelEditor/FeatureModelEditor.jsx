@@ -156,7 +156,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
       });
       setMenu(null);
     },
-    [isReadOnly, nodes, onConnect]
+    [isReadOnly, nodes, onConnect, arcType]
   );
 
   const onPaneClick = useCallback(() => {

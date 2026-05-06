@@ -20,6 +20,7 @@ export default () => {
 
   const handleChange = (value) => {
     setArcType(arcType === value ? null : value);
+    console.log(arcType);
   };
 
   const nodes = useGraphStore((state) => state.nodes);
