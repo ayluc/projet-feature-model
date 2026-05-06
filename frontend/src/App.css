@@ -337,9 +337,16 @@ body {
 }
 
 .reorganize-button {
+  width: 100%;
   height: auto !important;
   white-space: normal;
-  
+}
+
+.feature-legende-item,
+.operator-legende-item,
+.mandatory-legende-item,
+.optionnal-legende-item {
+  margin-bottom: 8px;
 }
 
 .toggle-wrapper {
