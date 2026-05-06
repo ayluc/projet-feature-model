@@ -55,6 +55,22 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
   const { toObject } = useReactFlow();
 
+  const getNextNodeId = useCallback(() => {
+    const maxId = nodes.reduce((max, node) => {
+      const idNum = parseInt(node.id, 10);
+      return isNaN(idNum) ? max : Math.max(max, idNum);
+    }, -1);
+    return (maxId + 1).toString();
+  }, [nodes]);
+
+  const getNextEdgeId = useCallback(() => {
+    const maxId = edges.reduce((max, edge) => {
+      const idNum = parseInt(edge.id, 10);
+      return isNaN(idNum) ? max : Math.max(max, idNum);
+    }, -1);
+    return (maxId + 1).toString();
+  }, [edges]);
+
   const onDragOver = useCallback((event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
@@ -103,15 +119,18 @@ function FeatureModelEditor({ isReadOnly = false }) {
     (connection) => {
       if (isReadOnly) return;
 
-      const sourceNode = nodes.find(n => n.id === connection.source);
-      const targetNode = nodes.find(n => n.id === connection.target);
+      const sourceNode = nodes.find((n) => n.id === connection.source);
+      const targetNode = nodes.find((n) => n.id === connection.target);
 
       const restrictedTypes = ["xor", "or", "cardinalite"];
+      
+      const newEdgeId = getNextEdgeId();
+      const connectionWithId = { ...connection, id: newEdgeId };
 
       // Si source ou target est un nœud restreint = création directe en optional, sans popup
       if (restrictedTypes.includes(sourceNode?.type) || restrictedTypes.includes(targetNode?.type)) {
         onConnect({
-          ...connection,
+          ...connectionWithId,
           data: { isMandatory: false },
           style: {
             strokeWidth: 2,
@@ -124,7 +143,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
       if (arcType === "mandatory") {
         console.log("Connection mandatory détectée, création sans popup");
         onConnect({
-          ...connection,
+          ...connectionWithId,
           data: { isMandatory: true },
           style: {
             strokeWidth: 2.5,
@@ -137,7 +156,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
       if (arcType === "optional") {
         console.log("Connection optional détectée, création sans popup");
         onConnect({
-          ...connection,
+          ...connectionWithId,
           data: { isMandatory: false },
           style: {
             strokeWidth: 2,
@@ -152,11 +171,11 @@ function FeatureModelEditor({ isReadOnly = false }) {
         nodeType: "link",
         linkSource: connection.source,
         linkTarget: connection.target,
-        pendingConnection: connection,
+        pendingConnection: connectionWithId, // Contient maintenant le nouvel ID
       });
       setMenu(null);
     },
-    [isReadOnly, nodes, onConnect, arcType]
+    [isReadOnly, nodes, onConnect, arcType, getNextEdgeId]
   );
 
   const onPaneClick = useCallback(() => {
@@ -178,14 +197,16 @@ function FeatureModelEditor({ isReadOnly = false }) {
         y: event.clientY,
       });
 
+      const newId = getNextNodeId();
+
       if (type === "feature" || type === "cardinalite") {
         setPopup({
-          pendingNode: { id: crypto.randomUUID(), type, position },
+          pendingNode: { id: newId, type, position },
           nodeType: type,
         });
       } else {
         const newNode = {
-          id: crypto.randomUUID(),
+          id: newId,
           type,
           position,
           data: { label: type.toUpperCase() },
@@ -193,7 +214,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         setNodes((nds) => nds.concat(newNode));
       }
     },
-    [screenToFlowPosition, type, setNodes, isReadOnly]
+    [screenToFlowPosition, type, setNodes, isReadOnly, getNextNodeId]
   );
 
   const handleNodesChange = useCallback((changes) => {
