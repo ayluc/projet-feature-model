@@ -37,6 +37,8 @@ func TestValidateCreation(t *testing.T) {
 	router := SetupRouter()
 	const endpoint = EndpointValidateCreation
 
+	// --- Table driven test for bad payloads
+
 	payloadsBad := []string{
 		"Not json",
 
@@ -71,8 +73,65 @@ func TestValidateCreation(t *testing.T) {
 				{ "id": 3, "type": "feature" }
 			],
 			"edges": [
-				{ "id": 1, "source": 1, "target": 2 }
+				{ "id": 1, "source": 1, "target": 2 },
 				{ "id": 1, "source": 3, "target": 2 }
+			]
+		 }`,
+
+		// Node has multpile in-arcs
+		`{
+			"nodes": [
+				{ "id": 1, "type": "feature" },
+				{ "id": 2, "type": "feature" },
+				{ "id": 3, "type": "feature" }
+			],
+			"edges": [
+				{ "id": 1, "source": 1, "target": 2 },
+				{ "id": 2, "source": 3, "target": 2 }
+			]
+		 }`,
+
+		// Node id must be gte 0
+		`{
+			"nodes": [
+				{ "id": -1, "type": "feature" },
+				{ "id": 2, "type": "feature" }
+			],
+			"edges": [
+				{ "id": 1, "source": -1, "target": 2 }
+			]
+		 }`,
+
+		// Arc id must be gte 0
+		`{
+			"nodes": [
+				{ "id": 1, "type": "feature" },
+				{ "id": 2, "type": "feature" }
+			],
+			"edges": [
+				{ "id": -1, "source": 1, "target": 2 }
+			]
+		 }`,
+
+		// Arc source id must be gte 0
+		`{
+			"nodes": [
+				{ "id": 1, "type": "feature" },
+				{ "id": 2, "type": "feature" }
+			],
+			"edges": [
+				{ "id": 1, "source": -1, "target": 2 }
+			]
+		 }`,
+
+		// Arc target id must be gte 0
+		`{
+			"nodes": [
+				{ "id": 1, "type": "feature" },
+				{ "id": 2, "type": "feature" }
+			],
+			"edges": [
+				{ "id": 1, "source": 1, "target": -1 }
 			]
 		 }`,
 	}
@@ -83,6 +142,7 @@ func TestValidateCreation(t *testing.T) {
 		router.ServeHTTP(recorder, request)
 
 		errMsg := fmt.Sprintf("Case: %d\nPayload:\n%s\nResponse:\n%s\n", i, payloadsBad[i], recorder.Body.String())
+		// assert.Equal(t, http.StatusOK, recorder.Code, errMsg)
 		assert.Equal(t, http.StatusBadRequest, recorder.Code, errMsg)
 		assertBodyNotEmpty(t, recorder)
 	}
@@ -96,6 +156,8 @@ func TestValidateCreation(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, recorder.Code)
 		assertBodyNotEmpty(t, recorder)
 	}
+
+	// --- Table driven test for correct payloads
 
 	payloadsOk := []string{
 		`{"nodes": [], "edges": []}`,
@@ -131,3 +193,7 @@ func assertBodyNotEmpty(t *testing.T, w *httptest.ResponseRecorder) {
 	_, err := w.Body.ReadByte()
 	assert.NotEqual(t, io.EOF, err, "Response body should not be empty")
 }
+
+// func TestSolver(t *testing.T) {
+// 	struct
+// }
