@@ -21,7 +21,7 @@ useEffect(() => {
       return;
     }
     if(cardinaliteMax < cardinaliteMin){
-      setError("Le maximum doit est supérieur au minimum")
+      setError("Le maximum doit être supérieur au minimum")
       return;
     }
     setError("");
@@ -71,7 +71,7 @@ useEffect(() => {
         
         <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingBottom: "4px", whiteSpace: "nowrap" }}>
           <input
-            type="integer"
+            type="number"
             placeholder="Minimum"
             className="border border-solid"
             value={cardinaliteMin}
@@ -84,7 +84,7 @@ useEffect(() => {
             }}
           />
           <input
-            type="integer"
+            type="number"
             placeholder="Maximum"
             className="border border-solid"
             value={cardinaliteMax}
