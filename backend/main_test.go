@@ -21,101 +21,113 @@ func TestMain(m *testing.M) {
 func TestPing(t *testing.T) {
 	router := SetupRouter()
 
-	w := httptest.NewRecorder()
+	recorder   := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", EndpointPing, nil)
+	router.ServeHTTP(recorder, request)
 
-	req, _ := http.NewRequest("GET", EndpointPing, nil)
-	router.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, recorder.Code)
 
-	assert.Equal(t, http.StatusOK, w.Code)
-	assertBodyEmpty(t, w)
+	// Body must be empty
+	_, err := recorder.Body.ReadByte()
+	errMsg := fmt.Sprintf("Response body should be empty but actually is:\n %s\n", recorder.Body.String())
+	assert.Equal(t, io.EOF, err, errMsg)
 }
 
 func TestValidateCreation(t *testing.T) {
 	router := SetupRouter()
 	const endpoint = EndpointValidateCreation
 
-	// --- Something that isn't JSON
+	payloadsBad := []string{
+		"Not json",
 
-	recorder := httptest.NewRecorder()
-	request, _ := http.NewRequest("POST", endpoint, strings.NewReader("Not json"))
-	router.ServeHTTP(recorder, request)
+		// Wrong type
+		`{
+			"nodes": [
+				{ "id": 1, "type": "bad_type" },
+				{ "id": 2, "type": "feature" }
+			],
+			"edges": [
+				{ "id": 1, "source": 1, "target": 2 }
+			]
+		 }`,
 
-	assert.Equal(t, http.StatusBadRequest, recorder.Code)
-	assertBodyNotEmpty(t, recorder)
+		// Duplicate node id
+		`{
+			"nodes": [
+				{ "id": 1, "type": "feature" },
+				{ "id": 2, "type": "feature" },
+				{ "id": 2, "type": "feature" }
+			],
+			"edges": [
+				{ "id": 1, "source": 1, "target": 2 }
+			]
+		 }`,
 
-	// --- Missing body
-
-	recorder = httptest.NewRecorder()
-	request, _ = http.NewRequest("POST", endpoint, nil)
-	router.ServeHTTP(recorder, request)
-
-	assert.Equal(t, http.StatusBadRequest, recorder.Code)
-	assertBodyNotEmpty(t, recorder)
-
-	// --- Empty model
-
-	recorder = httptest.NewRecorder()
-	request, _ = http.NewRequest("POST", endpoint, strings.NewReader(`{"nodes": [], "edges": []}`))
-	router.ServeHTTP(recorder, request)
-
-	assert.Equal(t, http.StatusOK, recorder.Code, recorder.Body.String())
-	// TODO: Check body
-
-	// --- Dummy model:
-
-	recorder = httptest.NewRecorder()
-
-	modelDummy := `
-	  {
-		"nodes": [
-		  { "id": "1", "type": "feature" },
-		  { "id": "2", "type": "or"      },
-		  { "id": "3", "type": "xor"     }
-		],
-		"edges": [
-		  { "id": "a1", "source": "1", "target": "2" },
-		  { "id": "a2", "source": "1", "target": "3" }
-		]
-	  }
-	`
-	request, _ = http.NewRequest("POST", endpoint, strings.NewReader(modelDummy))
-	router.ServeHTTP(recorder, request)
-
-	assert.Equal(t, http.StatusOK, recorder.Code, recorder.Body.String())
-	// TODO: Check body
-
-	// --- Incorrect data
-
-	recorder = httptest.NewRecorder()
-
-	modelIncorrect := `
-	{
-		"nodes": [
-			{ "id": "1", "type": "bad_type" },
-			{ "id": "2", "type": "feature" }
-		],
-		"edges": [
-			{ "id": "a1", "source": "1", "target": "2" }
-		]
+		// Duplicate Arc id
+		`{
+			"nodes": [
+				{ "id": 1, "type": "feature" },
+				{ "id": 2, "type": "feature" },
+				{ "id": 3, "type": "feature" }
+			],
+			"edges": [
+				{ "id": 1, "source": 1, "target": 2 }
+				{ "id": 1, "source": 3, "target": 2 }
+			]
+		 }`,
 	}
-	`
-	request, _ = http.NewRequest("POST", endpoint, strings.NewReader(modelIncorrect))
-	router.ServeHTTP(recorder, request)
 
-	assert.Equal(t, http.StatusBadRequest, recorder.Code)
-	// TODO: Check body
+	for i := range payloadsBad {
+		recorder   := httptest.NewRecorder()
+		request, _ := http.NewRequest("POST", endpoint, strings.NewReader(payloadsBad[i]))
+		router.ServeHTTP(recorder, request)
 
-	// --- Save file
+		errMsg := fmt.Sprintf("Case: %d\nPayload:\n%s\nResponse:\n%s\n", i, payloadsBad[i], recorder.Body.String())
+		assert.Equal(t, http.StatusBadRequest, recorder.Code, errMsg)
+		assertBodyNotEmpty(t, recorder)
+	}
+
+	// Nil message
+	{
+		recorder   := httptest.NewRecorder()
+		request, _ := http.NewRequest("POST", endpoint, nil)
+		router.ServeHTTP(recorder, request)
+
+		assert.Equal(t, http.StatusBadRequest, recorder.Code)
+		assertBodyNotEmpty(t, recorder)
+	}
+
+	payloadsOk := []string{
+		`{"nodes": [], "edges": []}`,
+
+		`{
+			"nodes": [
+			  { "id": 1, "type": "feature" },
+			  { "id": 2, "type": "or"      },
+			  { "id": 3, "type": "xor"     }
+			],
+			"edges": [
+			  { "id": 1, "source": 1, "target": 2 },
+			  { "id": 2, "source": 1, "target": 3 }
+			]
+		 }`,
+	}
+
+	for i := range payloadsOk {
+		recorder   := httptest.NewRecorder()
+		request, _ := http.NewRequest("POST", endpoint, strings.NewReader(payloadsOk[i]))
+		router.ServeHTTP(recorder, request)
+
+		errMsg := fmt.Sprintf("Case: %d\nPayload:\n%s\nResponse:\n%s\n", i, payloadsOk[i], recorder.Body.String())
+		assert.Equal(t, http.StatusOK, recorder.Code, errMsg)
+		assertBodyNotEmpty(t, recorder)
+	}
+
+	// --- Test save file
 	// TODO: Implement it
 }
 
 func assertBodyNotEmpty(t *testing.T, w *httptest.ResponseRecorder) {
 	_, err := w.Body.ReadByte()
 	assert.NotEqual(t, io.EOF, err, "Response body should not be empty")
-}
-
-func assertBodyEmpty(t *testing.T, w *httptest.ResponseRecorder) {
-	_, err := w.Body.ReadByte()
-	errMsg := fmt.Sprintf("Response body should be empty but actually is:\n %s\n", w.Body.String())
-	assert.Equal(t, io.EOF, err, errMsg)
 }
