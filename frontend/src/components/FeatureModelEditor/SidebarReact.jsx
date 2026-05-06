@@ -29,6 +29,8 @@ export default () => {
 
   const isLayoutAuto = useGraphStore((state) => state.isLayoutAuto);
   const setLayout = useGraphStore((state) => state.setLayout);
+  const isTransverseVisible = useGraphStore((state) => state.isTransverseVisible);
+  const setTransverseVisible = useGraphStore((state) => state.setTransverseVisible);
 
   const handleNoeuds = () => {
     const { layoutedNodes } = getLayoutedElements(nodes, edges);
@@ -77,6 +79,17 @@ export default () => {
       </div>
 
       <h4 className="text-sm font-semibold mt-4 mb-2 text-[#6e6d68] uppercase tracking-wide">Liaisons</h4>
+      <div className="toggle-wrapper">
+        <label className="toggle-label">Affichage des liaisons transverses</label>
+        <label className="toggle-switch">
+          <input
+            type="checkbox"
+            defaultChecked={isTransverseVisible}
+            onChange={() => setTransverseVisible(!isTransverseVisible)}
+          />
+          <span className="toggle-slider" />
+        </label>
+      </div>
       <p className="description mb-3">Sélectionner le type d'arc à appliquer automatiquement entre deux noeuds feature.</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>

@@ -9,6 +9,7 @@ export const useGraphStore = create()(
       nodes: [],
       edges: [],
       isLayoutAuto: true,
+      isTransverseVisible: true,
       arcType: null,
       
       setArcType: (val) => set({ arcType: val }),
@@ -25,6 +26,10 @@ export const useGraphStore = create()(
 
       setLayout: (update) => {
         set({ isLayoutAuto: update })
+      },
+
+      setTransverseVisible: (update) => {
+        set({ isTransverseVisible: update })
       },
 
       onNodesChange: (changes) => {

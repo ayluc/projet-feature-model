@@ -36,6 +36,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
   const futureStates = useTemporalStore((state) => state.futureStates);
   const pause = useTemporalStore((state) => state.pause);
   const resume = useTemporalStore((state) => state.resume);
+  const isTransverseVisible = useGraphStore((state) => state.isTransverseVisible);
 
   const [menu, setMenu] = useState(null);
   const [popup, setPopup] = useState(null);
@@ -123,7 +124,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
       const targetNode = nodes.find((n) => n.id === connection.target);
 
       const restrictedTypes = ["xor", "or", "cardinalite"];
-      
+
       const newEdgeId = getNextEdgeId();
       const connectionWithId = { ...connection, id: newEdgeId };
 
@@ -171,7 +172,8 @@ function FeatureModelEditor({ isReadOnly = false }) {
         nodeType: "link",
         linkSource: connection.source,
         linkTarget: connection.target,
-        pendingConnection: connectionWithId, // Contient maintenant le nouvel ID
+        pendingConnection: connectionWithId,
+        isTransverseAllowed: !restrictedTypes.includes(sourceNode?.type) && !restrictedTypes.includes(targetNode?.type), // ← ajout
       });
       setMenu(null);
     },
@@ -253,6 +255,10 @@ function FeatureModelEditor({ isReadOnly = false }) {
     }
   }, [nodes, edges, panelOpen]);
 
+  const visibleEdges = isTransverseVisible
+    ? edges
+    : edges.filter(e => e.data?.liaisonType !== "transverse");
+
 
   return (
     <div style={{ display: 'flex', width: '100%', height: 'calc(100vh - 80px)', position: 'relative' }}>
@@ -286,7 +292,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
       >
         <ReactFlow
           nodes={nodes}
-          edges={edges}
+          edges={visibleEdges}
           nodeTypes={nodeTypes}
           onNodesChange={isReadOnly ? undefined : handleNodesChange}
           onEdgesChange={isReadOnly ? undefined : onEdgesChange}
@@ -355,6 +361,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
                     linkSource: edge?.source,
                     linkTarget: edge?.target,
                     data: edge?.data,
+                    isTransverseAllowed: !restrictedTypes.includes(sourceNode?.type) && !restrictedTypes.includes(targetNode?.type), // ← ajout
                   });
                   return;
                 }
@@ -437,21 +444,36 @@ function FeatureModelEditor({ isReadOnly = false }) {
           popup={popup && popup.nodeType === "link" ? popup : null}
           onClose={() => setPopup(null)}
           onConfirm={(linkData) => {
-            const isMandatory = linkData.isMandatory === "true";
+            const { liaisonType, isMandatory: isMandatoryRaw, isExclusion: isExclusionRaw } = linkData;
+
+            const isMandatory = isMandatoryRaw === "true";
+            const isExclusion = isExclusionRaw === "true";
+
+            // Calcul du style selon le type de liaison
+            let edgeStyle = {};
+            let edgeData = {};
+
+            if (liaisonType === "simple") {
+              edgeData = { liaisonType: "simple", isMandatory };
+              edgeStyle = {
+                strokeWidth: isMandatory ? 2.5 : 2,
+                strokeDasharray: isMandatory ? "none" : "6 3",
+              };
+            } else if (liaisonType === "transverse") {
+              edgeData = { liaisonType: "transverse", isExclusion };
+              edgeStyle = {
+                strokeWidth: 2,
+                strokeDasharray: isExclusion ? "2 4" : "8 3",
+                stroke: isExclusion ? "#d9534f" : "#5b8dee",
+              };
+            }
 
             // Cas modification via clic droit
             if (popup?.linkId && !popup?.pendingConnection) {
               setEdges((eds) =>
                 eds.map((e) =>
                   e.id === popup.linkId
-                    ? {
-                      ...e,
-                      data: { ...e.data, isMandatory },
-                      style: {
-                        strokeWidth: isMandatory ? 2.5 : 2,
-                        strokeDasharray: isMandatory ? "none" : "6 3",
-                      },
-                    }
+                    ? { ...e, data: { ...e.data, ...edgeData }, style: edgeStyle }
                     : e
                 )
               );
@@ -463,11 +485,8 @@ function FeatureModelEditor({ isReadOnly = false }) {
             if (!popup?.pendingConnection) return;
             onConnect({
               ...popup.pendingConnection,
-              data: { isMandatory },
-              style: {
-                strokeWidth: isMandatory ? 2.5 : 2,
-                strokeDasharray: isMandatory ? "none" : "6 3",
-              },
+              data: edgeData,
+              style: edgeStyle,
             });
             setPopup(null);
           }}

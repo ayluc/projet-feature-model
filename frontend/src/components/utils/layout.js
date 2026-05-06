@@ -65,5 +65,6 @@ export const getLayoutedElements = (nodes, edges, direction = 'TB') => {
     };
   });
 
+
   return { layoutedNodes, layoutedEdges: edges };
 };
