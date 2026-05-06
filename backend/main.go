@@ -11,7 +11,7 @@ import (
 
 type NodeType string
 const (
-	NodeTypeCardinality NodeType = "combinaison"
+	NodeTypeCardinality NodeType = "cardinalite"
 	NodeTypeFeature     NodeType = "feature"
 	NodeTypeXor         NodeType = "xor"
 	NodeTypeOr          NodeType = "or"
@@ -19,7 +19,10 @@ const (
 
 type Node struct {
 	Id   int      `json:"id"   binding:"required,gte=0"`
-	Type NodeType `json:"type" binding:"required,oneof=combinaison feature xor or"`
+	Type NodeType `json:"type" binding:"required,oneof=cardinalite feature xor or"`
+	// TODO: Test these
+	CardinalityMin int `json:"cardinalityMin" binding:"required_if=Type cardinalite,gte=0"`
+	CandinalityMax int `json:"cardinalityMax" binding:"required_if=Type cardinalite,gte=0,gtefield=CardinalityMin"`
 }
 
 type Arc struct {
