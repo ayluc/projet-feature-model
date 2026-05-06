@@ -82,14 +82,17 @@ export default function ContextMenu({
   }
 
   return (
+    console.log({ type, label }),
     <div style={{ top, left, right, bottom }} className="context-menu" {...rest}>
       <p style={{ margin: '0.5em' }}>
         <small>Noeud : {label}</small>
       </p>
-      <button onClick={onModifyNode} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <Pencil />
-        <span>Modifier</span>
-      </button>
+      {label != "XOR" && label != "OR" && (
+        <button onClick={onModifyNode} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Pencil />
+          <span>Modifier</span>
+        </button>
+      )}
       <button onClick={duplicateNode} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <CopyPlus />
         <span>Dupliquer</span>
