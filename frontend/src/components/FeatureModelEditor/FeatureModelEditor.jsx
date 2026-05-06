@@ -201,9 +201,29 @@ function FeatureModelEditor({ isReadOnly = false }) {
       (c) => c.type === 'select' || c.type === 'dimensions'
     );
     if (isMinorChange) pause();
-    onNodesChange(changes);
+
+    // Bloque les désélections automatiques de ReactFlow sur les autres noeuds
+    const modifiedChanges = changes.map((change) => {
+      if (change.type === 'select' && !change.selected) {
+        const node = nodes.find(n => n.id === change.id);
+        if (node?.selected) {
+          return { ...change, selected: true }; // maintient la sélection
+        }
+      }
+      return change;
+    });
+
+    onNodesChange(modifiedChanges);
     if (isMinorChange) resume();
-  }, [onNodesChange, pause, resume]);
+  }, [onNodesChange, pause, resume, nodes]);
+
+  const onNodeClick = useCallback((event, node) => {
+    setNodes((nds) =>
+      nds.map((n) =>
+        n.id === node.id ? { ...n, selected: !n.selected } : n
+      )
+    );
+  }, [setNodes]);
 
   useEffect(() => {
     if (panelOpen) {
@@ -211,6 +231,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
       setJsonRepresentation(JSON.stringify(flowData, null, 2));
     }
   }, [nodes, edges, panelOpen]);
+
 
   return (
     <div style={{ display: 'flex', width: '100%', height: 'calc(100vh - 80px)', position: 'relative' }}>
@@ -261,6 +282,9 @@ function FeatureModelEditor({ isReadOnly = false }) {
           nodesConnectable={!isReadOnly}
           elementsSelectable={true}
           onDelete={isReadOnly ? undefined : onDelete}
+          multiSelectionKeyCode={null}
+          onNodeClick={onNodeClick}
+          deselectOnClick={false}
         >
           <Controls position="top-right" showInteractive={!isReadOnly}>
             <ControlButton

@@ -3,7 +3,7 @@
 .react-flow {
   --xy-background-color: #f7f9fb; /*fond du graph*/
   /* Custom Variables */
-  --xy-theme-selected: #4d4d4d; /*contour du node quand selectionne*/
+  --xy-theme-selected: #5f9225; /*contour du node quand selectionne*/
   --xy-theme-hover: #d8c0c1; /*contour du node quand survole*/
   --xy-theme-edge-hover: rgb(155, 153, 153); /*contour de l'edge quand survole*/
   --xy-theme-color-focus: #e8e8e8; /*contour gras du node quand focus dessus*/
@@ -87,8 +87,11 @@
 
 .react-flow__node.selectable.selected {
   border-color: var(--xy-theme-selected);
-  border-width: 1.7px;
-  box-shadow: var(--xy-node-boxshadow-default);
+  border-width: 2.5px;
+  box-shadow:
+      0px 3.54px 4.55px 0px #00000052, 0px 3.54px 4.55px 0px #0000000d,
+    0px 0.51px 1.01px 0px #00000079;
+
 }
 
 .react-flow__node-group {
