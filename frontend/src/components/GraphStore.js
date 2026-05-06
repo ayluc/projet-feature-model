@@ -9,6 +9,9 @@ export const useGraphStore = create()(
       nodes: [],
       edges: [],
       isLayoutAuto: true,
+      arcType: null,
+      
+      setArcType: (val) => set({ arcType: val }),
 
       setNodes: (update) => {
         const nextNodes = typeof update === 'function' ? update(get().nodes) : update;
@@ -21,7 +24,7 @@ export const useGraphStore = create()(
       },
 
       setLayout: (update) => {
-        set({isLayoutAuto: update})
+        set({ isLayoutAuto: update })
       },
 
       onNodesChange: (changes) => {
@@ -34,23 +37,20 @@ export const useGraphStore = create()(
 
       onConnect: (connection) => {
         const newEdges = addEdge(connection, get().edges);
-        
-        if(get().isLayoutAuto)
-        {
+
+        if (get().isLayoutAuto) {
           setTimeout(() => {
             const { layoutedNodes } = getLayoutedElements(get().nodes, newEdges);
             set({ nodes: layoutedNodes, edges: newEdges });
           }, 10);
-        }  
-        else
-        {
-          set({edges: newEdges});
+        }
+        else {
+          set({ edges: newEdges });
         }
       },
 
       onDelete: () => {
-        if(get().isLayoutAuto)
-        {
+        if (get().isLayoutAuto) {
           setTimeout(() => {
             const { layoutedNodes } = getLayoutedElements(get().nodes, get().edges);
             set({ nodes: layoutedNodes });

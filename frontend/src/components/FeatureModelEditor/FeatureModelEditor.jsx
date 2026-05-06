@@ -44,6 +44,8 @@ function FeatureModelEditor({ isReadOnly = false }) {
   const [type] = useDnD();
   const isDragging = useRef(false);
 
+  const arcType = useGraphStore((state) => state.arcType);
+
   const OFFSET_TOP = 100;
   const OFFSET_LEFT = 200;
 
@@ -100,7 +102,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
       const restrictedTypes = ["xor", "or", "cardinalite"];
 
-      // Si source ou target est un nœud restreint → création directe en optional, sans popup
+      // Si source ou target est un nœud restreint = création directe en optional, sans popup
       if (restrictedTypes.includes(sourceNode?.type) || restrictedTypes.includes(targetNode?.type)) {
         onConnect({
           ...connection,
@@ -113,7 +115,33 @@ function FeatureModelEditor({ isReadOnly = false }) {
         return;
       }
 
-      // Sinon → popup normal
+      if(arcType === "mandatory") {
+        console.log("Connection mandatory détectée, création sans popup");
+        onConnect({
+          ...connection,
+          data: { isMandatory: true },
+          style: {
+            strokeWidth: 2.5,
+            strokeDasharray: "none",
+          },
+        });
+        return;
+      }
+
+      if(arcType === "optional") {
+        console.log("Connection optional détectée, création sans popup");
+        onConnect({
+          ...connection, 
+          data: { isMandatory: false },
+          style: {
+            strokeWidth: 2,
+            strokeDasharray: "6 3",
+          },
+        });
+        return;
+      }
+
+      // Sinon popup normal
       setPopup({
         nodeType: "link",
         linkSource: connection.source,
