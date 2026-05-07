@@ -56,6 +56,49 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
   const { toObject } = useReactFlow();
 
+  const onNodeClick = useCallback((event, clickedNode) => {    
+    if (isReadOnly) {
+      if (!clickedNode.selected) {
+        const ancestorsIds = new Set();
+        const getAncestors = (currentId) => {
+          edges.forEach((edge) => {
+            if (edge.target === currentId && !ancestorsIds.has(edge.source)) {
+              ancestorsIds.add(edge.source);
+              getAncestors(edge.source);
+            }
+          });
+        };
+        getAncestors(clickedNode.id);
+
+        const targetIds = [clickedNode.id, ...Array.from(ancestorsIds)];
+
+        setNodes((nds) =>
+          nds.map((n) => {
+            if (targetIds.includes(n.id)) {
+              return { ...n, selected: true }; 
+            }
+            return n; 
+          })
+        );
+      } 
+      else {
+        setNodes((nds) =>
+          nds.map((n) =>
+            n.id === clickedNode.id ? { ...n, selected: false } : n
+          )
+        );
+      }
+    } 
+    else {
+      setNodes((nds) =>
+        nds.map((n) =>
+          n.id === clickedNode.id ? { ...n, selected: !n.selected } : n
+        )
+      );
+    }
+  }, [edges, setNodes, isReadOnly]);
+  
+
   const getNextNodeId = useCallback(() => {
     const maxId = nodes.reduce((max, node) => {
       const idNum = parseInt(node.id, 10);
@@ -240,13 +283,6 @@ function FeatureModelEditor({ isReadOnly = false }) {
     if (isMinorChange) resume();
   }, [onNodesChange, pause, resume, nodes]);
 
-  const onNodeClick = useCallback((event, node) => {
-    setNodes((nds) =>
-      nds.map((n) =>
-        n.id === node.id ? { ...n, selected: !n.selected } : n
-      )
-    );
-  }, [setNodes]);
 
   useEffect(() => {
     if (panelOpen) {

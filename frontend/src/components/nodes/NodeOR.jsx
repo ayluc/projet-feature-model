@@ -2,10 +2,6 @@ import { useCallback } from 'react';
 import { Position, Handle } from '@xyflow/react';
 
 export function NodeOR({isConnectable}) {
-  const onChange = useCallback((evt) => {
-    console.log(evt.target.value);
-  }, []);
- 
   return (
     <div className="node-or">
       <div>
