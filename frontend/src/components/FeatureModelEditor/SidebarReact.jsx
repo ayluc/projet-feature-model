@@ -52,7 +52,7 @@ export default () => {
           <span className="legende-label">Arc obligatoire</span>
           <hr className="line-solid" />
         </div>
-        <div className="optionnal-legende-item">
+        <div className="optional-legende-item">
           <span className="legende-label">Arc optionnel</span>
           <hr className="line-dotted" />
         </div>

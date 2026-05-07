@@ -309,7 +309,7 @@ body {
 
 }
 
-.optionnal-legende-item {
+.optional-legende-item {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -341,7 +341,7 @@ body {
 .feature-legende-item,
 .operator-legende-item,
 .mandatory-legende-item,
-.optionnal-legende-item {
+.optional-legende-item {
   margin-bottom: 8px;
 }
 
