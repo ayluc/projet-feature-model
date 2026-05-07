@@ -103,7 +103,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
     const maxId = nodes.reduce((max, node) => {
       const idNum = parseInt(node.id, 10);
       return isNaN(idNum) ? max : Math.max(max, idNum);
-    }, -1);
+    }, 0);
     return (maxId + 1).toString();
   }, [nodes]);
 
@@ -111,7 +111,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
     const maxId = edges.reduce((max, edge) => {
       const idNum = parseInt(edge.id, 10);
       return isNaN(idNum) ? max : Math.max(max, idNum);
-    }, -1);
+    }, 0);
     return (maxId + 1).toString();
   }, [edges]);
 

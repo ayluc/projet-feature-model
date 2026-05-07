@@ -6,10 +6,12 @@ import (
 	"net/http"
 
 	"github.com/Malomalsky/go-minizinc"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 type NodeType string
+
 const (
 	NodeTypeCardinality NodeType = "cardinalite"
 	NodeTypeFeature     NodeType = "feature"
@@ -37,12 +39,14 @@ type FeatureModel struct {
 }
 
 const (
-	EndpointPing = "/ping"
+	EndpointPing             = "/ping"
 	EndpointValidateCreation = "/validate-creation"
 )
 
 func SetupRouter() *gin.Engine {
 	router := gin.Default()
+
+	router.Use(cors.Default())
 
 	router.GET(EndpointPing, func(c *gin.Context) {
 		c.Data(http.StatusOK, "text/plain", nil)
@@ -80,7 +84,6 @@ func main() {
 	fmt.Printf("Solver loaded: %s\n", solver.Name)
 
 	router := SetupRouter()
-
 	// TODO: Read the url from the CLI
 	router.Run("localhost:8080")
 }
