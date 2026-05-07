@@ -60,12 +60,12 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
   const onNodeClick = useCallback((event, clickedNode) => {
     event.stopPropagation();
-    
-      setNodes((nds) =>
-        nds.map((n) =>
-          n.id === clickedNode.id ? { ...n, selected: !n.selected } : { ...n, selected: false }
-        )
-      );
+
+    setNodes((nds) =>
+      nds.map((n) =>
+        n.id === clickedNode.id ? { ...n, selected: !n.selected } : { ...n, selected: false }
+      )
+    );
   }, [setNodes, isReadOnly]);
 
 
@@ -274,14 +274,14 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
     const modifiedChanges = isReadOnly
       ? changes.map((change) => {
-          if (change.type === 'select' && !change.selected) {
-            const node = nodes.find(n => n.id === change.id);
-            if (node?.selected) {
-              return { ...change, selected: true };
-            }
+        if (change.type === 'select' && !change.selected) {
+          const node = nodes.find(n => n.id === change.id);
+          if (node?.selected) {
+            return { ...change, selected: true };
           }
-          return change;
-        })
+        }
+        return change;
+      })
       : changes;
 
     onNodesChange(modifiedChanges);
