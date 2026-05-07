@@ -331,6 +331,20 @@ function FeatureModelEditor({ isReadOnly = false }) {
     ? edges
     : edges.filter(e => e.data?.liaisonType !== "transverse");
 
+  const nodeMap = nodes.reduce((acc, node) => {
+    acc[node.id] = node.data?.label || `Nœud ${node.id}`;
+    return acc;
+  }, {});
+
+  const requiresEdges = edges.filter(
+    (e) => e.data?.liaisonType === "transverse" && !e.data?.isExclusion
+  );
+
+  const excludesEdges = edges.filter(
+    (e) => e.data?.liaisonType === "transverse" && e.data?.isExclusion
+  );
+
+  const [activeTab, setActiveTab] = useState("json");
 
   return (
     <div style={{ display: 'flex', width: '100%', height: 'calc(100vh - 80px)', position: 'relative' }}>
@@ -574,30 +588,107 @@ function FeatureModelEditor({ isReadOnly = false }) {
         style={{
           width: panelOpen ? '320px' : '0px',
           minWidth: 0,
-          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
           transition: 'width 0.3s ease',
           borderLeft: panelOpen ? '1px solid #e0e0e0' : 'none',
           background: '#fff',
-          boxShadow: panelOpen ? '-4px 0 12px rgba(0,0,0,0.08)' : 'none',
-          overflowY: panelOpen ? 'auto' : 'hidden',
         }}
       >
-        <div style={{ width: '320px', padding: '16px' }}>
-          <h2 className="text-lg font-bold mb-3">Représentation du feature model au format JSON</h2>
-          <pre style={{
-            fontSize: '11px',
-            background: '#f5f5f5',
-            borderRadius: '6px',
-            padding: '10px',
-            overflowX: 'auto',
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-all',
-          }}>
-            {jsonRepresentation}
-          </pre>
+        <div style={{ display: 'flex', borderBottom: '1px solid #e0e0e0', minWidth: '320px' }}>
+          <button
+            onClick={() => setActiveTab("json")}
+            style={{
+              flex: 1,
+              padding: '12px 8px',
+              background: activeTab === "json" ? '#fff' : '#f9f9f9',
+              border: 'none',
+              borderBottom: activeTab === "json" ? '2px solid #5b8dee' : '2px solid transparent',
+              cursor: 'pointer',
+              fontWeight: activeTab === "json" ? 'bold' : 'normal',
+              color: activeTab === "json" ? '#333' : '#777',
+              transition: 'background 0.2s',
+            }}
+          >
+            JSON
+          </button>
+          <button
+            onClick={() => setActiveTab("rules")}
+            style={{
+              flex: 1,
+              padding: '12px 8px',
+              background: activeTab === "rules" ? '#fff' : '#f9f9f9',
+              border: 'none',
+              borderBottom: activeTab === "rules" ? '2px solid #5b8dee' : '2px solid transparent',
+              cursor: 'pointer',
+              fontWeight: activeTab === "rules" ? 'bold' : 'normal',
+              color: activeTab === "rules" ? '#333' : '#777',
+              transition: 'background 0.2s',
+            }}
+          >
+            Dépendances et Incompatibilités
+          </button>
+        </div>
+
+        <div style={{ padding: '16px', overflowY: 'auto', flex: 1, minWidth: '320px' }}>
+          
+          {activeTab === "json" && (
+            <div>
+              <pre style={{
+                fontSize: '11px',
+                background: '#f5f5f5',
+                borderRadius: '6px',
+                padding: '10px',
+                overflowX: 'auto',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-all',
+                margin: 0
+              }}>
+                {jsonRepresentation}
+              </pre>
+            </div>
+          )}
+
+          {activeTab === "rules" && (
+            <div>
+              <div style={{ marginBottom: '24px' }}>
+                <h3 className="font-bold mb-2">Dépendances (Requires)</h3>
+                {requiresEdges.length > 0 ? (
+                  <ul style={{ paddingLeft: '20px', fontSize: '14px', listStyleType: 'disc' }}>
+                    {requiresEdges.map(edge => (
+                      <li key={edge.id} style={{ marginBottom: '4px' }}>
+                        <strong>{nodeMap[edge.source]}</strong> nécessite <strong>{nodeMap[edge.target]}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p style={{ fontSize: '12px', color: '#888', fontStyle: 'italic', margin: 0 }}>
+                    Aucune dépendance configurée.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <h3 className="font-bold mb-2">Incompatibilités (Excludes)</h3>
+                {excludesEdges.length > 0 ? (
+                  <ul style={{ paddingLeft: '20px', fontSize: '14px', listStyleType: 'disc' }}>
+                    {excludesEdges.map(edge => (
+                      <li key={edge.id} style={{ marginBottom: '4px' }}>
+                        <strong>{nodeMap[edge.source]}</strong> exclut <strong>{nodeMap[edge.target]}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p style={{ fontSize: '12px', color: '#888', fontStyle: 'italic', margin: 0 }}>
+                    Aucune exclusion configurée.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
-
     </div>
   );
 }
