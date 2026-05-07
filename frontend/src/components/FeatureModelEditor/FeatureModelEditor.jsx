@@ -290,11 +290,17 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
 
   useEffect(() => {
-    if (panelOpen) {
+    if (!panelOpen) return;
+
+    const timeoutId = setTimeout(() => {
       const flowData = toObject();
       setJsonRepresentation(JSON.stringify(flowData, null, 2));
-    }
-  }, [nodes, edges, panelOpen]);
+    }, 300);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [nodes, edges, panelOpen, toObject]);
 
   useEffect(() => {
     if (!isReadOnly) {
