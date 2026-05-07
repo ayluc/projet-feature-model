@@ -58,15 +58,15 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
   let edgeMarkers = {};
 
-const onNodeClick = useCallback((event, clickedNode) => {
-  event.stopPropagation();
-  
-    setNodes((nds) =>
-      nds.map((n) =>
-        n.id === clickedNode.id ? { ...n, selected: !n.selected } : { ...n, selected: false }
-      )
-    );
-}, [setNodes, isReadOnly]);
+  const onNodeClick = useCallback((event, clickedNode) => {
+    event.stopPropagation();
+    
+      setNodes((nds) =>
+        nds.map((n) =>
+          n.id === clickedNode.id ? { ...n, selected: !n.selected } : { ...n, selected: false }
+        )
+      );
+  }, [setNodes, isReadOnly]);
 
 
   const getNextNodeId = useCallback(() => {
@@ -267,26 +267,26 @@ const onNodeClick = useCallback((event, clickedNode) => {
   );
 
   const handleNodesChange = useCallback((changes) => {
-  const isMinorChange = changes.every(
-    (c) => c.type === 'select' || c.type === 'dimensions'
-  );
-  if (isMinorChange) pause();
+    const isMinorChange = changes.every(
+      (c) => c.type === 'select' || c.type === 'dimensions'
+    );
+    if (isMinorChange) pause();
 
-  const modifiedChanges = isReadOnly
-    ? changes.map((change) => {
-        if (change.type === 'select' && !change.selected) {
-          const node = nodes.find(n => n.id === change.id);
-          if (node?.selected) {
-            return { ...change, selected: true };
+    const modifiedChanges = isReadOnly
+      ? changes.map((change) => {
+          if (change.type === 'select' && !change.selected) {
+            const node = nodes.find(n => n.id === change.id);
+            if (node?.selected) {
+              return { ...change, selected: true };
+            }
           }
-        }
-        return change;
-      })
-    : changes;
+          return change;
+        })
+      : changes;
 
-  onNodesChange(modifiedChanges);
-  if (isMinorChange) resume();
-}, [onNodesChange, pause, resume, nodes, isReadOnly]);
+    onNodesChange(modifiedChanges);
+    if (isMinorChange) resume();
+  }, [onNodesChange, pause, resume, nodes, isReadOnly]);
 
 
   useEffect(() => {
