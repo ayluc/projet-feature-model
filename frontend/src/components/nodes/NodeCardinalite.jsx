@@ -2,10 +2,6 @@ import { useCallback } from 'react';
 import { Position, Handle } from '@xyflow/react';
 
 export function NodeCardinalite({data, isConnectable}) {
-  const onChange = useCallback((evt) => {
-    console.log(evt.target.value);
-  }, []);
- 
   return (
     <div className="node-cardinalite">
       <div style={{ textAlign: "center", display: 'flex', flexDirection: 'column'}}>
