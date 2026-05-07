@@ -11,26 +11,29 @@ import (
 
 type NodeType string
 const (
-	NodeTypeCardinality NodeType = "combinaison"
+	NodeTypeCardinality NodeType = "cardinalite"
 	NodeTypeFeature     NodeType = "feature"
 	NodeTypeXor         NodeType = "xor"
 	NodeTypeOr          NodeType = "or"
 )
 
 type Node struct {
-	Id   int      `json:"id"   binding:"required"`
-	Type NodeType `json:"type" binding:"required,oneof=combinaison feature xor or"`
+	Id   int      `json:"id"   binding:"required,gte=0"`
+	Type NodeType `json:"type" binding:"required,oneof=cardinalite feature xor or"`
+	// TODO: Test these
+	CardinalityMin int `json:"cardinalityMin" binding:"required_if=Type cardinalite,gte=0"`
+	CandinalityMax int `json:"cardinalityMax" binding:"required_if=Type cardinalite,gte=0,gtefield=CardinalityMin"`
 }
 
 type Arc struct {
-	Id       int `json:"id"     binding:"required"`
-	SourceId int `json:"source" binding:"required"`
-	TargetId int `json:"target" binding:"required"`
+	Id       int `json:"id"     binding:"required,gte=0"`
+	SourceId int `json:"source" binding:"required,gte=0"`
+	TargetId int `json:"target" binding:"required,gte=0"`
 }
 
 type FeatureModel struct {
 	Nodes []Node `json:"nodes" binding:"required,unique=Id,dive"`
-	Arcs  []Arc  `json:"edges" binding:"required,unique=Id,dive"`
+	Arcs  []Arc  `json:"edges" binding:"required,unique=Id,unique=TargetId,dive"`
 }
 
 const (
