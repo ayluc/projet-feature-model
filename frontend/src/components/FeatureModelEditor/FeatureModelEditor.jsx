@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useState, useEffect } from "react";
-import { ReactFlow, Controls, Background, useReactFlow, ControlButton } from "@xyflow/react";
+import { ReactFlow, Controls, Background, useReactFlow, ControlButton, MarkerType } from "@xyflow/react";
 import { Undo2, Redo2 } from "lucide-react";
 
 import { useDnD } from '@/components/DnDContext';
@@ -56,7 +56,9 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
   const { toObject } = useReactFlow();
 
-  const onNodeClick = useCallback((event, clickedNode) => {    
+  let edgeMarkers = {};
+
+  const onNodeClick = useCallback((event, clickedNode) => {
     if (isReadOnly) {
       if (!clickedNode.selected) {
         const ancestorsIds = new Set();
@@ -75,12 +77,12 @@ function FeatureModelEditor({ isReadOnly = false }) {
         setNodes((nds) =>
           nds.map((n) => {
             if (targetIds.includes(n.id)) {
-              return { ...n, selected: true }; 
+              return { ...n, selected: true };
             }
-            return n; 
+            return n;
           })
         );
-      } 
+      }
       else {
         setNodes((nds) =>
           nds.map((n) =>
@@ -88,7 +90,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
           )
         );
       }
-    } 
+    }
     else {
       setNodes((nds) =>
         nds.map((n) =>
@@ -97,7 +99,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
       );
     }
   }, [edges, setNodes, isReadOnly]);
-  
+
 
   const getNextNodeId = useCallback(() => {
     const maxId = nodes.reduce((max, node) => {
@@ -220,6 +222,12 @@ function FeatureModelEditor({ isReadOnly = false }) {
             strokeDasharray: "8 3",
             stroke: "#5b8dee",
           },
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            color: "#5b8dee",
+            width: 18,
+            height: 18,
+          },
         });
         return;
       }
@@ -228,7 +236,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         console.log("Connection excludes détectée, création sans popup");
         onConnect({
           ...connectionWithId,
-          data: { liaisonType: "transverse", isExclusion:true},
+          data: { liaisonType: "transverse", isExclusion: true },
           style: {
             strokeWidth: 2,
             strokeDasharray: "2 4",
@@ -530,29 +538,36 @@ function FeatureModelEditor({ isReadOnly = false }) {
                 strokeDasharray: isExclusion ? "2 4" : "8 3",
                 stroke: isExclusion ? "#d9534f" : "#5b8dee",
               };
-            }
+              if (!isExclusion) {
+                edgeMarkers = {
+                  markerEnd: { type: MarkerType.ArrowClosed, color: "#5b8dee", width: 18, height: 18 },
+                  markerStart: { type: MarkerType.ArrowClosed, orient: "auto-start-reverse", color: "#d9534f", width: 18, height: 18 },
+                };
+              }
 
-            // Cas modification via clic droit
-            if (popup?.linkId && !popup?.pendingConnection) {
-              setEdges((eds) =>
-                eds.map((e) =>
-                  e.id === popup.linkId
-                    ? { ...e, data: { ...e.data, ...edgeData }, style: edgeStyle }
-                    : e
-                )
-              );
+              // Cas modification via clic droit
+              if (popup?.linkId && !popup?.pendingConnection) {
+                setEdges((eds) =>
+                  eds.map((e) =>
+                    e.id === popup.linkId
+                      ? { ...e, data: { ...e.data, ...edgeData }, style: edgeStyle, ...edgeMarkers }
+                      : e
+                  )
+                );
+                setPopup(null);
+                return;
+              }
+
+              // Cas création via drag de connexion
+              if (!popup?.pendingConnection) return;
+              onConnect({
+                ...popup.pendingConnection,
+                data: edgeData,
+                style: edgeStyle,
+                ...edgeMarkers
+              });
               setPopup(null);
-              return;
             }
-
-            // Cas création via drag de connexion
-            if (!popup?.pendingConnection) return;
-            onConnect({
-              ...popup.pendingConnection,
-              data: edgeData,
-              style: edgeStyle,
-            });
-            setPopup(null);
           }}
         />
       </div>
