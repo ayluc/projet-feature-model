@@ -17,7 +17,7 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
     <div style={{ textAlign: "center", 
     display: 'flex', 
     flexDirection: 'column', }}>
-      <NodeToolbar>
+      <NodeToolbar isVisible={data.isReadOnly && selected}>
         <div style={{ display: 'flex', gap: '6px' }}>
           <button
             onClick={() => data.onConfigChange(id, 'included')}

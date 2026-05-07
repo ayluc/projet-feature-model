@@ -58,54 +58,15 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
   let edgeMarkers = {};
 
-  const onNodeClick = useCallback((event, clickedNode) => {
-    if (isReadOnly) {
-    //   if (!clickedNode.selected) {
-    //     // const ancestorsIds = new Set();
-    //     // const getAncestors = (currentId) => {
-    //     //   edges.forEach((edge) => {
-    //     //     if (edge.target === currentId && !ancestorsIds.has(edge.source)) {
-    //     //       ancestorsIds.add(edge.source);
-    //     //       getAncestors(edge.source);
-    //     //     }
-    //     //   });
-    //     // };
-    //     // getAncestors(clickedNode.id);
-
-    //     // const targetIds = [clickedNode.id, ...Array.from(ancestorsIds)];
-
-    //     // setNodes((nds) =>
-    //     //   nds.map((n) => {
-    //     //     if (targetIds.includes(n.id)) {
-    //     //       return { ...n, selected: true };
-    //     //     }
-    //     //     return n;
-    //     //   })
-    //     // );
-
-    //     setNodes((nds) =>
-    //       nds.map((n) => {
-    //         return { ...n, selected: true };
-    //       }
-    //       )
-    //     );
-    //   }
-    //   else {
-    //     setNodes((nds) =>
-    //       nds.map((n) =>
-    //         n.id === clickedNode.id ? { ...n, selected: false } : n
-    //       )
-    //     );
-    //   }
-    // }
-    // else {
-      setNodes((nds) =>
-        nds.map((n) =>
-          n.id === clickedNode.id ? { ...n, selected: !n.selected } : { ...n, selected: false }
-        )
-      );
-    }
-  }, [edges, setNodes, isReadOnly]);
+const onNodeClick = useCallback((event, clickedNode) => {
+  event.stopPropagation();
+  
+    setNodes((nds) =>
+      nds.map((n) =>
+        n.id === clickedNode.id ? { ...n, selected: !n.selected } : { ...n, selected: false }
+      )
+    );
+}, [setNodes, isReadOnly]);
 
 
   const getNextNodeId = useCallback(() => {
@@ -306,25 +267,26 @@ function FeatureModelEditor({ isReadOnly = false }) {
   );
 
   const handleNodesChange = useCallback((changes) => {
-    const isMinorChange = changes.every(
-      (c) => c.type === 'select' || c.type === 'dimensions'
-    );
-    if (isMinorChange) pause();
+  const isMinorChange = changes.every(
+    (c) => c.type === 'select' || c.type === 'dimensions'
+  );
+  if (isMinorChange) pause();
 
-    // Bloque les désélections automatiques de ReactFlow sur les autres noeuds
-    const modifiedChanges = changes.map((change) => {
-      if (change.type === 'select' && !change.selected) {
-        const node = nodes.find(n => n.id === change.id);
-        if (node?.selected) {
-          return { ...change, selected: true }; // maintient la sélection
+  const modifiedChanges = isReadOnly
+    ? changes.map((change) => {
+        if (change.type === 'select' && !change.selected) {
+          const node = nodes.find(n => n.id === change.id);
+          if (node?.selected) {
+            return { ...change, selected: true };
+          }
         }
-      }
-      return change;
-    });
+        return change;
+      })
+    : changes;
 
-    onNodesChange(modifiedChanges);
-    if (isMinorChange) resume();
-  }, [onNodesChange, pause, resume, nodes]);
+  onNodesChange(modifiedChanges);
+  if (isMinorChange) resume();
+}, [onNodesChange, pause, resume, nodes, isReadOnly]);
 
 
   useEffect(() => {
@@ -333,6 +295,16 @@ function FeatureModelEditor({ isReadOnly = false }) {
       setJsonRepresentation(JSON.stringify(flowData, null, 2));
     }
   }, [nodes, edges, panelOpen]);
+
+  useEffect(() => {
+    if (!isReadOnly) {
+      setNodes(nds => nds.map(n => ({
+        ...n,
+        className: '',
+        data: { ...n.data, configStatus: null }
+      })));
+    }
+  }, [isReadOnly]);
 
   const visibleEdges = isTransverseVisible
     ? edges
@@ -422,7 +394,9 @@ function FeatureModelEditor({ isReadOnly = false }) {
           nodesConnectable={!isReadOnly}
           onDelete={isReadOnly ? undefined : onDelete}
           onNodeClick={onNodeClick}
-          >
+          multiSelectionKeyCode={null}
+          deselectOnClick={true}
+        >
           <Controls position="top-right" showInteractive={!isReadOnly}>
             <ControlButton
               title="Annuler"
@@ -655,7 +629,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         </div>
 
         <div style={{ padding: '16px', overflowY: 'auto', flex: 1, minWidth: '320px' }}>
-          
+
           {activeTab === "json" && (
             <div>
               <pre style={{
