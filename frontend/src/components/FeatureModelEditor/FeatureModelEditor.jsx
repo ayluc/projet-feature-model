@@ -60,41 +60,48 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
   const onNodeClick = useCallback((event, clickedNode) => {
     if (isReadOnly) {
-      if (!clickedNode.selected) {
-        const ancestorsIds = new Set();
-        const getAncestors = (currentId) => {
-          edges.forEach((edge) => {
-            if (edge.target === currentId && !ancestorsIds.has(edge.source)) {
-              ancestorsIds.add(edge.source);
-              getAncestors(edge.source);
-            }
-          });
-        };
-        getAncestors(clickedNode.id);
+    //   if (!clickedNode.selected) {
+    //     // const ancestorsIds = new Set();
+    //     // const getAncestors = (currentId) => {
+    //     //   edges.forEach((edge) => {
+    //     //     if (edge.target === currentId && !ancestorsIds.has(edge.source)) {
+    //     //       ancestorsIds.add(edge.source);
+    //     //       getAncestors(edge.source);
+    //     //     }
+    //     //   });
+    //     // };
+    //     // getAncestors(clickedNode.id);
 
-        const targetIds = [clickedNode.id, ...Array.from(ancestorsIds)];
+    //     // const targetIds = [clickedNode.id, ...Array.from(ancestorsIds)];
 
-        setNodes((nds) =>
-          nds.map((n) => {
-            if (targetIds.includes(n.id)) {
-              return { ...n, selected: true };
-            }
-            return n;
-          })
-        );
-      }
-      else {
-        setNodes((nds) =>
-          nds.map((n) =>
-            n.id === clickedNode.id ? { ...n, selected: false } : n
-          )
-        );
-      }
-    }
-    else {
+    //     // setNodes((nds) =>
+    //     //   nds.map((n) => {
+    //     //     if (targetIds.includes(n.id)) {
+    //     //       return { ...n, selected: true };
+    //     //     }
+    //     //     return n;
+    //     //   })
+    //     // );
+
+    //     setNodes((nds) =>
+    //       nds.map((n) => {
+    //         return { ...n, selected: true };
+    //       }
+    //       )
+    //     );
+    //   }
+    //   else {
+    //     setNodes((nds) =>
+    //       nds.map((n) =>
+    //         n.id === clickedNode.id ? { ...n, selected: false } : n
+    //       )
+    //     );
+    //   }
+    // }
+    // else {
       setNodes((nds) =>
         nds.map((n) =>
-          n.id === clickedNode.id ? { ...n, selected: !n.selected } : n
+          n.id === clickedNode.id ? { ...n, selected: !n.selected } : { ...n, selected: false }
         )
       );
     }
@@ -331,6 +338,26 @@ function FeatureModelEditor({ isReadOnly = false }) {
     ? edges
     : edges.filter(e => e.data?.liaisonType !== "transverse");
 
+  const [hoveredNodeId, setHoveredNodeId] = useState(null);
+
+  const enrichedNodes = nodes.map(n => ({
+    ...n,
+    className: n.data.configStatus === 'included' ? 'node-included'
+      : n.data.configStatus === 'excluded' ? 'node-excluded'
+        : '',
+    data: {
+      ...n.data,
+      isReadOnly,
+      onConfigChange: (nodeId, status) => {
+        setNodes(nds => nds.map(nd =>
+          nd.id === nodeId
+            ? { ...nd, data: { ...nd.data, configStatus: nd.data.configStatus === status ? null : status } }
+            : nd
+        ));
+      }
+    }
+  }));
+
 
   return (
     <div style={{ display: 'flex', width: '100%', height: 'calc(100vh - 80px)', position: 'relative' }}>
@@ -363,7 +390,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         style={{ flex: 1, minWidth: 0 }}
       >
         <ReactFlow
-          nodes={nodes}
+          nodes={enrichedNodes}
           edges={visibleEdges}
           nodeTypes={nodeTypes}
           onNodesChange={isReadOnly ? undefined : handleNodesChange}
@@ -379,12 +406,9 @@ function FeatureModelEditor({ isReadOnly = false }) {
           fitView
           nodesDraggable={!isReadOnly}
           nodesConnectable={!isReadOnly}
-          elementsSelectable={true}
           onDelete={isReadOnly ? undefined : onDelete}
-          multiSelectionKeyCode={null}
           onNodeClick={onNodeClick}
-          deselectOnClick={false}
-        >
+          >
           <Controls position="top-right" showInteractive={!isReadOnly}>
             <ControlButton
               title="Annuler"

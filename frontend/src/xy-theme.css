@@ -161,3 +161,15 @@
   align-items: center;
   text-align: center;
 }
+
+.react-flow__node-feature.node-included {
+  background-color: #dcfce7;
+  border-color: #22c55e;
+  border-width: 2px;
+}
+
+.react-flow__node-feature.node-excluded {
+  background-color: #fee2e2;
+  border-color: #ef4444;
+  border-width: 2px;
+}
