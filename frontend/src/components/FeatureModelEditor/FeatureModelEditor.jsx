@@ -541,7 +541,6 @@ function FeatureModelEditor({ isReadOnly = false }) {
               if (!isExclusion) {
                 edgeMarkers = {
                   markerEnd: { type: MarkerType.ArrowClosed, color: "#5b8dee", width: 18, height: 18 },
-                  markerStart: { type: MarkerType.ArrowClosed, orient: "auto-start-reverse", color: "#d9534f", width: 18, height: 18 },
                 };
               }
 
