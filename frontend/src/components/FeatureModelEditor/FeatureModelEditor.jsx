@@ -672,7 +672,7 @@ const onNodeClick = useCallback((event, clickedNode) => {
                   <ul style={{ paddingLeft: '20px', fontSize: '14px', listStyleType: 'disc' }}>
                     {excludesEdges.map(edge => (
                       <li key={edge.id} style={{ marginBottom: '4px' }}>
-                        <strong>{nodeMap[edge.source]}</strong> exclut <strong>{nodeMap[edge.target]}</strong>
+                        <strong>{nodeMap[edge.source]}</strong> et <strong>{nodeMap[edge.target]}</strong> sont incompatibles
                       </li>
                     ))}
                   </ul>
