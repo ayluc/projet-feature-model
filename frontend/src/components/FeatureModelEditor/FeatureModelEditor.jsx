@@ -56,30 +56,38 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
   const { toObject } = useReactFlow();
 
-  const onNodeClick = useCallback((event, clickedNode) => {
+  const onNodeClick = useCallback((event, clickedNode) => {    
     if (isReadOnly) {
-      const ancestorsIds = new Set();
-      const getAncestors = (currentId) => {
-        edges.forEach((edge) => {
-          if (edge.target === currentId && !ancestorsIds.has(edge.source)) {
-            ancestorsIds.add(edge.source);
-            getAncestors(edge.source);
-          }
-        });
-      };
-      getAncestors(clickedNode.id);
+      if (!clickedNode.selected) {
+        const ancestorsIds = new Set();
+        const getAncestors = (currentId) => {
+          edges.forEach((edge) => {
+            if (edge.target === currentId && !ancestorsIds.has(edge.source)) {
+              ancestorsIds.add(edge.source);
+              getAncestors(edge.source);
+            }
+          });
+        };
+        getAncestors(clickedNode.id);
 
-      const targetIds = [clickedNode.id, ...Array.from(ancestorsIds)];
-      const willBeSelected = !clickedNode.selected;
+        const targetIds = [clickedNode.id, ...Array.from(ancestorsIds)];
 
-      setNodes((nds) =>
-        nds.map((n) => {
-          if (targetIds.includes(n.id)) {
-            return { ...n, selected: willBeSelected };
-          }
-          return n; 
-        })
-      );
+        setNodes((nds) =>
+          nds.map((n) => {
+            if (targetIds.includes(n.id)) {
+              return { ...n, selected: true }; 
+            }
+            return n; 
+          })
+        );
+      } 
+      else {
+        setNodes((nds) =>
+          nds.map((n) =>
+            n.id === clickedNode.id ? { ...n, selected: false } : n
+          )
+        );
+      }
     } 
     else {
       setNodes((nds) =>
