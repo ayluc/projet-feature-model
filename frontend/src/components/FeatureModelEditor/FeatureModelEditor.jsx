@@ -188,7 +188,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         console.log("Connection mandatory détectée, création sans popup");
         onConnect({
           ...connectionWithId,
-          data: { isMandatory: true },
+          data: { liaisonType: "simple", isMandatory: true },
           style: {
             strokeWidth: 2.5,
             strokeDasharray: "none",
@@ -201,10 +201,38 @@ function FeatureModelEditor({ isReadOnly = false }) {
         console.log("Connection optional détectée, création sans popup");
         onConnect({
           ...connectionWithId,
-          data: { isMandatory: false },
+          data: { liaisonType: "simple", isMandatory: false },
           style: {
             strokeWidth: 2,
             strokeDasharray: "6 3",
+          },
+        });
+        return;
+      }
+
+      if (arcType === "requires") {
+        console.log("Connection requires détectée, création sans popup");
+        onConnect({
+          ...connectionWithId,
+          data: { liaisonType: "transverse", isExclusion: false },
+          style: {
+            strokeWidth: 2,
+            strokeDasharray: "8 3",
+            stroke: "#5b8dee",
+          },
+        });
+        return;
+      }
+
+      if (arcType === "excludes") {
+        console.log("Connection excludes détectée, création sans popup");
+        onConnect({
+          ...connectionWithId,
+          data: { liaisonType: "transverse", isExclusion:true},
+          style: {
+            strokeWidth: 2,
+            strokeDasharray: "2 4",
+            stroke: "#d9534f",
           },
         });
         return;
@@ -216,7 +244,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         linkSource: connection.source,
         linkTarget: connection.target,
         pendingConnection: connectionWithId,
-        isTransverseAllowed: !restrictedTypes.includes(sourceNode?.type) && !restrictedTypes.includes(targetNode?.type), // ← ajout
+        isTransverseAllowed: !restrictedTypes.includes(sourceNode?.type) && !restrictedTypes.includes(targetNode?.type),
       });
       setMenu(null);
     },

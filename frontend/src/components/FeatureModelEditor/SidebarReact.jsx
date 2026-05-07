@@ -114,6 +114,28 @@ export default () => {
           />
           Optionnel
         </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
+          <input
+            type="radio"
+            name="arcType"
+            value="requires"
+            checked={arcType === "requires"}
+            onChange={() => { }}
+            onClick={() => handleChange("requires")}
+          />
+          Dépendance
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
+          <input
+            type="radio"
+            name="arcType"
+            value="excludes"
+            checked={arcType === "excludes"}
+            onChange={() => { }}
+            onClick={() => handleChange("excludes")}
+          />
+          Exclusion
+        </label>
       </div>
 
       <h4 className="text-sm font-semibold mb-2 text-[#6e6d68] uppercase tracking-wide">Réorganisation</h4>
