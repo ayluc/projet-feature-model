@@ -58,15 +58,15 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
   let edgeMarkers = {};
 
-const onNodeClick = useCallback((event, clickedNode) => {
-  event.stopPropagation();
-  
+  const onNodeClick = useCallback((event, clickedNode) => {
+    event.stopPropagation();
+
     setNodes((nds) =>
       nds.map((n) =>
         n.id === clickedNode.id ? { ...n, selected: !n.selected } : { ...n, selected: false }
       )
     );
-}, [setNodes, isReadOnly]);
+  }, [setNodes, isReadOnly]);
 
 
   const getNextNodeId = useCallback(() => {
@@ -267,13 +267,13 @@ const onNodeClick = useCallback((event, clickedNode) => {
   );
 
   const handleNodesChange = useCallback((changes) => {
-  const isMinorChange = changes.every(
-    (c) => c.type === 'select' || c.type === 'dimensions'
-  );
-  if (isMinorChange) pause();
+    const isMinorChange = changes.every(
+      (c) => c.type === 'select' || c.type === 'dimensions'
+    );
+    if (isMinorChange) pause();
 
-  const modifiedChanges = isReadOnly
-    ? changes.map((change) => {
+    const modifiedChanges = isReadOnly
+      ? changes.map((change) => {
         if (change.type === 'select' && !change.selected) {
           const node = nodes.find(n => n.id === change.id);
           if (node?.selected) {
@@ -282,11 +282,11 @@ const onNodeClick = useCallback((event, clickedNode) => {
         }
         return change;
       })
-    : changes;
+      : changes;
 
-  onNodesChange(modifiedChanges);
-  if (isMinorChange) resume();
-}, [onNodesChange, pause, resume, nodes, isReadOnly]);
+    onNodesChange(modifiedChanges);
+    if (isMinorChange) resume();
+  }, [onNodesChange, pause, resume, nodes, isReadOnly]);
 
 
   useEffect(() => {
@@ -672,7 +672,7 @@ const onNodeClick = useCallback((event, clickedNode) => {
                   <ul style={{ paddingLeft: '20px', fontSize: '14px', listStyleType: 'disc' }}>
                     {excludesEdges.map(edge => (
                       <li key={edge.id} style={{ marginBottom: '4px' }}>
-                        <strong>{nodeMap[edge.source]}</strong> exclut <strong>{nodeMap[edge.target]}</strong>
+                        <strong>{nodeMap[edge.source]}</strong> et <strong>{nodeMap[edge.target]}</strong> sont incompatibles
                       </li>
                     ))}
                   </ul>
