@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useState, useEffect } from "react";
+import React, { useRef, useCallback, useState, useEffect, useMemo } from "react";
 import { ReactFlow, Controls, Background, useReactFlow, ControlButton, MarkerType } from "@xyflow/react";
 import { Undo2, Redo2 } from "lucide-react";
 
@@ -312,42 +312,52 @@ function FeatureModelEditor({ isReadOnly = false }) {
     }
   }, [isReadOnly]);
 
-  const visibleEdges = isTransverseVisible
-    ? edges
-    : edges.filter(e => e.data?.liaisonType !== "transverse");
-
   const [hoveredNodeId, setHoveredNodeId] = useState(null);
 
-  const enrichedNodes = nodes.map(n => ({
-    ...n,
-    className: n.data.configStatus === 'included' ? 'node-included'
-      : n.data.configStatus === 'excluded' ? 'node-excluded'
-        : '',
-    data: {
-      ...n.data,
-      isReadOnly,
-      onConfigChange: (nodeId, status) => {
-        setNodes(nds => nds.map(nd =>
-          nd.id === nodeId
-            ? { ...nd, data: { ...nd.data, configStatus: nd.data.configStatus === status ? null : status } }
-            : nd
-        ));
+  const enrichedNodes = useMemo(() => {
+    return nodes.map(n => ({
+      ...n,
+      className: n.data.configStatus === 'included' ? 'node-included'
+        : n.data.configStatus === 'excluded' ? 'node-excluded'
+          : '',
+      data: {
+        ...n.data,
+        isReadOnly,
+        onConfigChange: (nodeId, status) => {
+          setNodes(nds => nds.map(nd =>
+            nd.id === nodeId
+              ? { ...nd, data: { ...nd.data, configStatus: nd.data.configStatus === status ? null : status } }
+              : nd
+          ));
+        }
       }
-    }
-  }));
+    }));
+  }, [nodes, isReadOnly, setNodes]);
 
-  const nodeMap = nodes.reduce((acc, node) => {
-    acc[node.id] = node.data?.label || `Nœud ${node.id}`;
-    return acc;
-  }, {});
+  const nodeMap = useMemo(() => {
+    return nodes.reduce((acc, node) => {
+      acc[node.id] = node.data?.label || `Nœud ${node.id}`;
+      return acc;
+    }, {});
+  }, [nodes]);
 
-  const requiresEdges = edges.filter(
-    (e) => e.data?.liaisonType === "transverse" && !e.data?.isExclusion
-  );
+  const visibleEdges = useMemo(() => {
+    return isTransverseVisible
+      ? edges
+      : edges.filter(e => e.data?.liaisonType !== "transverse");
+  }, [edges, isTransverseVisible]);
 
-  const excludesEdges = edges.filter(
-    (e) => e.data?.liaisonType === "transverse" && e.data?.isExclusion
-  );
+  const { requiresEdges, excludesEdges } = useMemo(() => {
+    const req = [];
+    const exc = [];
+    edges.forEach((e) => {
+      if (e.data?.liaisonType === "transverse") {
+        if (e.data?.isExclusion) exc.push(e);
+        else req.push(e);
+      }
+    });
+    return { requiresEdges: req, excludesEdges: exc };
+  }, [edges]);
 
   const [activeTab, setActiveTab] = useState("json");
 
