@@ -32,9 +32,68 @@ export default () => {
   const isTransverseVisible = useGraphStore((state) => state.isTransverseVisible);
   const setTransverseVisible = useGraphStore((state) => state.setTransverseVisible);
 
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+
   const handleNoeuds = () => {
     const { layoutedNodes } = getLayoutedElements(nodes, edges);
     setNodes(layoutedNodes);
+  };
+
+  const handleValidateModel = async () => {
+    const formattedNodes = nodes.map(node => {
+      const formattedNode = {
+        id: parseInt(node.id,10),
+        type: node.type
+      }
+
+      if(node.type === "cardinalite" && node.data)
+      {
+        formattedNode.cardinalityMax = parseInt(node.cardinalityMax, 10);
+        formattedNode.cardinalityMin = parseInt(node.cardinalityMin, 10);
+      }
+
+      return formattedNode;
+    });
+
+    const formattedEdges = edges.map(edge => {
+      const formattedEdge = {
+        id: parseInt(edge.id),
+        source: parseInt(edge.source),
+        target: parseInt(edge.target)
+      }
+
+      return formattedEdge;
+    });
+
+    const payload = {
+      nodes: formattedNodes,
+      edges: formattedEdges
+    };
+
+    try {
+      const response = await fetch('http://localhost:8080/validate-creation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur lors de la validation');
+      }
+      console.log(data);
+
+      setResult(data);
+      setError(null);
+    } catch (err) {
+      console.error("Erreur de communication avec le back:", err);
+      setError(err.message);
+      setResult(null);
+    }
   };
 
   return (
@@ -154,6 +213,13 @@ export default () => {
           <span className="toggle-slider" />
         </label>
       </div>
+
+      <h4 className="text-sm font-semibold mb-2 text-[#6e6d68] uppercase tracking-wide">Back-end</h4>
+      <Button variant="outline" onClick={handleValidateModel} className="reorganize-button mb-4">
+        Validation du graphe
+      </Button>
     </aside>
+
+    
   );
 };

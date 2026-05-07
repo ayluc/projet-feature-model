@@ -6,10 +6,12 @@ import (
 	"net/http"
 
 	"github.com/Malomalsky/go-minizinc"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 type NodeType string
+
 const (
 	NodeTypeCardinality NodeType = "cardinalite"
 	NodeTypeFeature     NodeType = "feature"
@@ -17,18 +19,21 @@ const (
 	NodeTypeOr          NodeType = "or"
 )
 
+type NodeId int
+
 type Node struct {
-	Id   int      `json:"id"   binding:"required,gte=0"`
-	Type NodeType `json:"type" binding:"required,oneof=cardinalite feature xor or"`
-	// TODO: Test these
-	CardinalityMin int `json:"cardinalityMin" binding:"required_if=Type cardinalite,gte=0"`
-	CandinalityMax int `json:"cardinalityMax" binding:"required_if=Type cardinalite,gte=0,gtefield=CardinalityMin"`
+	Id   NodeId        `json:"id"             binding:"required,gte=1"`
+	Type NodeType      `json:"type"           binding:"required,oneof=cardinalite feature xor or"`
+	CardinalityMin int `json:"cardinaliteMin" binding:"required_if=type cardinalite,gte=0"`
+	CandinalityMax int `json:"cardinaliteMax" binding:"required_if=type cardinalite,gtefield=CardinalityMin"`
 }
 
+type ArcId int
+
 type Arc struct {
-	Id       int `json:"id"     binding:"required,gte=0"`
-	SourceId int `json:"source" binding:"required,gte=0"`
-	TargetId int `json:"target" binding:"required,gte=0"`
+	Id       ArcId `json:"id"     binding:"required,gte=1"`
+	SourceId int   `json:"source" binding:"required,gte=1"`
+	TargetId int   `json:"target" binding:"required,gte=1"`
 }
 
 type FeatureModel struct {
@@ -37,12 +42,14 @@ type FeatureModel struct {
 }
 
 const (
-	EndpointPing = "/ping"
+	EndpointPing             = "/ping"
 	EndpointValidateCreation = "/validate-creation"
 )
 
 func SetupRouter() *gin.Engine {
 	router := gin.Default()
+
+	router.Use(cors.Default())
 
 	router.GET(EndpointPing, func(c *gin.Context) {
 		c.Data(http.StatusOK, "text/plain", nil)
@@ -80,7 +87,6 @@ func main() {
 	fmt.Printf("Solver loaded: %s\n", solver.Name)
 
 	router := SetupRouter()
-
 	// TODO: Read the url from the CLI
 	router.Run("localhost:8080")
 }
