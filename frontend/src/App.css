@@ -25,13 +25,11 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  overflow: hidden;
 }
 
 .dndflow .reactflow-wrapper {
   flex-grow: 1;
   height: calc(100vh - 80px);
-  /* 80px = hauteur approximative de ta Toolbar */
   width: 100%;
   min-height: 0;
   max-height: 100%;
@@ -44,12 +42,10 @@ body {
   padding: 15px 10px;
   font-size: 12px;
   background: #fcfcfc;
-  overflow: hidden;
-  /* déjà présent ✓ */
-  max-height: 100vh;
-  /* ajouter */
+  overflow-y: auto;
+  height: 100%;
   box-sizing: border-box;
-  /* ajouter */
+  padding-bottom: 100px;
 }
 
 .dndflow aside .description {
@@ -406,3 +402,6 @@ body {
   transform: translateX(16px);
 }
 
+#scrollable {
+  overflow-y: scroll;
+}

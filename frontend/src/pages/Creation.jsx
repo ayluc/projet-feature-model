@@ -7,7 +7,7 @@ function Creation() {
   return (
     <div>
         <div className="dndflow">
-            <Sidebar />
+            <Sidebar/>
             <FeatureModelEditor/>
         </div>
     </div>
