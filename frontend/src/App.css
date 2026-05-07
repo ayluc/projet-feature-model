@@ -289,7 +289,7 @@ body {
   z-index: 10;
 }
 
-.mandatory-legende-item {
+.line-legende-item {
   display: flex; 
   flex-direction: column; 
   margin-bottom: 5px;
@@ -302,7 +302,7 @@ body {
   border-radius: 5px;
 }
 
-.line-solid {
+.mandatory-line-solid {
   border: none;
   border-top: 3px solid #b1b1b7;
   margin: 4px 0 0 0;
@@ -322,13 +322,51 @@ body {
   border-radius: 5px;
 }
 
-.line-dotted {
+.optional-line-dotted {
   border: none;
   border-top: 3px dashed #b1b1b7;
   margin: 4px 0 0 0;
 }
 
-.line-solid, .line-dotted {
+.dependancy-legende-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: rgb(255, 255, 255, 0);
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-bottom: 5px;
+  z-index: 10;
+  border: solid 2px rgb(255, 255, 255, 0);
+  border-radius: 5px;
+}
+
+.dependancy-line-dotted {
+  border: none;
+  border-top: 3px dashed #5b8dee;
+  margin: 4px 0 0 0;
+}
+
+.incompatibility-legende-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: rgb(255, 255, 255, 0);
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-bottom: 5px;
+  z-index: 10;
+  border: solid 2px rgb(255, 255, 255, 0);
+  border-radius: 5px;
+}
+
+.incompatibility-line-dotted {
+  border: none;
+  border-top: 3px dotted #d9534f;
+  margin: 4px 0 0 0;
+}
+
+.mandatory-line-solid, .optional-line-dotted, .incompatibility-line-dotted, .dependancy-line-dotted {
   width: 100%;
 }
 
@@ -341,7 +379,9 @@ body {
 .feature-legende-item,
 .operator-legende-item,
 .mandatory-legende-item,
-.optional-legende-item {
+.optional-legende-item,
+.inclusion-legende-item,
+.exclusion-legende-item {
   margin-bottom: 8px;
 }
 

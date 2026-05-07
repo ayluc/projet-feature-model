@@ -107,13 +107,21 @@ export default () => {
         <div className="operator-legende-item">
           <span className="legende-label">Noeud opérateur</span>
         </div>
-        <div className="mandatory-legende-item">
+        <div className="line-legende-item">
           <span className="legende-label">Arc obligatoire</span>
-          <hr className="line-solid" />
+          <hr className="mandatory-line-solid" />
         </div>
-        <div className="optional-legende-item">
+        <div className="line-legende-item">
           <span className="legende-label">Arc optionnel</span>
-          <hr className="line-dotted" />
+          <hr className="optional-line-dotted" />
+        </div>
+        <div className="line-legende-item">
+          <span className="legende-label">Arc de dépendance (source → target)</span>
+          <hr className="dependancy-line-dotted" />
+        </div>
+        <div className="line-legende-item">
+          <span className="legende-label">Arc d'incompatibilité</span>
+          <hr className="incompatibility-line-dotted" />
         </div>
       </div>
 
