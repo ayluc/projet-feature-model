@@ -40,6 +40,7 @@ func TestValidateCreation(t *testing.T) {
 	// --- Table driven test for bad payloads
 
 	payloadsBad := []string{
+		// Not json
 		"Not json",
 
 		// Wrong type
@@ -65,6 +66,71 @@ func TestValidateCreation(t *testing.T) {
 			]
 		 }`,
 
+		// Missing node id
+		`{
+			"nodes": [
+				{ "type": "feature" }
+			],
+			"edges": []
+		 }`,
+
+		// Node has multiple in-arcs
+		`{
+			"nodes": [
+				{ "id": 1, "type": "feature" },
+				{ "id": 2, "type": "feature" },
+				{ "id": 3, "type": "feature" }
+			],
+			"edges": [
+				{ "id": 1, "source": 1, "target": 2 },
+				{ "id": 2, "source": 3, "target": 2 }
+			]
+		 }`,
+
+		// Node id must be gte 1
+		`{
+			"nodes": [
+				{ "id": 0, "type": "feature" },
+				{ "id": 2, "type": "feature" }
+			],
+			"edges": [
+				{ "id": 1, "source": 1, "target": 2 }
+			]
+		 }`,
+
+		// Node id must be gte 1 (negative)
+		`{
+			"nodes": [
+				{ "id": -1, "type": "feature" },
+				{ "id": 2, "type": "feature" }
+			],
+			"edges": [
+				{ "id": 1, "source": 1, "target": 2 }
+			]
+		 }`,
+
+		// Node cardinaliteMin must be gte 0 if type is cardinalite
+		`{
+			"nodes": [
+				{ "id": 1, "type": "feature" },
+				{ "id": 2, "type": "cardinalite", "cardinaliteMin": -1, "cardinaliteMax": 5 }
+			],
+			"edges": [
+				{ "id": 1, "source": 1, "target": 2 }
+			]
+		 }`,
+
+		// Node cardinaliteMax must be gte cardinaliteMin if type is cardinalite
+		`{
+			"nodes": [
+				{ "id": 1, "type": "feature" },
+				{ "id": 2, "type": "cardinalite", "cardinaliteMin": 5, "cardinaliteMax": 3 }
+			],
+			"edges": [
+				{ "id": 1, "source": 1, "target": 2 }
+			]
+		 }`,
+
 		// Duplicate Arc id
 		`{
 			"nodes": [
@@ -78,31 +144,18 @@ func TestValidateCreation(t *testing.T) {
 			]
 		 }`,
 
-		// Node has multpile in-arcs
+		// Arc id must be gte 1
 		`{
 			"nodes": [
 				{ "id": 1, "type": "feature" },
-				{ "id": 2, "type": "feature" },
-				{ "id": 3, "type": "feature" }
-			],
-			"edges": [
-				{ "id": 1, "source": 1, "target": 2 },
-				{ "id": 2, "source": 3, "target": 2 }
-			]
-		 }`,
-
-		// Node id must be gte 0
-		`{
-			"nodes": [
-				{ "id": -1, "type": "feature" },
 				{ "id": 2, "type": "feature" }
 			],
 			"edges": [
-				{ "id": 1, "source": -1, "target": 2 }
+				{ "id": 0, "source": 1, "target": 2 }
 			]
 		 }`,
 
-		// Arc id must be gte 0
+		// Arc id must be gte 1 (negative)
 		`{
 			"nodes": [
 				{ "id": 1, "type": "feature" },
@@ -113,7 +166,18 @@ func TestValidateCreation(t *testing.T) {
 			]
 		 }`,
 
-		// Arc source id must be gte 0
+		// Arc source id must be gte 1
+		`{
+			"nodes": [
+				{ "id": 1, "type": "feature" },
+				{ "id": 2, "type": "feature" }
+			],
+			"edges": [
+				{ "id": 1, "source": 0, "target": 2 }
+			]
+		 }`,
+
+		// Arc source id must be gte 1 (negative)
 		`{
 			"nodes": [
 				{ "id": 1, "type": "feature" },
@@ -124,7 +188,18 @@ func TestValidateCreation(t *testing.T) {
 			]
 		 }`,
 
-		// Arc target id must be gte 0
+		// Arc target id must be gte 1
+		`{
+			"nodes": [
+				{ "id": 1, "type": "feature" },
+				{ "id": 2, "type": "feature" }
+			],
+			"edges": [
+				{ "id": 1, "source": 1, "target": 0 }
+			]
+		 }`,
+
+		// Arc target id must be gte 1 (negative)
 		`{
 			"nodes": [
 				{ "id": 1, "type": "feature" },
@@ -136,13 +211,14 @@ func TestValidateCreation(t *testing.T) {
 		 }`,
 	}
 
+
 	for i := range payloadsBad {
 		recorder   := httptest.NewRecorder()
 		request, _ := http.NewRequest("POST", endpoint, strings.NewReader(payloadsBad[i]))
 		router.ServeHTTP(recorder, request)
 
 		errMsg := fmt.Sprintf("Case: %d\nPayload:\n%s\nResponse:\n%s\n", i, payloadsBad[i], recorder.Body.String())
-		// assert.Equal(t, http.StatusOK, recorder.Code, errMsg)
+		// assert.Equal(t, http.StatusOK, recorder.Code, errMsg) // Use this to verify the kind of error
 		assert.Equal(t, http.StatusBadRequest, recorder.Code, errMsg)
 		assertBodyNotEmpty(t, recorder)
 	}
@@ -160,19 +236,108 @@ func TestValidateCreation(t *testing.T) {
 	// --- Table driven test for correct payloads
 
 	payloadsOk := []string{
-		`{"nodes": [], "edges": []}`,
+	// Empty graph
+	`{"nodes": [], "edges": []}`,
 
-		`{
-			"nodes": [
-			  { "id": 1, "type": "feature" },
-			  { "id": 2, "type": "or"      },
-			  { "id": 3, "type": "xor"     }
-			],
-			"edges": [
-			  { "id": 1, "source": 1, "target": 2 },
-			  { "id": 2, "source": 1, "target": 3 }
-			]
-		 }`,
+	// Valid types
+	`{
+		"nodes": [
+			{ "id": 1, "type": "feature" },
+			{ "id": 2, "type": "or"      },
+			{ "id": 3, "type": "xor"     }
+		],
+		"edges": [
+			{ "id": 1, "source": 1, "target": 2 },
+			{ "id": 2, "source": 1, "target": 3 }
+		]
+	 }`,
+
+	// Valid cardinalite type with valid min/max
+	`{
+		"nodes": [
+			{ "id": 1, "type": "feature" },
+			{ "id": 2, "type": "cardinalite", "cardinaliteMin": 0, "cardinaliteMax": 5 }
+		],
+		"edges": [
+			{ "id": 1, "source": 1, "target": 2 }
+		]
+	 }`,
+
+	// Valid cardinalite with min equal to max
+	`{
+		"nodes": [
+			{ "id": 1, "type": "feature" },
+			{ "id": 2, "type": "cardinalite", "cardinaliteMin": 3, "cardinaliteMax": 3 }
+		],
+		"edges": [
+			{ "id": 1, "source": 1, "target": 2 }
+		]
+	 }`,
+
+	// Node id at boundary 1
+	`{
+		"nodes": [
+			{ "id": 1, "type": "feature" },
+			{ "id": 2, "type": "feature" }
+		],
+		"edges": [
+			{ "id": 3, "source": 1, "target": 2 }
+		]
+	 }`,
+
+	// Arc id at boundary 1
+	`{
+		"nodes": [
+			{ "id": 2, "type": "feature" },
+			{ "id": 3, "type": "feature" }
+		],
+		"edges": [
+			{ "id": 1, "source": 2, "target": 3 }
+		]
+	 }`,
+
+	// Arc source at boundary 1
+	`{
+		"nodes": [
+			{ "id": 1, "type": "feature" },
+			{ "id": 2, "type": "feature" }
+		],
+		"edges": [
+			{ "id": 3, "source": 1, "target": 2 }
+		]
+	 }`,
+
+	// Arc target at boundary 1
+	`{
+		"nodes": [
+			{ "id": 2, "type": "feature" },
+			{ "id": 1, "type": "feature" }
+		],
+		"edges": [
+			{ "id": 3, "source": 2, "target": 1 }
+		]
+	 }`,
+
+	// Single node with no edges
+	`{
+		"nodes": [
+			{ "id": 1, "type": "feature" }
+		],
+		"edges": []
+	 }`,
+
+	// Multiple edges from same source to different targets
+	`{
+		"nodes": [
+			{ "id": 1, "type": "feature" },
+			{ "id": 2, "type": "feature" },
+			{ "id": 3, "type": "feature" }
+		],
+		"edges": [
+			{ "id": 1, "source": 1, "target": 2 },
+			{ "id": 2, "source": 1, "target": 3 }
+		]
+	 }`,
 	}
 
 	for i := range payloadsOk {

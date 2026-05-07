@@ -19,18 +19,21 @@ const (
 	NodeTypeOr          NodeType = "or"
 )
 
+type NodeId int
+
 type Node struct {
-	Id   int      `json:"id"   binding:"required,gte=0"`
-	Type NodeType `json:"type" binding:"required,oneof=cardinalite feature xor or"`
-	// TODO: Test these
-	CardinalityMin int `json:"cardinalityMin" binding:"required_if=Type cardinalite,gte=0"`
-	CandinalityMax int `json:"cardinalityMax" binding:"required_if=Type cardinalite,gte=0,gtefield=CardinalityMin"`
+	Id   NodeId        `json:"id"             binding:"required,gte=1"`
+	Type NodeType      `json:"type"           binding:"required,oneof=cardinalite feature xor or"`
+	CardinalityMin int `json:"cardinaliteMin" binding:"required_if=type cardinalite,gte=0"`
+	CandinalityMax int `json:"cardinaliteMax" binding:"required_if=type cardinalite,gtefield=CardinalityMin"`
 }
 
+type ArcId int
+
 type Arc struct {
-	Id       int `json:"id"     binding:"required,gte=0"`
-	SourceId int `json:"source" binding:"required,gte=0"`
-	TargetId int `json:"target" binding:"required,gte=0"`
+	Id       ArcId `json:"id"     binding:"required,gte=1"`
+	SourceId int   `json:"source" binding:"required,gte=1"`
+	TargetId int   `json:"target" binding:"required,gte=1"`
 }
 
 type FeatureModel struct {
