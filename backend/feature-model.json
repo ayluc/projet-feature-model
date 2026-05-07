@@ -140,7 +140,7 @@
         "label": "Essence",
         "isMandatory": false
       },
-      "className": "optionnal",
+      "className": "optional",
       "measured": {
         "width": 68,
         "height": 49
@@ -157,7 +157,7 @@
         "label": "Elec",
         "isMandatory": false
       },
-      "className": "optionnal",
+      "className": "optional",
       "measured": {
         "width": 50,
         "height": 49
@@ -195,7 +195,7 @@
         "label": "Siege chauffant",
         "isMandatory": false
       },
-      "className": "optionnal",
+      "className": "optional",
       "measured": {
         "width": 105,
         "height": 49
@@ -233,7 +233,7 @@
         "label": "Self driving",
         "isMandatory": false
       },
-      "className": "optionnal",
+      "className": "optional",
       "measured": {
         "width": 81,
         "height": 49
@@ -271,7 +271,7 @@
         "label": "Ecran",
         "isMandatory": false
       },
-      "className": "optionnal",
+      "className": "optional",
       "measured": {
         "width": 53,
         "height": 49

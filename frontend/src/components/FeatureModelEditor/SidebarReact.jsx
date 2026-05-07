@@ -115,7 +115,7 @@ export default () => {
           <span className="legende-label">Arc obligatoire</span>
           <hr className="line-solid" />
         </div>
-        <div className="optionnal-legende-item">
+        <div className="optional-legende-item">
           <span className="legende-label">Arc optionnel</span>
           <hr className="line-dotted" />
         </div>
@@ -176,6 +176,28 @@ export default () => {
             onClick={() => handleChange("optional")}
           />
           Optionnel
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
+          <input
+            type="radio"
+            name="arcType"
+            value="requires"
+            checked={arcType === "requires"}
+            onChange={() => { }}
+            onClick={() => handleChange("requires")}
+          />
+          Dépendance
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
+          <input
+            type="radio"
+            name="arcType"
+            value="excludes"
+            checked={arcType === "excludes"}
+            onChange={() => { }}
+            onClick={() => handleChange("excludes")}
+          />
+          Exclusion
         </label>
       </div>
 
