@@ -1,3 +1,4 @@
+import { UndoIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
@@ -9,12 +10,33 @@ export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
   useEffect(() => {
     if (popup) {
       if (popup.linkId) {
-        setIsMandatory(popup.data?.isMandatory !== undefined ? String(popup.data.isMandatory) : null);
+        const typeLiaison = popup.data?.liaisonType || null;
+
+        setLiaisonType(typeLiaison);
+
+        if(typeLiaison === "simple")
+        {
+          setIsMandatory(popup.data?.isMandatory !== undefined ? String(popup.data.isMandatory) : null);
+          setIsExclusion(null);
+        }
+        else if (typeLiaison === "transverse")
+        {
+          setIsMandatory(null);
+          setIsExclusion(popup.data?.isExclusion !== undefined ? String(popup.data.isMandatory) : null);
+        }
+        else
+        {
+          setIsMandatory(null);
+          setIsExclusion(null);
+        }
+
+
       } else {
         setIsMandatory(null);
+        setLiaisonType(null);
+        setIsExclusion(null);
       }
-      setLiaisonType(null);
-      setIsExclusion(null);
+
       setError("");
     }
   }, [popup]);

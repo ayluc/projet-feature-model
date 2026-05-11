@@ -560,6 +560,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
                 strokeWidth: isMandatory ? 2.5 : 2,
                 strokeDasharray: isMandatory ? "none" : "6 3",
               };
+              edgeMarkers = {markerEnd: null};
             } else if (liaisonType === "transverse") {
               edgeData = { liaisonType: "transverse", isExclusion };
               edgeStyle = {
@@ -567,35 +568,32 @@ function FeatureModelEditor({ isReadOnly = false }) {
                 strokeDasharray: isExclusion ? "2 4" : "8 3",
                 stroke: isExclusion ? "#d9534f" : "#5b8dee",
               };
-              if (!isExclusion) {
-                edgeMarkers = isExclusion
-                  ? { markerEnd: undefined }                                                         
-                  : { markerEnd: { type: MarkerType.ArrowClosed, color: "#5b8dee", width: 18, height: 18 } };
-              }
-
-              // Cas modification via clic droit
-              if (popup?.linkId && !popup?.pendingConnection) {
-                setEdges((eds) =>
-                  eds.map((e) =>
-                    e.id === popup.linkId
-                      ? { ...e, data: { ...e.data, ...edgeData }, style: edgeStyle, markerEnd: isExclusion ? null : { type: MarkerType.ArrowClosed, color: "#5b8dee", width: 18, height: 18 }, }
-                      : e
-                  )
-                );
-                setPopup(null);
-                return;
-              }
-
-              // Cas création via drag de connexion
-              if (!popup?.pendingConnection) return;
-              onConnect({
-                ...popup.pendingConnection,
-                data: edgeData,
-                style: edgeStyle,
-                ...edgeMarkers
-              });
-              setPopup(null);
+              edgeMarkers = isExclusion
+                ? { markerEnd: null }                                                         
+                : { markerEnd: { type: MarkerType.ArrowClosed, color: "#5b8dee", width: 18, height: 18 } };
             }
+            // Cas modification via clic droit
+            if (popup?.linkId && !popup?.pendingConnection) {
+              setEdges((eds) =>
+                eds.map((e) =>
+                  e.id === popup.linkId
+                    ? { ...e, data: { ...e.data, ...edgeData }, style: edgeStyle, ...edgeMarkers}
+                    : e
+                )
+              );
+              setPopup(null);
+              return;
+            }
+
+            // Cas création via drag de connexion
+            if (!popup?.pendingConnection) return;
+            onConnect({
+              ...popup.pendingConnection,
+              data: edgeData,
+              style: edgeStyle,
+              ...edgeMarkers
+            });
+            setPopup(null);
           }}
         />
       </div>
