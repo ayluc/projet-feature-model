@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"html/template"
+
 	//"log"
-	"net/http"
-	"os"
 	"encoding/json"
+	"net/http"
 	"os"
 
 	// "github.com/Malomalsky/go-minizinc"
@@ -35,10 +35,10 @@ type Node struct {
 type ArcId int
 
 type Arc struct {
-	Id       ArcId `json:"id"     binding:"required,gte=1"`
-	SourceId int   `json:"source" binding:"required,gte=1"`
-	TargetId int   `json:"target" binding:"required,gte=1"`
-	Type    string `json:"type"   binding:"required,oneof=mandatory optional dependancy exclusion"`
+	Id       ArcId  `json:"id"     binding:"required,gte=1"`
+	SourceId int    `json:"source" binding:"required,gte=1"`
+	TargetId int    `json:"target" binding:"required,gte=1"`
+	Type     string `json:"type"   binding:"required,oneof=mandatory optional dependancy exclusion"`
 }
 
 type FeatureModel struct {
@@ -152,21 +152,21 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Usage: graphparser <input.json> [output.txt]")
 		os.Exit(1)
 	}
- 
+
 	data, err := os.ReadFile(os.Args[1])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Lecture impossible : %v\n", err)
 		os.Exit(1)
 	}
- 
+
 	var fm FeatureModel
 	if err := json.Unmarshal(data, &fm); err != nil {
 		fmt.Fprintf(os.Stderr, "JSON invalide : %v\n", err)
 		os.Exit(1)
 	}
- 
+
 	result := Convert(fm)
- 
+
 	if len(os.Args) >= 3 {
 		if err := os.WriteFile(os.Args[2], []byte(result), 0644); err != nil {
 			fmt.Fprintf(os.Stderr, "Écriture impossible : %v\n", err)
@@ -177,4 +177,3 @@ func main() {
 		fmt.Print(result)
 	}
 }
-
