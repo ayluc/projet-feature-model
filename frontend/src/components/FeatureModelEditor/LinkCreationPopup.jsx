@@ -1,4 +1,3 @@
-import { UndoIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
@@ -6,6 +5,8 @@ export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
   const [isMandatory, setIsMandatory] = useState(null);
   const [isExclusion, setIsExclusion] = useState(null);
   const [error, setError] = useState("");
+
+  const isEditing = Boolean(popup?.linkId);
 
   useEffect(() => {
     if (popup) {
@@ -98,12 +99,13 @@ export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
 
         {/* Parent 1 — Liaison simple */}
-        <label style={labelStyle(true)}>
+        <label style={isEditing ? (labelStyle(liaisonType === "simple")) : (labelStyle(true))}>
           <input
             type="radio"
             name="liaisonType"
             value="simple"
             checked={liaisonType === "simple"}
+            disabled={liaisonType !== "simple" && isEditing}
             onChange={() => { setLiaisonType("simple"); setIsExclusion(null); }}
           />
           Liaison simple
@@ -135,12 +137,13 @@ export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
         </div>
 
         {/* Parent 2 — Liaison transverse */}
-        <label style={labelStyle(true)}>
+        <label style={isEditing ? (labelStyle(liaisonType === "transverse")) : (labelStyle(true))}>
           <input
             type="radio"
             name="liaisonType"
             value="transverse"
             checked={liaisonType === "transverse"}
+            disabled={liaisonType !== "transverse" && isEditing}
             onChange={() => { setLiaisonType("transverse"); setIsMandatory(null); }}
           />
           Liaison transverse
