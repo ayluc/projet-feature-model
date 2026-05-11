@@ -83,14 +83,20 @@ func SetupRouter() *gin.Engine {
 	router.POST(EndpointValidateCreation, func(c *gin.Context) {
 		var req FeatureModel
 		err := c.ShouldBindJSON(&req)
-		fmt.Println(Convert(req))
 		if err != nil {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		// TODO: validate the feature model using the solver
+		result := Convert(req)
+		fmt.Println(result) // log terminal
 
+		if err := os.WriteFile("feature-model.dzn", []byte(result), 0644); err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "impossible d'écrire feature-model.dzn: " + err.Error()})
+			return
+		}
+
+		// TODO: validate the feature model using the solver
 		c.IndentedJSON(http.StatusOK, gin.H{
 			"valid":     true,
 			"nodeCount": len(req.Nodes),
