@@ -76,8 +76,8 @@ const minizincTemplate = `
 include "FM.mzn";
 {{ range .Nodes }}
 {{ if ne .Status "" }}
-constraint x[{{ .Id }}] == true;
-constraint y[{{ .Id }}] == {{ if eq .Status "included" }}true{{ else }}false{{ end }};
+constraint isActivated[{{ .Id }}] == true;
+constraint isIncluded[{{ .Id }}] == {{ if eq .Status "included" }}true{{ else }}false{{ end }};
 {{ end }}
 {{ end }}
 `
