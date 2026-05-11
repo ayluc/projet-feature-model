@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
+	//"log"
 	"net/http"
+	"os"
+	"encoding/json"
 
-	"github.com/Malomalsky/go-minizinc"
+	// "github.com/Malomalsky/go-minizinc"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -34,6 +36,7 @@ type Arc struct {
 	Id       ArcId `json:"id"     binding:"required,gte=1"`
 	SourceId int   `json:"source" binding:"required,gte=1"`
 	TargetId int   `json:"target" binding:"required,gte=1"`
+	Type    string `json:"type"   binding:"required,oneof=mandatory optional dependancy exclusion"`
 }
 
 type FeatureModel struct {
@@ -58,6 +61,7 @@ func SetupRouter() *gin.Engine {
 	router.POST(EndpointValidateCreation, func(c *gin.Context) {
 		var req FeatureModel
 		err := c.ShouldBindJSON(&req)
+		fmt.Println(Convert(req))
 		if err != nil {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -75,18 +79,54 @@ func SetupRouter() *gin.Engine {
 	return router
 }
 
-func main() {
-	// For the library to find the solver a minizinc solver config file must
-	// be created at ~/.minizinc/solvers/<your_solver_config>.msc
-	// XDG standard is not supported :(
-	solver, err := minizinc.FindSolver("Gecode")
-	if err != nil {
-		log.Fatal(err)
-	}
+// func main() {
+// 	// For the library to find the solver a minizinc solver config file must
+// 	// be created at ~/.minizinc/solvers/<your_solver_config>.msc
+// 	// XDG standard is not supported :(
+// 	solver, err := minizinc.FindSolver("Gecode")
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	fmt.Printf("Solver loaded: %s\n", solver.Name)
+// 	fmt.Printf("Solver loaded: %s\n", solver.Name)
+
+// 	router := SetupRouter()
+// 	// TODO: Read the url from the CLI
+// 	router.Run("localhost:8080")
+// }
+
+func main() {
 
 	router := SetupRouter()
 	// TODO: Read the url from the CLI
 	router.Run("localhost:8080")
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "Usage: graphparser <input.json> [output.txt]")
+		os.Exit(1)
+	}
+ 
+	data, err := os.ReadFile(os.Args[1])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Lecture impossible : %v\n", err)
+		os.Exit(1)
+	}
+ 
+	var fm FeatureModel
+	if err := json.Unmarshal(data, &fm); err != nil {
+		fmt.Fprintf(os.Stderr, "JSON invalide : %v\n", err)
+		os.Exit(1)
+	}
+ 
+	result := Convert(fm)
+ 
+	if len(os.Args) >= 3 {
+		if err := os.WriteFile(os.Args[2], []byte(result), 0644); err != nil {
+			fmt.Fprintf(os.Stderr, "Écriture impossible : %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Fichier généré : %s\n", os.Args[2])
+	} else {
+		fmt.Print(result)
+	}
 }
+

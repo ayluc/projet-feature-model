@@ -1,7 +1,6 @@
 import dagre from 'dagre';
 
 export const getLayoutedElements = (nodes, edges, direction = 'TB') => {
-  // Ajoutez temporairement ce log au début de la fonction
   console.log('Tous les edges :', edges);
   console.log('Edges filtrés :', edges.filter(e => e.type === 'mandatory' || e.type === 'optional'));
 

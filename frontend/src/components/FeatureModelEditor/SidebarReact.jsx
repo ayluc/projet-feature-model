@@ -54,10 +54,16 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
     });
 
     const formattedEdges = edges.map(edge => {
+      console.log("Edge avant formatage : ", edge, edge.data.isMandatory, edge.data.isExclusion);
       const formattedEdge = {
         id: parseInt(edge.id),
         source: parseInt(edge.source),
-        target: parseInt(edge.target)
+        target: parseInt(edge.target),
+        type: edge.data
+          ? ("isMandatory" in edge.data
+            ? (edge.data.isMandatory ? "mandatory" : "optional")
+            : (edge.data.isExclusion ? "exclusion" : "dependancy"))
+          : "dependancy"
       }
 
       return formattedEdge;
@@ -67,6 +73,8 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
       nodes: formattedNodes,
       edges: formattedEdges
     };
+
+    console.log("Payload envoyé au back : ", JSON.stringify(payload));
 
     try {
       const response = await fetch('http://localhost:8080/validate-creation', {
@@ -82,7 +90,7 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
       if (!response.ok) {
         throw new Error(data.error || 'Erreur lors de la validation');
       }
-      console.log(data);
+      console.log("DATA : ", data);
 
       setResult(data);
       setError(null);
