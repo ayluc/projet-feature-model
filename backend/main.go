@@ -56,6 +56,7 @@ type Configuration struct {
 }
 
 const minizincTemplate = `
+include "FM.mzn";
 {{ range .Nodes }}
 {{ if ne .Status "" }}
 constraint x[{{ .Id }}] == true;
@@ -112,9 +113,17 @@ func SetupRouter() *gin.Engine {
 			return
 		}
 
-		err = tmpl.Execute(os.Stdout, req)
+		file, err := os.Create("configuration.mzn")
 		if err != nil {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la création du fichier"})
+			return
+		}
+
+		defer file.Close()
+
+		err = tmpl.Execute(file, req)
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
