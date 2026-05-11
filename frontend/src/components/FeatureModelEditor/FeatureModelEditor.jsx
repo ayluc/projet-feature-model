@@ -210,6 +210,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
             strokeDasharray: "2 4",
             stroke: "#d9534f",
           },
+          markerEnd: null,
         });
         return;
       }
@@ -557,9 +558,9 @@ function FeatureModelEditor({ isReadOnly = false }) {
                 stroke: isExclusion ? "#d9534f" : "#5b8dee",
               };
               if (!isExclusion) {
-                edgeMarkers = {
-                  markerEnd: { type: MarkerType.ArrowClosed, color: "#5b8dee", width: 18, height: 18 },
-                };
+                edgeMarkers = isExclusion
+                  ? { markerEnd: undefined }                                                         
+                  : { markerEnd: { type: MarkerType.ArrowClosed, color: "#5b8dee", width: 18, height: 18 } };
               }
 
               // Cas modification via clic droit
@@ -567,7 +568,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
                 setEdges((eds) =>
                   eds.map((e) =>
                     e.id === popup.linkId
-                      ? { ...e, data: { ...e.data, ...edgeData }, style: edgeStyle, ...edgeMarkers }
+                      ? { ...e, data: { ...e.data, ...edgeData }, style: edgeStyle, markerEnd: isExclusion ? null : { type: MarkerType.ArrowClosed, color: "#5b8dee", width: 18, height: 18 }, }
                       : e
                   )
                 );
