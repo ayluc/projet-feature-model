@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/Malomalsky/go-minizinc"
 	"github.com/gin-contrib/cors"
@@ -22,10 +24,10 @@ const (
 type NodeId int
 
 type Node struct {
-	Id   NodeId        `json:"id"             binding:"required,gte=1"`
-	Type NodeType      `json:"type"           binding:"required,oneof=cardinalite feature xor or"`
-	CardinalityMin int `json:"cardinaliteMin" binding:"required_if=type cardinalite,gte=0"`
-	CandinalityMax int `json:"cardinaliteMax" binding:"required_if=type cardinalite,gtefield=CardinalityMin"`
+	Id             NodeId   `json:"id"             binding:"required,gte=1"`
+	Type           NodeType `json:"type"           binding:"required,oneof=cardinalite feature xor or"`
+	CardinalityMin int      `json:"cardinaliteMin" binding:"required_if=type cardinalite,gte=0"`
+	CandinalityMax int      `json:"cardinaliteMax" binding:"required_if=type cardinalite,gtefield=CardinalityMin"`
 }
 
 type ArcId int
@@ -41,9 +43,26 @@ type FeatureModel struct {
 	Arcs  []Arc  `json:"edges" binding:"required,unique=Id,unique=TargetId,dive"`
 }
 
+type NodeConfig struct {
+	Id     NodeId `json:"id"`
+	Status string `json:"status"`
+}
+
+type Configuration struct {
+	Nodes []NodeConfig
+}
+
+const minizincTemplate = `
+{{ range .Nodes }}
+{{ if ne .Status "" }}constraint x[{{ .Id }}] == true;{{ end }}
+{{ if ne .Status "" }}constraint y[{{ .Id }}] == {{ if eq .Status "included" }}true{{ else }}false{{ end }};{{ end }}
+{{ end }}
+`
+
 const (
-	EndpointPing             = "/ping"
-	EndpointValidateCreation = "/validate-creation"
+	EndpointPing                  = "/ping"
+	EndpointValidateCreation      = "/validate-creation"
+	EndpointValidateConfiguration = "/validate-configuration"
 )
 
 func SetupRouter() *gin.Engine {
@@ -69,6 +88,33 @@ func SetupRouter() *gin.Engine {
 			"valid":     true,
 			"nodeCount": len(req.Nodes),
 			"arcCount":  len(req.Arcs),
+		})
+	})
+
+	router.POST(EndpointValidateConfiguration, func(c *gin.Context) {
+		var req Configuration
+		err := c.ShouldBindJSON(&req)
+
+		if err != nil {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		tmpl, err := template.New("mzn").Parse(minizincTemplate)
+		if err != nil {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		err = tmpl.Execute(os.Stdout, req)
+		if err != nil {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.IndentedJSON(http.StatusOK, gin.H{
+			"valid": true,
+			"nodes": req.Nodes,
 		})
 	})
 
