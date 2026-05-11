@@ -25,11 +25,20 @@ const (
 
 type NodeId int
 
+type OperatorType string
+
+const (
+    OperatorTypeOr          OperatorType = "or"
+    OperatorTypeXor         OperatorType = "xor"
+    OperatorTypeCardinality OperatorType = "cardinalite"
+)
+
 type Node struct {
-	Id             NodeId   `json:"id"             binding:"required,gte=1"`
-	Type           NodeType `json:"type"           binding:"required,oneof=cardinalite feature xor or"`
-	CardinalityMin int      `json:"cardinaliteMin" binding:"required_if=type cardinalite,gte=0"`
-	CardinalityMax int      `json:"cardinaliteMax" binding:"required_if=type cardinalite,gtefield=CardinalityMin"`
+    Id             NodeId       `json:"id"           binding:"required,gte=1"`
+    Type           NodeType     `json:"type"         binding:"required,oneof=feature"`
+    OperatorType   OperatorType `json:"operatorType" binding:"omitempty,oneof=or xor cardinalite"`
+    CardinalityMin int          `json:"cardinaliteMin" binding:"omitempty,gte=0"`
+    CardinalityMax int          `json:"cardinaliteMax" binding:"omitempty"`
 }
 
 type ArcId int

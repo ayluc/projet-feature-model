@@ -81,50 +81,102 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
     }
     else // Mode création
     {
-      const formattedNodes = nodes.map(node => {
-        const formattedNode = {
-          id: parseInt(node.id, 10),
-          type: node.type
+      // -- Étape 1 : construire des maps pour accès rapide
+      const edgeMap = {};   // source -> [targets]
+      const parentMap = {}; // target -> source
+      edges.forEach(e => {
+        if (!edgeMap[e.source]) edgeMap[e.source] = [];
+        edgeMap[e.source].push(e.target);
+        parentMap[e.target] = e.source;
+      });
+
+      const nodeMap = {};
+      nodes.forEach(n => nodeMap[n.id] = n);
+
+      // -- Étape 2 : pour chaque nœud opérateur, remonter la cardinalité au parent feature
+      const operatorTypes = ["or", "xor", "cardinalite"];
+      const operatorIds = new Set(
+        nodes.filter(n => operatorTypes.includes(n.type)).map(n => n.id)
+      );
+
+      // cardinalité héritée par chaque feature parent d'un opérateur
+      const inheritedOperator = {}; // featureId -> { type, min, max, operatorId }
+      operatorIds.forEach(opId => {
+        const op = nodeMap[opId];
+        const parentId = parentMap[opId];
+        if (!parentId) return;
+
+        let min, max;
+        if (op.type === "xor") { min = 1; max = 1; }
+        else if (op.type === "or") { min = 1; max = (edgeMap[opId] || []).length; }
+        else if (op.type === "cardinalite") {
+          min = parseInt(op.data?.cardinaliteMin, 10);
+          max = parseInt(op.data?.cardinaliteMax, 10);
         }
-
-        if (node.type === "cardinalite" && node.data) {
-          console.log("Node cardinalité avant formatage : ", node, node.data.cardinaliteMin, node.data.cardinaliteMax);
-          formattedNode.cardinaliteMax = parseInt(node.data.cardinaliteMax, 10);
-          formattedNode.cardinaliteMin = parseInt(node.data.cardinaliteMin, 10);
-        }
-
-        return formattedNode;
+        inheritedOperator[parentId] = { type: op.type, min, max, operatorId: opId };
       });
 
-      const formattedArcs = edges.filter(edge => "isMandatory" in edge.data).map(edge => {
-        console.log("Edge avant formatage : ", edge, edge.data.isMandatory, edge.data.isExclusion);
-          const formattedArc = {
-            id: parseInt(edge.id),
-            source: parseInt(edge.source),
-            target: parseInt(edge.target),
-            type: edge.data.isMandatory ? "mandatory" : "optional"
+      // -- Étape 3 : construire les nœuds finaux (features uniquement)
+      const formattedNodes = nodes
+        .filter(n => !operatorTypes.includes(n.type))
+        .map(n => {
+          const id = parseInt(n.id, 10);
+          const inherited = inheritedOperator[n.id];
+          const formattedNode = { id, type: "feature" };
+          if (inherited) {
+            formattedNode.operatorType = inherited.type;
+            formattedNode.cardinaliteMin = inherited.min;
+            formattedNode.cardinaliteMax = inherited.max;
           }
-          return formattedArc;
-      });
+          return formattedNode;
+        });
 
-      const formattedLinks = edges.filter(edge => "isExclusion" in edge.data).map(edge => {
-        console.log("Edge avant formatage : ", edge, edge.data.isMandatory, edge.data.isExclusion);
-          const formattedLink = {
+      // -- Étape 4 : construire les arcs en "court-circuitant" les opérateurs
+      // Les enfants d'un opérateur deviennent enfants du feature parent de l'opérateur
+      const formattedArcs = edges
+        .filter(e => "isMandatory" in e.data)
+        .reduce((acc, edge) => {
+          const sourceId = edge.source;
+          const targetId = edge.target;
+
+          // Si la source est un opérateur, on remonte au parent feature de cet opérateur
+          const realSourceId = operatorIds.has(sourceId)
+            ? parentMap[sourceId]
+            : sourceId;
+
+          // Si source ou target est un opérateur→opérateur, on ignore
+          if (operatorIds.has(targetId)) return acc;
+          if (!realSourceId) return acc;
+
+          acc.push({
             id: parseInt(edge.id),
-            source: parseInt(edge.source),
-            target: parseInt(edge.target),
-            type: edge.data.isExclusion ? "exclusion" : "dependancy"
-          }
-          return formattedLink;
-      });
+            source: parseInt(realSourceId),
+            target: parseInt(targetId),
+            type: edge.data.isMandatory ? "mandatory" : "optional",
+          });
+          return acc;
+        }, []);
+
+      // Renuméroter les ids d'arcs pour éviter les doublons
+      formattedArcs.forEach((a, i) => a.id = i + 1);
+
+      const formattedLinks = edges
+        .filter(e => "isExclusion" in e.data)
+        .map((edge, i) => ({
+          id: i + 1,
+          source: parseInt(edge.source),
+          target: parseInt(edge.target),
+          type: edge.data.isExclusion ? "exclusion" : "dependancy",
+        }));
 
       const payload = {
         nodes: formattedNodes,
         arcs: formattedArcs,
-        links: formattedLinks
+        links: formattedLinks,
       };
 
       console.log("Payload envoyé au back : ", JSON.stringify(payload));
+      // ... reste du fetch inchangé
 
       try {
         const response = await fetch('http://localhost:8080/validate-creation', {

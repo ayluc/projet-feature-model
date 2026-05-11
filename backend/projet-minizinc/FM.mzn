@@ -97,20 +97,20 @@ constraint assert(forall(i in FEATURE)(dependents[i] intersect incompatibles[i] 
 %%% FEATURE ACTIVATION PROBLEM
 
 % FEATURE ACTIVATION VARIABLES
-%% `x[i]==true` when `i` is activated
-array[FEATURE] of var bool: x;
+%% `isActivated[i]==true` when `i` is activated
+array[FEATURE] of var bool: isActivated;
 
 % FEATURE ACTIVATION CONSTRAINTS
 % [A1] Including a feature activates it
 constraint
 	forall(i in FEATURE)(
-		x[i] <- y[i]
+		isActivated[i] <- isIncluded[i]
 	);
 
 % [A2] The root is activated
 constraint
 	forall(i in roots)(
-		x[i]
+		isActivated[i]
 	);
 
 
@@ -118,53 +118,53 @@ constraint
 %%% FEATURE CONFIGURATION PROBLEM
 
 % FEATURE INCLUSIVENESS VARIABLES
-%% `y[i]==true` when `i` is included in the configuration
-array[FEATURE] of var bool: y;
-%% (Auxiliary) `yz[i]` counts the children of `i` that are included
-array[FEATURE] of var CHILDREN: yz = [sum(j in children[i])(y[j]==1) | i in FEATURE];
+%% `isIncluded[i]==true` when `i` is included in the configuration
+array[FEATURE] of var bool: isIncluded;
+%% (Auxiliary) `nbIncludedChildrenOfI[i]` counts the children of `i` that are included
+array[FEATURE] of var CHILDREN: nbIncludedChildrenOfI = [sum(j in children[i])(isIncluded[j]==1) | i in FEATURE];
 
 % FEATURE INCLUSIVENESS CONSTRAINTS
 % [C1] Including a non-root active feature includes its parent (and hence activates it)
 constraint
 	forall(j in FEATURE where j!=root)(
-		x[j] -> (y[j] -> y[parent[j]])
+		isActivated[j] -> (isIncluded[j] -> isIncluded[parent[j]])
 	);
 	
 % [C2] Root features are included
 constraint
 	forall(i in roots)(
-		y[i]
+		isIncluded[i]
 	);
 
 % [C3] Including an active feature includes all of its mandatory children (and hence activates them)
 constraint
 	forall(i,j in FEATURE where j in children[i] /\ mandatory[j]==1)(
-		x[i] -> (y[i] -> y[j])
+		isActivated[i] -> (isIncluded[i] -> isIncluded[j])
 	);
 
 % [C4-C5] Including an active feature whose children are all active forces the number of included children to satisfy the preset lower and upper cardinality bounds
 constraint
 	forall(i in FEATURE)(
-		(x[i] /\ forall(j in children[i])(x[j])) -> (y[i] -> (min_children[i]<=yz[i] /\ yz[i]<=max_children[i]))
+		(isActivated[i] /\ forall(j in children[i])(isActivated[j])) -> (isIncluded[i] -> (min_children[i]<=nbIncludedChildrenOfI[i] /\ nbIncludedChildrenOfI[i]<=max_children[i]))
 	);
 
 % [C6] Including an active feature includes all its dependent features (and hence activates them)
 constraint
 	forall(i,j in FEATURE where j in dependents[i])(
-		x[i] -> (y[i] -> y[j])
+		isActivated[i] -> (isIncluded[i] -> isIncluded[j])
 	);
 	
 % [C7-1] Including an active feature excludes and also activates all its incompatible features
 constraint
 	forall(i,j in FEATURE where j in incompatibles[i])(
-		x[i] -> (y[i] -> (not(y[j]) /\ x[j]))
+		isActivated[i] -> (isIncluded[i] -> (not(isIncluded[j]) /\ isActivated[j]))
 	);
 	
 % [C7-2] Excluding an active feature includes (and hence activates) all its incompatible features
 constraint
 	forall(i,j in FEATURE where j in incompatibles[i])(
-		x[i] -> (not(y[i]) -> y[j])
-%		x[i] -> (not(y[i]) -> (y[j] /\ x[j]))
+		isActivated[i] -> (not(isIncluded[i]) -> isIncluded[j])
+%		isActivated[i] -> (not(isIncluded[i]) -> (isIncluded[j] /\ isActivated[j]))
 	);
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -172,7 +172,7 @@ constraint
 
 % OBJECTIVE
 % Minimize the number of activated variables
-solve minimize sum(i in FEATURE)(x[i]==1) * (1 + nr_features) + sum(i in FEATURE)(y[i]==1);
+solve minimize sum(i in FEATURE)(isActivated[i]==1) * (1 + nr_features) + sum(i in FEATURE)(isIncluded[i]==1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FEATURE CONFIGURATION DISPLAY
@@ -202,8 +202,8 @@ output
 ++["\n"]
 ++["INCOMPATIBLES\t" ++ show(incompatibles)]
 ++["\n"]
-++["ACTIVATION\t\t" ++ show(x)]
+++["ACTIVATION\t\t" ++ show(isActivated)]
 ++["\n"]
-++["CONFIGURATION\t" ++ show(y)]
+++["CONFIGURATION\t" ++ show(isIncluded)]
 ++["\n"]
 ;

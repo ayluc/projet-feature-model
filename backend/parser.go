@@ -35,6 +35,8 @@ func Convert(fm FeatureModel) string {
 	mandatorySet  := make(map[int]bool)
 	incompatibles := make(map[int][]int)
 	dependents    := make(map[int][]int)
+	parentOf      := make(map[int]int)   // enfant → parent (pour trouver la racine)
+	mandatoryChildCount := make(map[int]int) // parent → nb d'enfants obligatoires
 
 	for _, n := range fm.Nodes {
 		children[int(n.Id)]      = []int{}
@@ -42,11 +44,21 @@ func Convert(fm FeatureModel) string {
 		dependents[int(n.Id)]    = []int{}
 	}
 
-	// Arcs hiérarchiques (mandatory / optional uniquement)
+	// Arcs hiérarchiques (mandatory / optional)
 	for _, a := range fm.Arcs {
 		children[a.SourceId] = append(children[a.SourceId], a.TargetId)
+		parentOf[a.TargetId] = a.SourceId
 		if a.Type == "mandatory" {
 			mandatorySet[a.TargetId] = true
+			mandatoryChildCount[a.SourceId]++
+		}
+	}
+
+	// Trouver la racine : le nœud qui n'est l'enfant d'aucun autre
+	for _, n := range fm.Nodes {
+		id := int(n.Id)
+		if _, hasParent := parentOf[id]; !hasParent {
+			mandatorySet[id] = true // FIX 1 : la racine est mandatory
 		}
 	}
 
@@ -54,6 +66,7 @@ func Convert(fm FeatureModel) string {
 	for _, l := range fm.Links {
 		if l.Type == "exclusion" {
 			incompatibles[l.SourceId] = append(incompatibles[l.SourceId], l.TargetId)
+			incompatibles[l.TargetId] = append(incompatibles[l.TargetId], l.SourceId) // FIX 3 : symétrie
 		}
 		if l.Type == "dependancy" {
 			dependents[l.SourceId] = append(dependents[l.SourceId], l.TargetId)
@@ -108,26 +121,28 @@ func Convert(fm FeatureModel) string {
 		n := nodeById[id]
 		kids := children[id]
 		var minC, maxC int
-		switch n.Type {
-		case NodeTypeCardinality:
-			minC = n.CardinalityMin
-			maxC = n.CardinalityMax
-		case NodeTypeXor:
+
+		switch n.OperatorType {
+		case OperatorTypeXor:
 			minC = 1
 			maxC = 1
-		case NodeTypeOr:
-			minC = 1
-			maxC = len(kids)
-		case NodeTypeFeature:
+		case OperatorTypeOr:
 			minC = 0
 			maxC = len(kids)
+		case OperatorTypeCardinality:
+			minC = n.CardinalityMin
+			maxC = n.CardinalityMax
+		default: // feature sans opérateur
+			minC = mandatoryChildCount[id]
+			maxC = len(kids)
 		}
+
 		minChildrenParts = append(minChildrenParts, fmt.Sprintf("%d", minC))
 		maxChildrenParts = append(maxChildrenParts, fmt.Sprintf("%d", maxC))
 	}
 
 	return fmt.Sprintf("FEATURE= %d..%d;\n", minID, maxID) +
-		fmt.Sprintf("children= [%s]\n", formatList(children)) +
+		fmt.Sprintf("children= [%s];\n", formatList(children)) +
 		fmt.Sprintf("mandatory= [%s];\n", strings.Join(mandatoryParts, ",")) +
 		fmt.Sprintf("dependents= [%s];\n", formatList(dependents)) +
 		fmt.Sprintf("incompatibles= [%s];\n", formatList(incompatibles)) +
