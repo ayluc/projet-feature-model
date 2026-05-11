@@ -1,0 +1,15 @@
+{
+    "openFiles": [
+        "FM.mzn",
+        "fm_f9_m2_d1_i1_a.dzn"
+    ],
+    "openTab": 0,
+    "projectFiles": [
+        "FM.mzn",
+        "fm_f9_m2_d1_i1_a.dzn",
+        "configuration.mzn"
+    ],
+    "selectedBuiltinConfigId": "org.gecode.gecode",
+    "selectedBuiltinConfigVersion": "6.3.0",
+    "version": 106
+}
