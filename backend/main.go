@@ -29,7 +29,7 @@ type Node struct {
 	Id             NodeId   `json:"id"             binding:"required,gte=1"`
 	Type           NodeType `json:"type"           binding:"required,oneof=cardinalite feature xor or"`
 	CardinalityMin int      `json:"cardinaliteMin" binding:"required_if=type cardinalite,gte=0"`
-	CandinalityMax int      `json:"cardinaliteMax" binding:"required_if=type cardinalite,gtefield=CardinalityMin"`
+	CardinalityMax int      `json:"cardinaliteMax" binding:"required_if=type cardinalite,gtefield=CardinalityMin"`
 }
 
 type ArcId int
@@ -38,12 +38,20 @@ type Arc struct {
 	Id       ArcId  `json:"id"     binding:"required,gte=1"`
 	SourceId int    `json:"source" binding:"required,gte=1"`
 	TargetId int    `json:"target" binding:"required,gte=1"`
-	Type     string `json:"type"   binding:"required,oneof=mandatory optional dependancy exclusion"`
+	Type     string `json:"type"   binding:"required,oneof=mandatory optional"`
+}
+
+type Link struct {
+    Id       ArcId  `json:"id"     binding:"required,gte=1"`
+    SourceId int    `json:"source" binding:"required,gte=1"`
+    TargetId int    `json:"target" binding:"required,gte=1"`
+    Type     string `json:"type"   binding:"required,oneof=dependancy exclusion"`
 }
 
 type FeatureModel struct {
 	Nodes []Node `json:"nodes" binding:"required,unique=Id,dive"`
-	Arcs  []Arc  `json:"edges" binding:"required,unique=Id,unique=TargetId,dive"`
+	Arcs  []Arc  `json:"arcs" binding:"required,unique=Id,unique=TargetId,dive"`
+	Links []Link `json:"links" binding:"omitempty,unique=Id,dive"`
 }
 
 type NodeConfig struct {
@@ -91,7 +99,7 @@ func SetupRouter() *gin.Engine {
 		result := Convert(req)
 		fmt.Println(result) // log terminal
 
-		if err := os.WriteFile("feature-model.dzn", []byte(result), 0644); err != nil {
+		if err := os.WriteFile("projet-minizinc/feature-model.dzn", []byte(result), 0644); err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "impossible d'écrire feature-model.dzn: " + err.Error()})
 			return
 		}

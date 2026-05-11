@@ -7,7 +7,6 @@ import (
 )
 
 // ── Conversion FeatureModel → format cible ───────────────────────────────────
-
 func isOperator(t NodeType) bool {
 	return t == NodeTypeOr || t == NodeTypeXor || t == NodeTypeCardinality
 }
@@ -42,18 +41,25 @@ func Convert(fm FeatureModel) string {
 		incompatibles[int(n.Id)] = []int{}
 		dependents[int(n.Id)]    = []int{}
 	}
+
+	// Arcs hiérarchiques (mandatory / optional uniquement)
 	for _, a := range fm.Arcs {
 		children[a.SourceId] = append(children[a.SourceId], a.TargetId)
 		if a.Type == "mandatory" {
 			mandatorySet[a.TargetId] = true
 		}
-		if a.Type == "exclusion" {
-			incompatibles[a.SourceId] = append(incompatibles[a.SourceId], a.TargetId)
+	}
+
+	// Arcs transversaux (dependancy / exclusion)
+	for _, l := range fm.Links {
+		if l.Type == "exclusion" {
+			incompatibles[l.SourceId] = append(incompatibles[l.SourceId], l.TargetId)
 		}
-		if a.Type == "dependancy" {
-			dependents[a.SourceId] = append(dependents[a.SourceId], a.TargetId)
+		if l.Type == "dependancy" {
+			dependents[l.SourceId] = append(dependents[l.SourceId], l.TargetId)
 		}
 	}
+
 	for id := range children {
 		sort.Ints(children[id])
 		sort.Ints(incompatibles[id])
@@ -101,12 +107,11 @@ func Convert(fm FeatureModel) string {
 	for _, id := range ids {
 		n := nodeById[id]
 		kids := children[id]
-
 		var minC, maxC int
 		switch n.Type {
 		case NodeTypeCardinality:
 			minC = n.CardinalityMin
-			maxC = n.CandinalityMax
+			maxC = n.CardinalityMax
 		case NodeTypeXor:
 			minC = 1
 			maxC = 1

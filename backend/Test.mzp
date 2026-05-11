@@ -1,7 +1,8 @@
 {
     "openFiles": [
         "FM.mzn",
-        "feature-model.dzn"
+        "feature-model.dzn",
+        "configuration.mzn"
     ],
     "openTab": 0,
     "projectFiles": [

@@ -96,28 +96,35 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
         return formattedNode;
       });
 
-    const formattedEdges = edges.map(edge => {
-      console.log("Edge avant formatage : ", edge, edge.data.isMandatory, edge.data.isExclusion);
-      const formattedEdge = {
-        id: parseInt(edge.id),
-        source: parseInt(edge.source),
-        target: parseInt(edge.target),
-        type: edge.data
-          ? ("isMandatory" in edge.data
-            ? (edge.data.isMandatory ? "mandatory" : "optional")
-            : (edge.data.isExclusion ? "exclusion" : "dependancy"))
-          : "dependancy"
-      }
-
-        return formattedEdge;
+      const formattedArcs = edges.filter(edge => "isMandatory" in edge.data).map(edge => {
+        console.log("Edge avant formatage : ", edge, edge.data.isMandatory, edge.data.isExclusion);
+          const formattedArc = {
+            id: parseInt(edge.id),
+            source: parseInt(edge.source),
+            target: parseInt(edge.target),
+            type: edge.data.isMandatory ? "mandatory" : "optional"
+          }
+          return formattedArc;
       });
 
-    const payload = {
-      nodes: formattedNodes,
-      edges: formattedEdges
-    };
+      const formattedLinks = edges.filter(edge => "isExclusion" in edge.data).map(edge => {
+        console.log("Edge avant formatage : ", edge, edge.data.isMandatory, edge.data.isExclusion);
+          const formattedLink = {
+            id: parseInt(edge.id),
+            source: parseInt(edge.source),
+            target: parseInt(edge.target),
+            type: edge.data.isExclusion ? "exclusion" : "dependancy"
+          }
+          return formattedLink;
+      });
 
-    console.log("Payload envoyé au back : ", JSON.stringify(payload));
+      const payload = {
+        nodes: formattedNodes,
+        arcs: formattedArcs,
+        links: formattedLinks
+      };
+
+      console.log("Payload envoyé au back : ", JSON.stringify(payload));
 
       try {
         const response = await fetch('http://localhost:8080/validate-creation', {
@@ -130,10 +137,10 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
 
         const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors de la validation');
-      }
-      console.log("DATA : ", data);
+        if (!response.ok) {
+          throw new Error(data.error || 'Erreur lors de la validation');
+        }
+        console.log("DATA : ", data);
 
         setResult(data);
         setError(null);
