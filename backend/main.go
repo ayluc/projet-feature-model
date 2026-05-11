@@ -119,7 +119,7 @@ func SetupRouter() *gin.Engine {
 			return
 		}
 
-		file, err := os.Create("configuration.mzn")
+		file, err := os.Create("projet-minizinc/configuration.mzn")
 		if err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la création du fichier"})
 			return
