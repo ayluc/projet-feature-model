@@ -88,8 +88,9 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
         }
 
         if (node.type === "cardinalite" && node.data) {
-          formattedNode.cardinalityMax = parseInt(node.cardinalityMax, 10);
-          formattedNode.cardinalityMin = parseInt(node.cardinalityMin, 10);
+          console.log("Node cardinalité avant formatage : ", node, node.data.cardinaliteMin, node.data.cardinaliteMax);
+          formattedNode.cardinaliteMax = parseInt(node.data.cardinaliteMax, 10);
+          formattedNode.cardinaliteMin = parseInt(node.data.cardinaliteMin, 10);
         }
 
         return formattedNode;

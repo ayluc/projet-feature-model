@@ -8,6 +8,10 @@ import (
 
 // ── Conversion FeatureModel → format cible ───────────────────────────────────
 
+func isOperator(t NodeType) bool {
+	return t == NodeTypeOr || t == NodeTypeXor || t == NodeTypeCardinality
+}
+
 func Convert(fm FeatureModel) string {
 	// 1. Plage des IDs (tous les noeuds)
 	minID, maxID := int(fm.Nodes[0].Id), int(fm.Nodes[0].Id)
@@ -21,7 +25,13 @@ func Convert(fm FeatureModel) string {
 		}
 	}
 
-	// 2. Construction des maps depuis les arcs
+	// 2. Map id → Node pour accès rapide
+	nodeById := make(map[int]Node, len(fm.Nodes))
+	for _, n := range fm.Nodes {
+		nodeById[int(n.Id)] = n
+	}
+
+	// 3. Construction des maps depuis les arcs
 	children      := make(map[int][]int)
 	mandatorySet  := make(map[int]bool)
 	incompatibles := make(map[int][]int)
@@ -50,7 +60,7 @@ func Convert(fm FeatureModel) string {
 		sort.Ints(dependents[id])
 	}
 
-	// 3. IDs triés
+	// 4. IDs triés
 	ids := make([]int, 0, len(fm.Nodes))
 	for _, n := range fm.Nodes {
 		ids = append(ids, int(n.Id))
@@ -75,7 +85,7 @@ func Convert(fm FeatureModel) string {
 		return strings.Join(parts, ",")
 	}
 
-	// 4. mandatory
+	// 5. mandatory
 	mandatoryParts := make([]string, 0, len(ids))
 	for _, id := range ids {
 		if mandatorySet[id] {
@@ -85,9 +95,37 @@ func Convert(fm FeatureModel) string {
 		}
 	}
 
+	// 6. min_children / max_children
+	minChildrenParts := make([]string, 0, len(ids))
+	maxChildrenParts := make([]string, 0, len(ids))
+	for _, id := range ids {
+		n := nodeById[id]
+		kids := children[id]
+
+		var minC, maxC int
+		switch n.Type {
+		case NodeTypeCardinality:
+			minC = n.CardinalityMin
+			maxC = n.CandinalityMax
+		case NodeTypeXor:
+			minC = 1
+			maxC = 1
+		case NodeTypeOr:
+			minC = 1
+			maxC = len(kids)
+		case NodeTypeFeature:
+			minC = 0
+			maxC = len(kids)
+		}
+		minChildrenParts = append(minChildrenParts, fmt.Sprintf("%d", minC))
+		maxChildrenParts = append(maxChildrenParts, fmt.Sprintf("%d", maxC))
+	}
+
 	return fmt.Sprintf("FEATURE= %d..%d;\n", minID, maxID) +
 		fmt.Sprintf("children= [%s]\n", formatList(children)) +
 		fmt.Sprintf("mandatory= [%s];\n", strings.Join(mandatoryParts, ",")) +
 		fmt.Sprintf("dependents= [%s];\n", formatList(dependents)) +
-		fmt.Sprintf("incompatibles= [%s];\n", formatList(incompatibles))
+		fmt.Sprintf("incompatibles= [%s];\n", formatList(incompatibles)) +
+		fmt.Sprintf("min_children= [%s];\n", strings.Join(minChildrenParts, ",")) +
+		fmt.Sprintf("max_children= [%s];\n", strings.Join(maxChildrenParts, ","))
 }
