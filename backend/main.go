@@ -54,8 +54,10 @@ type Configuration struct {
 
 const minizincTemplate = `
 {{ range .Nodes }}
-{{ if ne .Status "" }}constraint x[{{ .Id }}] == true;{{ end }}
-{{ if ne .Status "" }}constraint y[{{ .Id }}] == {{ if eq .Status "included" }}true{{ else }}false{{ end }};{{ end }}
+{{ if ne .Status "" }}
+constraint x[{{ .Id }}] == true;
+constraint y[{{ .Id }}] == {{ if eq .Status "included" }}true{{ else }}false{{ end }};
+{{ end }}
 {{ end }}
 `
 
