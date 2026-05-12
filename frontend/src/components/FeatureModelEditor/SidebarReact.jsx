@@ -44,9 +44,10 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
       const formattedNodes = nodes
         .filter(node => node.type === "feature")
         .map(node => ({
-          id: parseInt(node.id, 10),
+          id: String(node.id).match(/[0-9]+/) ? parseInt(String(node.id).match(/[0-9]+/)[0], 10) : 1,
           status: node.data?.configStatus || null
-        }));
+        })
+        );
 
 
       const payload = {
@@ -116,56 +117,59 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
         inheritedOperator[parentId] = { type: op.type, min, max, operatorId: opId };
       });
 
-      // -- Étape 3 : construire les nœuds finaux (features uniquement)
+      // -- Étape 3 : Construire les nœuds finaux (features uniquement)
       const formattedNodes = nodes
         .filter(n => !operatorTypes.includes(n.type))
         .map(n => {
-          const id = parseInt(n.id, 10);
+          const numericId = parseInt(String(n.id).match(/\d+/)[0], 10);
           const inherited = inheritedOperator[n.id];
-          const formattedNode = { id, type: "feature" };
+
+          const formattedNode = { id: numericId, type: "feature" };
+
           if (inherited) {
             formattedNode.operatorType = inherited.type;
             formattedNode.cardinaliteMin = inherited.min;
             formattedNode.cardinaliteMax = inherited.max;
           }
+
           return formattedNode;
         });
 
-      // -- Étape 4 : construire les arcs en "court-circuitant" les opérateurs
-      // Les enfants d'un opérateur deviennent enfants du feature parent de l'opérateur
+      // -- Étape 4 : Construire les arcs en "court-circuitant" les opérateurs
       const formattedArcs = edges
         .filter(e => "isMandatory" in e.data)
         .reduce((acc, edge) => {
           const sourceId = edge.source;
           const targetId = edge.target;
 
-          // Si la source est un opérateur, on remonte au parent feature de cet opérateur
+          if (operatorIds.has(targetId)) return acc;
+
           const realSourceId = operatorIds.has(sourceId)
             ? parentMap[sourceId]
             : sourceId;
 
-          // Si source ou target est un opérateur→opérateur, on ignore
-          if (operatorIds.has(targetId)) return acc;
           if (!realSourceId) return acc;
 
           acc.push({
-            id: parseInt(edge.id),
-            source: parseInt(realSourceId),
-            target: parseInt(targetId),
-            type: edge.data.isMandatory ? "mandatory" : "optional",
+            id: 0, 
+            source: parseInt(String(realSourceId).match(/\d+/)[0], 10),
+            target: parseInt(String(targetId).match(/\d+/)[0], 10),
+            type: operatorIds.has(sourceId) ? "optional" : (edge.data.isMandatory ? "mandatory" : "optional"),
           });
+
           return acc;
         }, []);
 
-      // Renuméroter les ids d'arcs pour éviter les doublons
+      // Renuméroter proprement les ID d'arcs à partir de 1
       formattedArcs.forEach((a, i) => a.id = i + 1);
 
+      // -- Étape 5 : Les liens transverses
       const formattedLinks = edges
         .filter(e => "isExclusion" in e.data)
         .map((edge, i) => ({
           id: i + 1,
-          source: parseInt(edge.source),
-          target: parseInt(edge.target),
+          source: parseInt(String(edge.source).match(/\d+/)[0], 10),
+          target: parseInt(String(edge.target).match(/\d+/)[0], 10),
           type: edge.data.isExclusion ? "exclusion" : "dependancy",
         }));
 
@@ -176,7 +180,6 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
       };
 
       console.log("Payload envoyé au back : ", JSON.stringify(payload));
-      // ... reste du fetch inchangé
 
       try {
         const response = await fetch('http://localhost:8080/validate-creation', {

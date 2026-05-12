@@ -69,12 +69,28 @@ function FeatureModelEditor({ isReadOnly = false }) {
   }, [setNodes, isReadOnly]);
 
 
-  const getNextNodeId = useCallback(() => {
-    const maxId = nodes.reduce((max, node) => {
-      const idNum = parseInt(node.id, 10);
-      return isNaN(idNum) ? max : Math.max(max, idNum);
-    }, 0);
-    return (maxId + 1).toString();
+  const getNextNodeFeatureId = useCallback(() => {
+    const maxId = nodes
+      .filter(n => n.type === "feature")
+      .reduce((max, node) => {
+        const regex = /[0-9]+/;
+        const match = String(node.id).match(regex);
+        const idNum = match ? parseInt(match[0], 10) : 0;
+        return Math.max(max, idNum);
+      }, 0);
+    return "feature-" + (maxId + 1).toString();
+  }, [nodes]);
+
+  const getNextNodeOperateurId = useCallback(() => {
+    const maxId = nodes
+      .filter(n => n.type === "or" || n.type === "xor" || n.type === "cardinalite")
+      .reduce((max, node) => {
+        const regex = /[0-9]+/;
+        const match = String(node.id).match(regex);
+        const idNum = match ? parseInt(match[0], 10) : 0;
+        return Math.max(max, idNum);
+      }, 0);
+    return "operateur-" + (maxId + 1).toString();
   }, [nodes]);
 
   const getNextEdgeId = useCallback(() => {
@@ -247,7 +263,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         y: event.clientY,
       });
 
-      const newId = getNextNodeId();
+      const newId = type === "feature" ? getNextNodeFeatureId() : getNextNodeOperateurId();
 
       if (type === "feature" || type === "cardinalite") {
         setPopup({
@@ -264,7 +280,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         setNodes((nds) => nds.concat(newNode));
       }
     },
-    [screenToFlowPosition, type, setNodes, isReadOnly, getNextNodeId]
+    [screenToFlowPosition, type, setNodes, isReadOnly, getNextNodeFeatureId, getNextNodeOperateurId]
   );
 
   const handleNodesChange = useCallback((changes) => {
@@ -560,7 +576,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
                 strokeWidth: isMandatory ? 2.5 : 2,
                 strokeDasharray: isMandatory ? "none" : "6 3",
               };
-              edgeMarkers = {markerEnd: null};
+              edgeMarkers = { markerEnd: null };
             } else if (liaisonType === "transverse") {
               edgeData = { liaisonType: "transverse", isExclusion };
               edgeStyle = {
@@ -569,7 +585,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
                 stroke: isExclusion ? "#d9534f" : "#5b8dee",
               };
               edgeMarkers = isExclusion
-                ? { markerEnd: null }                                                         
+                ? { markerEnd: null }
                 : { markerEnd: { type: MarkerType.ArrowClosed, color: "#5b8dee", width: 18, height: 18 } };
             }
             // Cas modification via clic droit
@@ -577,7 +593,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
               setEdges((eds) =>
                 eds.map((e) =>
                   e.id === popup.linkId
-                    ? { ...e, data: { ...e.data, ...edgeData }, style: edgeStyle, ...edgeMarkers}
+                    ? { ...e, data: { ...e.data, ...edgeData }, style: edgeStyle, ...edgeMarkers }
                     : e
                 )
               );
