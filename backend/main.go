@@ -178,11 +178,17 @@ func SetupRouter() *gin.Engine {
 			return
 		}
 
-		cmd := exec.Command("minizinc", "--solver", "Gecode", "projet-minizinc/configuration.mzn", "projet-minizinc/feature-model.dzn")
+		cmd := exec.Command("minizinc", "--solver", "Gecode", "--output-mode", "json", "projet-minizinc/configuration.mzn", "projet-minizinc/feature-model.dzn")
 		var outBuf, errBuf bytes.Buffer
 		cmd.Stdout = &outBuf
 		cmd.Stderr = &errBuf
 		_ = cmd.Run()
+
+		cmd1 := exec.Command("minizinc", "--solver", "Gecode", "projet-minizinc/configuration.mzn", "projet-minizinc/feature-model.dzn")
+		var outBuf1, errBuf1 bytes.Buffer
+		cmd1.Stdout = &outBuf1
+		cmd1.Stderr = &errBuf1
+		_ = cmd1.Run()
 
 		if bytes.Contains(outBuf.Bytes(), []byte("UNSATISFIABLE")) {
 			c.IndentedJSON(http.StatusOK, gin.H{
@@ -191,7 +197,7 @@ func SetupRouter() *gin.Engine {
 			})
 			return
 		}
-		fmt.Println(outBuf.String())
+		fmt.Println(outBuf1.String())
 
 		jsonBytes, err := extractOptimalSolution(outBuf.Bytes())
 		if err != nil {
