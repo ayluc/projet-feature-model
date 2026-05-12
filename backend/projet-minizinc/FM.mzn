@@ -7,7 +7,7 @@
 
 % The range of feature ids
 set of int: FEATURE;
-% Integrity constraint
+% Integrity constraint //Les features doivent avoir un ID >= 1
 constraint assert(min(FEATURE)==1, "[I1-1] Features must be numbered from 1 onwards");
 
 % The number of features
@@ -21,7 +21,7 @@ set of int: CHILDREN = 0..nr_features;
 
 % CHILD NODES
 %% `j in children[i]` when `j` is a child of `i`:
-%% [C1] `i` *must* be included if `j` is included (and `j` *must* be excluded if `i` is excluded) 
+%% [C1] `i` *must* be included if `j` is included (and `j` *must* be excluded if `i` is excluded)  ???j doit être inclus si i inclus, faux ?
 array[FEATURE] of set of FEATURE: children;
 
 % (Auxiliary) Parent nodes
@@ -167,6 +167,35 @@ constraint
 %		isActivated[i] -> (not(isIncluded[i]) -> (isIncluded[j] /\ isActivated[j]))
 	);
 	
+% [C8] Inclusion du dernier enfant non activé si le quota minimum d'enfant à inclure n'est pas rempli
+	constraint
+    forall(i in FEATURE where children[i] != {})(
+        (isActivated[i] /\ isIncluded[i] /\
+         sum(j in children[i])(isActivated[j]) == card(children[i]) - 1 /\
+         nbIncludedChildrenOfI[i] < min_children[i])
+        ->
+        forall(j in children[i])(
+            not(isActivated[j]) -> isIncluded[j]
+        )
+    );
+    
+% [C9] Exclusion des autres enfants non activés lorsqu'un des enfants d'un XOR est inclus
+constraint
+    forall(i in FEATURE, j in children[i])(
+        (isActivated[i] /\ isIncluded[i] /\ nbIncludedChildrenOfI[i] >= max_children[i])
+        ->
+        (isActivated[j])
+    );
+    
+% [C10] Exclusion de la source d'une dépendance si sa target est exclue
+constraint
+    forall(i in FEATURE, j in dependents[i])(
+        (isActivated[j] /\ not(isIncluded[j]))
+        ->
+        (isActivated[i] /\ not(isIncluded[i]))
+    );
+   
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FEATURE CONFIGURATION GENERATION
 
@@ -202,7 +231,7 @@ output
 ++["\n"]
 ++["INCOMPATIBLES\t" ++ show(incompatibles)]
 ++["\n"]
-++["ACTIVATION\t\t" ++ show(isActivated)]
+++["ACTIVATION\t" ++ show(isActivated)]
 ++["\n"]
 ++["CONFIGURATION\t" ++ show(isIncluded)]
 ++["\n"]
