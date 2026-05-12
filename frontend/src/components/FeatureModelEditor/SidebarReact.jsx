@@ -70,7 +70,37 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
         if (!response.ok) {
           throw new Error(data.error || 'Erreur lors de la validation');
         }
+        
         console.log(data);
+
+        if (data.valid && data.solution) {
+          const { isIncluded, isActivated } = data.solution;
+          
+          setNodes((nds) => nds.map((n) => {
+            if (n.type === "feature") {
+              const match = String(n.id).match(/\d+/);
+              const numericId = match ? parseInt(match[0], 10) : null;
+              
+              if (numericId && isIncluded[numericId - 1] !== undefined) {
+                const active = isActivated[numericId - 1]; 
+                const included = isIncluded[numericId - 1]; 
+
+                const newStatus = active 
+                  ? (included ? 'included' : 'excluded') 
+                  : null;
+
+                return {
+                  ...n,
+                  data: { 
+                    ...n.data, 
+                    configStatus: newStatus 
+                  }
+                };
+              }
+            }
+            return n;
+          }));
+        }
 
         setResult(data);
         setError(null);
