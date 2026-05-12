@@ -139,7 +139,7 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
 
         let min, max;
         if (op.type === "xor") { min = 1; max = 1; }
-        else if (op.type === "or") { min = 1; max = (edgeMap[opId] || []).length; }
+        else if (op.type === "or") { min = 0; max = (edgeMap[opId] || []).length; }
         else if (op.type === "cardinalite") {
           min = parseInt(op.data?.cardinaliteMin, 10);
           max = parseInt(op.data?.cardinaliteMax, 10);
