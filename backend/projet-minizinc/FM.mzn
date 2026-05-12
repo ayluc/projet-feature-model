@@ -231,8 +231,9 @@ output
 ++["\n"]
 ++["INCOMPATIBLES\t" ++ show(incompatibles)]
 ++["\n"]
-++["ACTIVATION\t" ++ show(isActivated)]
+++["ACTIVATION\t" ++ concat([show(i) ++ ": " ++ show(isActivated[i]) ++ " | " | i in FEATURE])]
 ++["\n"]
-++["CONFIGURATION\t" ++ show(isIncluded)]
+++["\n"]
+++["CONFIGURATION\t" ++ concat([show(i) ++ ": " ++ show(isIncluded[i]) ++ " | " | i in FEATURE])]
 ++["\n"]
 ;
