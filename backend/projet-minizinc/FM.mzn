@@ -194,7 +194,13 @@ constraint
         ->
         (isActivated[i] /\ not(isIncluded[i]))
     );
-   
+
+constraint 
+  forall(i in FEATURE, j in children[i])(
+    (isActivated[i] /\ not(isIncluded[i])) 
+    ->
+    (isActivated[j])
+  );
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FEATURE CONFIGURATION GENERATION
