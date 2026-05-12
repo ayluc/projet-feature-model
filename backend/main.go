@@ -178,7 +178,7 @@ func SetupRouter() *gin.Engine {
 			return
 		}
 
-		cmd := exec.Command("minizinc", "--solver", "Gecode", "--output-mode", "json", "projet-minizinc/configuration.mzn", "projet-minizinc/feature-model.dzn")
+		cmd := exec.Command("minizinc", "--solver", "Gecode", "projet-minizinc/configuration.mzn", "projet-minizinc/feature-model.dzn")
 		var outBuf, errBuf bytes.Buffer
 		cmd.Stdout = &outBuf
 		cmd.Stderr = &errBuf
