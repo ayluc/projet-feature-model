@@ -161,11 +161,15 @@ constraint
 	);
 	
 % [C7-2] Excluding an active feature includes (and hence activates) all its incompatible features
+% Forme simplifiée équivalente
 constraint
-	forall(i,j in FEATURE where j in incompatibles[i])(
-		isActivated[i] -> (not(isIncluded[i]) -> isIncluded[j])
-%		isActivated[i] -> (not(isIncluded[i]) -> (isIncluded[j] /\ isActivated[j]))
-	);
+    forall(i,j in FEATURE where j in incompatibles[i])(
+        (isActivated[i] /\ not(isIncluded[i])
+         /\ not(i in ancestors[j])
+         /\ not(exists(k in ancestors[i])(isActivated[k] /\ not(isIncluded[k]) /\ k in ancestors[j]))
+        )
+        -> isIncluded[j]
+    );
 	
 % [C8] Inclusion du dernier enfant non activé si le quota minimum d'enfant à inclure n'est pas rempli
 	constraint
@@ -196,7 +200,7 @@ constraint
     );
 
 constraint 
-  forall(i in FEATURE, j in children[i])(
+  forall(i in FEATURE, j in FEATURE where i in ancestors[j])(
     (isActivated[i] /\ not(isIncluded[i])) 
     ->
     (isActivated[j])
