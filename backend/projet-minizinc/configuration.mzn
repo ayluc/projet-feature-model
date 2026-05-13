@@ -24,10 +24,10 @@ include "FM.mzn";
 
 
 
+constraint isActivated[12] == true;
+constraint isIncluded[12] == false;
 
 
-constraint isActivated[13] == true;
-constraint isIncluded[13] == false;
 
 
 
