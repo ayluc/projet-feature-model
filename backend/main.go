@@ -190,15 +190,16 @@ func SetupRouter() *gin.Engine {
 		cmd1.Stderr = &errBuf1
 		_ = cmd1.Run()
 
+		fmt.Println(outBuf1.String())
+		fmt.Println(errBuf1.String())
+
 		if bytes.Contains(outBuf.Bytes(), []byte("UNSATISFIABLE")) {
 			c.IndentedJSON(http.StatusOK, gin.H{
 				"valid": false,
 				"nodes": req.Nodes,
 			})
-			fmt.Println("UNSAT")
 			return
 		}
-		fmt.Println(outBuf1.String())
 
 		jsonBytes, err := extractOptimalSolution(outBuf.Bytes())
 		if err != nil {
