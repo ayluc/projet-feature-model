@@ -195,6 +195,7 @@ func SetupRouter() *gin.Engine {
 				"valid": false,
 				"nodes": req.Nodes,
 			})
+			fmt.Println("UNSAT")
 			return
 		}
 		fmt.Println(outBuf1.String())

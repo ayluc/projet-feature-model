@@ -1,4 +1,3 @@
-import { useCallback } from 'react';
 import { Position, Handle } from '@xyflow/react';
 
 export function NodeCardinalite({data, isConnectable}) {

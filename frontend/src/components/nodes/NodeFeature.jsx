@@ -1,4 +1,3 @@
-import { useCallback } from 'react';
 import { Position, Handle, NodeToolbar } from '@xyflow/react';
 
 export function NodeFeature({ id, data, isConnectable, selected }) {
