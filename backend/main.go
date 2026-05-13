@@ -124,6 +124,15 @@ func SetupRouter() *gin.Engine {
 		cmd.Stderr = &errBuf
 		_ = cmd.Run()
 
+		cmd1 := exec.Command("minizinc", "--solver", "Gecode", "projet-minizinc/FM.mzn", "projet-minizinc/feature-model.dzn")
+		var outBuf1, errBuf1 bytes.Buffer
+		cmd1.Stdout = &outBuf1
+		cmd1.Stderr = &errBuf1
+		_ = cmd1.Run()
+
+		fmt.Println(outBuf1.String())
+		fmt.Println(errBuf1.String())
+
 		if bytes.Contains(outBuf.Bytes(), []byte("UNSATISFIABLE")) {
 			c.IndentedJSON(http.StatusOK, gin.H{
 				"valid":     false,
