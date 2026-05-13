@@ -12,8 +12,6 @@ export const useGraphStore = create()(
       isTransverseVisible: true,
       arcType: null,
 
-      isReadOnly: false,
-
       setIsReadOnly: (val) => set({ isReadOnly: val }),
 
       setArcType: (val) => set({ arcType: val }),
@@ -69,6 +67,10 @@ export const useGraphStore = create()(
     }),
     {
       limit: 50,
+      partialize: (state) => ({
+        nodes: state.nodes,
+        edges: state.edges
+      }),
     }
   )
 );

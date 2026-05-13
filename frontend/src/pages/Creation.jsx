@@ -7,8 +7,8 @@ function Creation() {
   return (
     <div>
         <div className="dndflow">
-            <Sidebar/>
-            <FeatureModelEditor/>
+            <Sidebar isReadOnly={false}/>
+            <FeatureModelEditor isReadOnly={false}/>
         </div>
     </div>
   );

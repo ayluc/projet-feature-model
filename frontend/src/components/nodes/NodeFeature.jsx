@@ -14,7 +14,7 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
     : configStatus === 'excluded' ? '#fee2e2'
       : '#e6f1fb';
 
-  const isReadOnly = useGraphStore((state) => state.isReadOnly);
+  const isReadOnly = data.isReadOnly;
 
   const { validate } = useModelValidation(isReadOnly);
 
@@ -25,7 +25,7 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
       display: 'flex',
       flexDirection: 'column',
     }}>
-      <NodeToolbar isVisible={data.isReadOnly && selected}>
+      <NodeToolbar isVisible={isReadOnly && selected}>
         <div style={{ display: 'flex', gap: '6px' }}>
           <button
             onClick={() => { data.onConfigChange(id, 'included'); if (configStatus !== "included" && configStatus !== "excluded") validate(); }}
