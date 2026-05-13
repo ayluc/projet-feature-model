@@ -11,7 +11,11 @@ export const useGraphStore = create()(
       isLayoutAuto: true,
       isTransverseVisible: true,
       arcType: null,
-      
+
+      isReadOnly: false,
+
+      setIsReadOnly: (val) => set({ isReadOnly: val }),
+
       setArcType: (val) => set({ arcType: val }),
 
       setNodes: (update) => {
