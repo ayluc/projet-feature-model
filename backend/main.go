@@ -52,7 +52,7 @@ type Link struct {
 	Id       ArcId  `json:"id"     binding:"required,gte=1"`
 	SourceId int    `json:"source" binding:"required,gte=1"`
 	TargetId int    `json:"target" binding:"required,gte=1"`
-	Type     string `json:"type"   binding:"required,oneof=dependancy exclusion compatibility equivalence difference"`
+	Type     string `json:"type"   binding:"required,oneof=inclusion exclusion compatibility equivalence difference"`
 }
 
 type FeatureModel struct {

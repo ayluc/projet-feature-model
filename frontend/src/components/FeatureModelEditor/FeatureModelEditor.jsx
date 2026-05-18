@@ -354,18 +354,18 @@ function FeatureModelEditor({ isReadOnly = false }) {
   }, [edges, isTransverseVisible]);
 
   // ✅ Correction : chaque type transverse est filtré indépendamment
-  const { dependancyEdges, exclusionEdges, compatibilityEdges, equivalenceEdges, differenceEdges } = useMemo(() => {
-    const dep = [], exc = [], com = [], equ = [], dif = [];
+  const { inclusionEdges, exclusionEdges, compatibilityEdges, equivalenceEdges, differenceEdges } = useMemo(() => {
+    const inc = [], exc = [], com = [], equ = [], dif = [];
     edges.forEach((e) => {
       if (e.data?.liaisonType === "transverse") {
-        if (e.data?.isDependancy)     dep.push(e);
+        if (e.data?.isInclusion)     inc.push(e);
         else if (e.data?.isExclusion)     exc.push(e);
         else if (e.data?.isCompatibility) com.push(e);
         else if (e.data?.isEquivalence)   equ.push(e);
         else if (e.data?.isDifference)    dif.push(e);
       }
     });
-    return { dependancyEdges: dep, exclusionEdges: exc, compatibilityEdges: com, equivalenceEdges: equ, differenceEdges: dif };
+    return { inclusionEdges: inc, exclusionEdges: exc, compatibilityEdges: com, equivalenceEdges: equ, differenceEdges: dif };
   }, [edges]);
 
   const [activeTab, setActiveTab] = useState("json");
@@ -467,7 +467,6 @@ function FeatureModelEditor({ isReadOnly = false }) {
             <ContextMenu
               {...menu}
               onClick={onPaneClick}
-              onClose={() => setMenu(null)}
               onOpenPopup={(popupData) => {
                 setMenu(null);
                 if (menu.type === "edge") {
@@ -536,7 +535,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
           popup={popup && popup.nodeType === "link" ? popup : null}
           onClose={() => setPopup(null)}
           onConfirm={(linkData) => {
-            const { liaisonType, isMandatory: isMandatoryRaw, isDependancy, isExclusion, isCompatibility, isEquivalence, isDifference } = linkData;
+            const { liaisonType, isMandatory: isMandatoryRaw, isInclusion, isExclusion, isCompatibility, isEquivalence, isDifference } = linkData;
             const isMandatory = isMandatoryRaw === "true";
 
             let edgeStyle = {};
@@ -550,7 +549,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
               };
               edgeMarkers = { markerEnd: null };
             } else if (liaisonType === "transverse") {
-              edgeData = { liaisonType: "transverse", isDependancy, isExclusion, isCompatibility, isEquivalence, isDifference };
+              edgeData = { liaisonType: "transverse", isInclusion, isExclusion, isCompatibility, isEquivalence, isDifference };
               const { edgeStyle: s, edgeMarkers: m } = getTransverseStyle(edgeData);
               edgeStyle = s;
               edgeMarkers = m;
@@ -609,7 +608,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
               {/* Inclusion */}
               <div style={{ marginBottom: '24px' }}>
                 <h3 className="font-bold mb-2">Inclusion (A ⇒ B)</h3>
-                {edgeList(dependancyEdges, e => (
+                {edgeList(inclusionEdges, e => (
                   <><strong>{nodeMap[e.source]}</strong> nécessite <strong>{nodeMap[e.target]}</strong></>
                 )) ?? emptyMsg("Aucune inclusion configurée.")}
               </div>
