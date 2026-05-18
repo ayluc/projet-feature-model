@@ -8,6 +8,7 @@ import {
   DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Menu, ArrowDownToLine, Plus, Trash2, FileUp, FileDown } from "lucide-react";
+import { useModelValidation } from './utils/useModelValidation';
 
 function Toolbar() {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ function Toolbar() {
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (!file) return;
-    if (nodes.length> 0 && window.confirm("Êtes-vous sûr de vouloir écraser votre feature model actuel ?") || nodes.length === 0 ) {
+    if (nodes.length > 0 && window.confirm("Êtes-vous sûr de vouloir écraser votre feature model actuel ?") || nodes.length === 0) {
 
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -69,6 +70,8 @@ function Toolbar() {
       event.target.value = "";
     }
   };
+
+  const { validate } = useModelValidation(true);
 
   return (
     <>
@@ -112,8 +115,15 @@ function Toolbar() {
           </Button>
         </div>
         <div className="col-span-1 flex justify-start">
-          <Button variant={location.pathname === "/configuration" ? "default" : "outline"}
-            onClick={() => navigate("/configuration")}>
+          <Button
+            variant={location.pathname === "/configuration" ? "default" : "outline"}
+            onClick={async () => {
+              const isValid = await validate();
+              if (isValid) {
+                navigate("/configuration");
+              }
+            }}
+          >
             Configuration
           </Button>
         </div>

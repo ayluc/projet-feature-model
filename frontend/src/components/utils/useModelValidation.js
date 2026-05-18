@@ -1,6 +1,25 @@
 import { useState } from 'react';
 import { useGraphStore } from '@/components/GraphStore';
 
+const validateGraph = (nodes, edges) => {
+	const operatorTypes = ["or", "xor", "cardinalite"];
+
+	// Récupère les IDs de tous les noeuds enfants (qui ont un parent)
+	const childIds = new Set(edges.map(e => e.target));
+
+	// Tous les noeuds non-opérateurs qui n'ont pas de parent = racines candidates
+	const roots = nodes.filter(n => !operatorTypes.includes(n.type) && !childIds.has(n.id));
+
+	// Il doit y avoir exactement une racine
+	if (roots.length !== 1) return false;
+
+	// TODO: ajouter d'autres validations ici
+	// ex: vérifier qu'aucun nœud feature n'est isolé (sans parent ET sans enfant)
+	// ex: vérifier qu'il n'y a pas de cycles
+
+	return true;
+};
+
 export const useModelValidation = (isReadOnly) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState(null);
@@ -8,6 +27,7 @@ export const useModelValidation = (isReadOnly) => {
 
 	const setNodes = useGraphStore((state) => state.setNodes);
 
+	// Retourne true si la validation réussit, false sinon
 	const validate = async () => {
 		const currentNodes = useGraphStore.getState().nodes;
 		const currentEdges = useGraphStore.getState().edges;
@@ -16,11 +36,13 @@ export const useModelValidation = (isReadOnly) => {
 		setError(null);
 
 		try {
-			// Mode configuration
-			// Mode création
-			// -- Étape 1 : construire des maps pour accès rapide
-			const edgeMap = {};   // source -> [targets]
-			const parentMap = {}; // target -> source
+
+			// ── Mode création ───────────────────────────────────────────
+			console.log("Validation du modèle en mode création");
+
+			// Étape 1 : maps pour accès rapide
+			const edgeMap = {};
+			const parentMap = {};
 			currentEdges.forEach(e => {
 				if (!edgeMap[e.source]) edgeMap[e.source] = [];
 				edgeMap[e.source].push(e.target);
@@ -30,14 +52,13 @@ export const useModelValidation = (isReadOnly) => {
 			const nodeMap = {};
 			currentNodes.forEach(n => nodeMap[n.id] = n);
 
-			// -- Étape 2 : pour chaque nœud opérateur, remonter la cardinalité au parent feature
+			// Étape 2 : cardinalité héritée des opérateurs
 			const operatorTypes = ["or", "xor", "cardinalite"];
 			const operatorIds = new Set(
 				currentNodes.filter(n => operatorTypes.includes(n.type)).map(n => n.id)
 			);
 
-			// cardinalité héritée par chaque feature parent d'un opérateur
-			const inheritedOperator = {}; // featureId -> { type, min, max, operatorId }
+			const inheritedOperator = {};
 			operatorIds.forEach(opId => {
 				const op = nodeMap[opId];
 				const parentId = parentMap[opId];
@@ -53,59 +74,51 @@ export const useModelValidation = (isReadOnly) => {
 				inheritedOperator[parentId] = { type: op.type, min, max, operatorId: opId };
 			});
 
-			// -- Étape 3 : Construire les nœuds finaux (features uniquement)
+			// Étape 3 : nœuds finaux (features uniquement)
 			const formattedNodes = currentNodes
 				.filter(n => !operatorTypes.includes(n.type))
 				.map(n => {
 					const numericId = parseInt(String(n.id).match(/\d+/)[0], 10);
 					const inherited = inheritedOperator[n.id];
-
 					const formattedNode = { id: numericId, type: "feature" };
-
 					if (inherited) {
 						formattedNode.operatorType = inherited.type;
 						formattedNode.cardinaliteMin = inherited.min;
 						formattedNode.cardinaliteMax = inherited.max;
 					}
-
 					return formattedNode;
 				});
 
-			// -- Étape 4 : Construire les arcs en "court-circuitant" les opérateurs
+			// Étape 4 : arcs en court-circuitant les opérateurs
 			const formattedArcs = currentEdges
 				.filter(e => "isMandatory" in e.data)
 				.reduce((acc, edge) => {
-					const sourceId = edge.source;
-					const targetId = edge.target;
-
+					const { source: sourceId, target: targetId } = edge;
 					if (operatorIds.has(targetId)) return acc;
 
-					const realSourceId = operatorIds.has(sourceId)
-						? parentMap[sourceId]
-						: sourceId;
-
+					const realSourceId = operatorIds.has(sourceId) ? parentMap[sourceId] : sourceId;
 					if (!realSourceId) return acc;
 
 					acc.push({
 						id: 0,
 						source: parseInt(String(realSourceId).match(/\d+/)[0], 10),
 						target: parseInt(String(targetId).match(/\d+/)[0], 10),
-						type: operatorIds.has(sourceId) ? "optional" : (edge.data.isMandatory ? "mandatory" : "optional"),
+						type: operatorIds.has(sourceId)
+							? "optional"
+							: (edge.data.isMandatory ? "mandatory" : "optional"),
 					});
-
 					return acc;
 				}, []);
 
-			// Renuméroter proprement les ID d'arcs à partir de 1
 			formattedArcs.forEach((a, i) => a.id = i + 1);
 
-			// -- Étape 5 : Les liens transverses
+			// Étape 5 : liens transverses
 			const formattedLinks = currentEdges
 				.filter(e => e.data?.liaisonType === "transverse")
 				.map((edge, i) => {
 					const d = edge.data;
 					let type = null;
-					if (d.isInclusion) type = "inclusion";
+					if (d.isDependancy) type = "dependancy";
 					else if (d.isExclusion) type = "exclusion";
 					else if (d.isCompatibility) type = "compatibility";
 					else if (d.isEquivalence) type = "equivalence";
@@ -119,22 +132,46 @@ export const useModelValidation = (isReadOnly) => {
 						type,
 					};
 				})
-				.filter(Boolean); // retire les nulls si un type n'est pas reconnu
+				.filter(Boolean);
 
-			const payload = {
-				nodes: formattedNodes,
-				arcs: formattedArcs,
-				links: formattedLinks,
-			};
+			const payload = { nodes: formattedNodes, arcs: formattedArcs, links: formattedLinks };
+			console.log("Payload création :", JSON.stringify(payload));
 
-			console.log("Payload envoyé au back : ", JSON.stringify(payload));
+			const response = await fetch('http://localhost:8080/validate-creation', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload),
+			});
 
-			try {
-				const response = await fetch('http://localhost:8080/validate-creation', {
+			const data = await response.json();
+
+			if (!response.ok) {
+				throw new Error(data.error || 'Erreur lors de la validation');
+			}
+
+			console.log("Réponse création :", data);
+			setResult(data);
+
+			const isGraphValid = validateGraph(currentNodes, currentEdges);
+			if (isReadOnly) {
+				// ── Mode configuration ──────────────────────────────────────
+				console.log("Validation du modèle en mode configuration");
+
+				const formattedNodes = currentNodes
+					.filter(node => node.type === "feature")
+					.map(node => ({
+						id: String(node.id).match(/[0-9]+/)
+							? parseInt(String(node.id).match(/[0-9]+/)[0], 10)
+							: 1,
+						status: node.data?.configStatus || null,
+					}));
+
+				const payload = { nodes: formattedNodes };
+				console.log("Payload configuration :", payload);
+
+				const response = await fetch('http://localhost:8080/validate-configuration', {
 					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
+					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify(payload),
 				});
 
@@ -143,89 +180,37 @@ export const useModelValidation = (isReadOnly) => {
 				if (!response.ok) {
 					throw new Error(data.error || 'Erreur lors de la validation');
 				}
-				console.log("DATA : ", data);
 
-				setResult(data);
-				setError(null);
+				console.log("Réponse configuration :", data);
 
-				if (isReadOnly) {
-					const formattedNodes = currentNodes
-						.filter(node => node.type === "feature")
-						.map(node => ({
-							id: String(node.id).match(/[0-9]+/) ? parseInt(String(node.id).match(/[0-9]+/)[0], 10) : 1,
-							status: node.data?.configStatus || null
-						})
-						);
+				if (data.valid && data.solution) {
+					const { isIncluded, isActivated } = data.solution;
 
+					setNodes((nds) => nds.map((n) => {
+						if (n.type === "feature") {
+							const match = String(n.id).match(/\d+/);
+							const numericId = match ? parseInt(match[0], 10) : null;
 
-					const payload = {
-						nodes: formattedNodes,
-					};
+							if (numericId && isIncluded[numericId - 1] !== undefined) {
+								const active = isActivated[numericId - 1];
+								const included = isIncluded[numericId - 1];
+								const newStatus = active ? (included ? 'included' : 'excluded') : null;
 
-					console.log(payload);
-
-					try {
-						const response = await fetch('http://localhost:8080/validate-configuration', {
-							method: 'POST',
-							headers: {
-								'Content-Type': 'application/json',
-							},
-							body: JSON.stringify(payload),
-						});
-
-						const data = await response.json();
-
-						if (!response.ok) {
-							throw new Error(data.error || 'Erreur lors de la validation');
+								return { ...n, data: { ...n.data, configStatus: newStatus } };
+							}
 						}
-
-						console.log(data);
-
-						if (data.valid && data.solution) {
-							const { isIncluded, isActivated } = data.solution;
-
-							setNodes((nds) => nds.map((n) => {
-								if (n.type === "feature") {
-									const match = String(n.id).match(/\d+/);
-									const numericId = match ? parseInt(match[0], 10) : null;
-
-									if (numericId && isIncluded[numericId - 1] !== undefined) {
-										const active = isActivated[numericId - 1];
-										const included = isIncluded[numericId - 1];
-
-										const newStatus = active
-											? (included ? 'included' : 'excluded')
-											: null;
-
-										return {
-											...n,
-											data: {
-												...n.data,
-												configStatus: newStatus
-											}
-										};
-									}
-								}
-								return n;
-							}));
-						}
-
-						setResult(data);
-						setError(null);
-					} catch (err) {
-						console.error("Erreur de communication avec le back:", err);
-						setError(err.message);
-						setResult(null);
-					}
+						return n;
+					}));
 				}
-			} catch (err) {
-				console.error("Erreur de communication avec le back:", err);
-				setError(err.message);
-				setResult(null);
+				setResult(data);
 			}
-			setResult(data);
+			return data.valid === true && isGraphValid;
+
 		} catch (err) {
+			console.error("Erreur de validation :", err);
 			setError(err.message);
+			setResult(null);
+			return false;
 		} finally {
 			setIsLoading(false);
 		}
