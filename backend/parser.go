@@ -33,7 +33,7 @@ func Convert(fm FeatureModel) string {
 	// 3. Construction des maps depuis les arcs
 	children             := make(map[int][]int)
 	mandatorySet         := make(map[int]bool)
-	dependents           := make(map[int][]int) // inclusion : A => B
+	includes           := make(map[int][]int) // inclusion : A => B
 	excludes             := make(map[int][]int) // exclusion mutuelle : A /\ B = false (symétrique)
 	compatibles         := make(map[int][]int) // compatibilité : A \/ B = true
 	equivalents         := make(map[int][]int) // équivalence : A = B (symétrique)
@@ -43,7 +43,7 @@ func Convert(fm FeatureModel) string {
 
 	for _, n := range fm.Nodes {
 		children[int(n.Id)]    = []int{}
-		dependents[int(n.Id)]  = []int{}
+		includes[int(n.Id)]  = []int{}
 		excludes[int(n.Id)]    = []int{}
 		compatibles[int(n.Id)] = []int{}
 		equivalents[int(n.Id)] = []int{}
@@ -74,7 +74,7 @@ func Convert(fm FeatureModel) string {
 		switch l.Type {
 		case "inclusion":
 			// A => B : directionnel, pas symétrique
-			dependents[src] = append(dependents[src], tgt)
+			includes[src] = append(includes[src], tgt)
 
 		case "exclusion":
 			// A /\ B = false : symétrique
@@ -100,7 +100,7 @@ func Convert(fm FeatureModel) string {
 	// Tri pour output déterministe
 	for id := range children {
 		sort.Ints(children[id])
-		sort.Ints(dependents[id])
+		sort.Ints(includes[id])
 		sort.Ints(excludes[id])
 		sort.Ints(compatibles[id])
 		sort.Ints(equivalents[id])
@@ -172,7 +172,7 @@ func Convert(fm FeatureModel) string {
 	return fmt.Sprintf("FEATURE= %d..%d;\n", minID, maxID) +
 		fmt.Sprintf("children= [%s];\n", formatList(children)) +
 		fmt.Sprintf("mandatory= [%s];\n", strings.Join(mandatoryParts, ",")) +
-		fmt.Sprintf("dependents= [%s];\n", formatList(dependents)) +
+		fmt.Sprintf("includes= [%s];\n", formatList(includes)) +
 		fmt.Sprintf("excludes= [%s];\n", formatList(excludes)) +
 		fmt.Sprintf("compatibles= [%s];\n", formatList(compatibles)) +
 		fmt.Sprintf("equivalents= [%s];\n", formatList(equivalents)) +

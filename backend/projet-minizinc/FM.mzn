@@ -21,7 +21,7 @@ set of int: CHILDREN = 0..nr_features;
 
 % CHILD NODES
 %% `j in children[i]` when `j` is a child of `i`:
-%% [C1] `i` *must* be included if `j` is included (and `j` *must* be excluded if `i` is excluded)  ???j doit être inclus si i inclus, faux ?
+%% [C1] `i` *must* be included if `j` is included (and `j` *must* be excluded if `i` is excluded)
 array[FEATURE] of set of FEATURE: children;
 
 % (Auxiliary) Parent nodes
@@ -300,7 +300,7 @@ output
 ++["\n"]
 ++["OR-NODES\t\t" ++ show(or_node)]
 ++["\n"]
-++["DEPENDENTS\t\t" ++ show(includes)]
+++["includes\t\t" ++ show(includes)]
 ++["\n"]
 ++["compatibles\t" ++ show(compatibles)]
 ++["\n"]
