@@ -72,8 +72,8 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
           <hr className="optional-line-dotted" />
         </div>
         <div className="line-legende-item">
-          <span className="legende-label">Arc de dépendance (A =&#62; B)</span>
-          <hr className="dependancy-line-dotted" />
+          <span className="legende-label">Arc d'inclusion (A =&#62; B)</span>
+          <hr className="inclusion-line-dotted" />
         </div>
         <div className="line-legende-item">
           <span className="legende-label">Arc d'exclusion mutuelle (A /\ B = FALSE)</span>
@@ -148,12 +148,12 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
               <input
                 type="radio"
                 name="arcType"
-                value="dependancy"
-                checked={arcType === "dependancy"}
+                value="inclusion"
+                checked={arcType === "inclusion"}
                 onChange={() => { }}
-                onClick={() => handleChange("dependancy")}
+                onClick={() => handleChange("inclusion")}
               />
-              Dépendance
+              Inclusion
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
               <input

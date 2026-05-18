@@ -170,13 +170,25 @@ export const useModelValidation = (isReadOnly) => {
 
 				// -- Étape 5 : Les liens transverses
 				const formattedLinks = currentEdges
-					.filter(e => "isExclusion" in e.data)
-					.map((edge, i) => ({
-						id: i + 1,
-						source: parseInt(String(edge.source).match(/\d+/)[0], 10),
-						target: parseInt(String(edge.target).match(/\d+/)[0], 10),
-						type: edge.data.isExclusion ? "exclusion" : "dependancy",
-					}));
+					.filter(e => e.data?.liaisonType === "transverse")
+					.map((edge, i) => {
+						const d = edge.data;
+						let type = null;
+						if (d.isInclusion) type = "inclusion";
+						else if (d.isExclusion) type = "exclusion";
+						else if (d.isCompatibility) type = "compatibility";
+						else if (d.isEquivalence) type = "equivalence";
+						else if (d.isDifference) type = "difference";
+						if (!type) return null;
+
+						return {
+							id: i + 1,
+							source: parseInt(String(edge.source).match(/\d+/)[0], 10),
+							target: parseInt(String(edge.target).match(/\d+/)[0], 10),
+							type,
+						};
+					})
+					.filter(Boolean); // retire les nulls si un type n'est pas reconnu
 
 				const payload = {
 					nodes: formattedNodes,

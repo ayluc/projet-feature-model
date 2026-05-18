@@ -18,6 +18,31 @@ const nodeTypes = {
   cardinalite: NodeCardinalite
 };
 
+// Retourne le style et les markers selon le type transverse
+function getTransverseStyle(data) {
+  if (data?.isInclusion) return {
+    edgeStyle: { strokeWidth: 2, strokeDasharray: "8 3", stroke: "#5b8dee" },
+    edgeMarkers: { markerEnd: { type: MarkerType.ArrowClosed, color: "#5b8dee", width: 18, height: 18 } },
+  };
+  if (data?.isExclusion) return {
+    edgeStyle: { strokeWidth: 2, strokeDasharray: "2 4", stroke: "#d9534f" },
+    edgeMarkers: { markerEnd: null },
+  };
+  if (data?.isCompatibility) return {
+    edgeStyle: { strokeWidth: 2, strokeDasharray: "4 4", stroke: "#daac17" },
+    edgeMarkers: { markerEnd: null },
+  };
+  if (data?.isEquivalence) return {
+    edgeStyle: { strokeWidth: 5, stroke: "#19b420" }, // double ligne gérée via edgeType custom
+    edgeMarkers: { markerEnd: null },
+  };
+  if (data?.isDifference) return {
+    edgeStyle: { strokeWidth: 1, stroke: "#d9534f" },
+    edgeMarkers: { markerEnd: null },
+  };
+  return { edgeStyle: {}, edgeMarkers: {} };
+}
+
 function FeatureModelEditor({ isReadOnly = false }) {
   const reactFlowWrapper = useRef(null);
 
@@ -46,9 +71,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
   const isDragging = useRef(false);
 
   const [panelOpen, setPanelOpen] = useState(false);
-
   const arcType = useGraphStore((state) => state.arcType);
-
   const [jsonRepresentation, setJsonRepresentation] = useState("");
 
   const OFFSET_TOP = 100;
@@ -60,14 +83,12 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
   const onNodeClick = useCallback((event, clickedNode) => {
     event.stopPropagation();
-
     setNodes((nds) =>
       nds.map((n) =>
         n.id === clickedNode.id ? { ...n, selected: !n.selected } : { ...n, selected: false }
       )
     );
   }, [setNodes, isReadOnly]);
-
 
   const getNextNodeFeatureId = useCallback(() => {
     const maxId = nodes
@@ -110,7 +131,6 @@ function FeatureModelEditor({ isReadOnly = false }) {
     (event, node) => {
       event.preventDefault();
       if (isReadOnly) return;
-
       setMenu({
         id: node.id,
         label: node.data?.label ?? node.id,
@@ -122,22 +142,19 @@ function FeatureModelEditor({ isReadOnly = false }) {
     [isReadOnly]
   );
 
-  // Dans setMenu pour les edges :
   const onEdgeContextMenu = useCallback(
     (event, edge) => {
       event.preventDefault();
       if (isReadOnly) return;
-
       const restrictedTypes = ["xor", "or", "cardinalite"];
       const sourceNode = nodes.find(n => n.id === edge.source);
       const targetNode = nodes.find(n => n.id === edge.target);
       const isEditable = !restrictedTypes.includes(sourceNode?.type) && !restrictedTypes.includes(targetNode?.type);
-      console.log("Noeuds :", sourceNode, targetNode, sourceNode.data?.label, targetNode.data?.label)
       setMenu({
         id: edge.id,
         label: `Lien ${sourceNode.data?.label} → ${targetNode.data?.label}`,
         type: "edge",
-        isEditable, // ← transmis au ContextMenu
+        isEditable,
         top: event.clientY - OFFSET_TOP,
         left: event.clientX - OFFSET_LEFT,
       });
@@ -151,137 +168,87 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
       const sourceNode = nodes.find((n) => n.id === connection.source);
       const targetNode = nodes.find((n) => n.id === connection.target);
-
       const restrictedTypes = ["xor", "or", "cardinalite"];
-
       const newEdgeId = getNextEdgeId();
       const connectionWithId = { ...connection, id: newEdgeId };
 
-      // Si source ou target est un nœud restreint = création directe en optional, sans popup
       if (restrictedTypes.includes(sourceNode?.type) || restrictedTypes.includes(targetNode?.type)) {
         onConnect({
           ...connectionWithId,
           data: { isMandatory: false },
-          style: {
-            strokeWidth: 2,
-            strokeDasharray: "6 3",
-          },
+          style: { strokeWidth: 2, strokeDasharray: "6 3" },
         });
         return;
       }
 
       if (arcType === "mandatory") {
-        console.log("Connection mandatory détectée, création sans popup");
         onConnect({
           ...connectionWithId,
           data: { liaisonType: "simple", isMandatory: true },
-          style: {
-            strokeWidth: 2.5,
-            strokeDasharray: "none",
-          },
+          style: { strokeWidth: 2.5, strokeDasharray: "none" },
         });
         return;
       }
 
       if (arcType === "optional") {
-        console.log("Connection optional détectée, création sans popup");
         onConnect({
           ...connectionWithId,
           data: { liaisonType: "simple", isMandatory: false },
-          style: {
-            strokeWidth: 2,
-            strokeDasharray: "6 3",
-          },
+          style: { strokeWidth: 2, strokeDasharray: "6 3" },
         });
         return;
       }
 
-      if (arcType === "dependancy") {
-        console.log("Connection dependancy détectée, création sans popup");
+      if (arcType === "inclusion") {
         onConnect({
           ...connectionWithId,
-          data: { liaisonType: "transverse", isDependancy: true },
-          style: {
-            strokeWidth: 2,
-            strokeDasharray: "8 3",
-            stroke: "#5b8dee",
-          },
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color: "#5b8dee",
-            width: 18,
-            height: 18,
-          },
+          data: { liaisonType: "transverse", isInclusion: true },
+          style: { strokeWidth: 2, strokeDasharray: "8 3", stroke: "#5b8dee" },
+          markerEnd: { type: MarkerType.ArrowClosed, color: "#5b8dee", width: 18, height: 18 },
         });
         return;
       }
 
       if (arcType === "exclusion") {
-        console.log("Connection exclusion détectée, création sans popup");
         onConnect({
           ...connectionWithId,
           data: { liaisonType: "transverse", isExclusion: true },
-          style: {
-            strokeWidth: 2,
-            strokeDasharray: "2 4",
-            stroke: "#d9534f",
-          },
+          style: { strokeWidth: 2, strokeDasharray: "2 4", stroke: "#d9534f" },
           markerEnd: null,
         });
         return;
       }
 
       if (arcType === "compatibility") {
-        console.log("Connection compatibility détectée, création sans popup");
         onConnect({
           ...connectionWithId,
           data: { liaisonType: "transverse", isCompatibility: true },
-          style: {
-            strokeWidth: 2,
-            strokeDasharray: "4 4",
-            stroke: "#daac17",
-          },
+          style: { strokeWidth: 2, strokeDasharray: "4 4", stroke: "#daac17" },
           markerEnd: null,
-          // markerEnd: {
-          //   type: MarkerType.ArrowClosed,
-          //   color: "#daac17",
-          //   width: 18,
-          //   height: 18,
-          // },
         });
         return;
       }
 
       if (arcType === "equivalence") {
-        console.log("Connection equivalence détectée, création sans popup");
         onConnect({
           ...connectionWithId,
           data: { liaisonType: "transverse", isEquivalence: true },
-          style: {
-            strokeWidth: 2,
-            strokeDasharray: "2 4",
-            stroke: "#19b420",
-          },
+          style: { strokeWidth: 5, stroke: "#19b420" },
           markerEnd: null,
         });
         return;
       }
 
       if (arcType === "difference") {
-        console.log("Connection difference détectée, création sans popup");
         onConnect({
           ...connectionWithId,
           data: { liaisonType: "transverse", isDifference: true },
-          style: {
-            strokeWidth: 1,
-            stroke: "#d9534f",
-          },
+          style: { strokeWidth: 1, stroke: "#d9534f" },
           markerEnd: null,
         });
         return;
       }
 
-      // Sinon popup normal
       setPopup({
         nodeType: "link",
         linkSource: connection.source,
@@ -308,65 +275,40 @@ function FeatureModelEditor({ isReadOnly = false }) {
       event.preventDefault();
       if (!type || isReadOnly) return;
 
-      const position = screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
-
+      const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
       const newId = type === "feature" ? getNextNodeFeatureId() : getNextNodeOperateurId();
 
       if (type === "feature" || type === "cardinalite") {
-        setPopup({
-          pendingNode: { id: newId, type, position },
-          nodeType: type,
-        });
+        setPopup({ pendingNode: { id: newId, type, position }, nodeType: type });
       } else {
-        const newNode = {
-          id: newId,
-          type,
-          position,
-          data: { label: type.toUpperCase() },
-        };
-        setNodes((nds) => nds.concat(newNode));
+        setNodes((nds) => nds.concat({ id: newId, type, position, data: { label: type.toUpperCase() } }));
       }
     },
     [screenToFlowPosition, type, setNodes, isReadOnly, getNextNodeFeatureId, getNextNodeOperateurId]
   );
 
   const handleNodesChange = useCallback((changes) => {
-    const isMinorChange = changes.every(
-      (c) => c.type === 'select' || c.type === 'dimensions'
-    );
+    const isMinorChange = changes.every((c) => c.type === 'select' || c.type === 'dimensions');
     if (isMinorChange) pause();
-
     const modifiedChanges = isReadOnly
       ? changes.map((change) => {
-        if (change.type === 'select' && !change.selected) {
-          const node = nodes.find(n => n.id === change.id);
-          if (node?.selected) {
-            return { ...change, selected: true };
+          if (change.type === 'select' && !change.selected) {
+            const node = nodes.find(n => n.id === change.id);
+            if (node?.selected) return { ...change, selected: true };
           }
-        }
-        return change;
-      })
+          return change;
+        })
       : changes;
-
     onNodesChange(modifiedChanges);
     if (isMinorChange) resume();
   }, [onNodesChange, pause, resume, nodes, isReadOnly]);
 
-
   useEffect(() => {
     if (!panelOpen) return;
-
     const timeoutId = setTimeout(() => {
-      const flowData = toObject();
-      setJsonRepresentation(JSON.stringify(flowData, null, 2));
+      setJsonRepresentation(JSON.stringify(toObject(), null, 2));
     }, 300);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
+    return () => clearTimeout(timeoutId);
   }, [nodes, edges, panelOpen, toObject]);
 
   useEffect(() => {
@@ -379,14 +321,11 @@ function FeatureModelEditor({ isReadOnly = false }) {
     }
   }, [isReadOnly]);
 
-  const [hoveredNodeId, setHoveredNodeId] = useState(null);
-
   const enrichedNodes = useMemo(() => {
     return nodes.map(n => ({
       ...n,
       className: n.data.configStatus === 'included' ? 'node-included'
-        : n.data.configStatus === 'excluded' ? 'node-excluded'
-          : '',
+        : n.data.configStatus === 'excluded' ? 'node-excluded' : '',
       data: {
         ...n.data,
         isReadOnly,
@@ -414,28 +353,53 @@ function FeatureModelEditor({ isReadOnly = false }) {
       : edges.filter(e => e.data?.liaisonType !== "transverse");
   }, [edges, isTransverseVisible]);
 
-  const { requiresEdges, excludesEdges } = useMemo(() => {
-    const req = [];
-    const exc = [];
+  // ✅ Correction : chaque type transverse est filtré indépendamment
+  const { dependancyEdges, exclusionEdges, compatibilityEdges, equivalenceEdges, differenceEdges } = useMemo(() => {
+    const dep = [], exc = [], com = [], equ = [], dif = [];
     edges.forEach((e) => {
       if (e.data?.liaisonType === "transverse") {
-        if (e.data?.isExclusion) exc.push(e);
-        else req.push(e);
+        if (e.data?.isDependancy)     dep.push(e);
+        else if (e.data?.isExclusion)     exc.push(e);
+        else if (e.data?.isCompatibility) com.push(e);
+        else if (e.data?.isEquivalence)   equ.push(e);
+        else if (e.data?.isDifference)    dif.push(e);
       }
     });
-    return { requiresEdges: req, excludesEdges: exc };
+    return { dependancyEdges: dep, exclusionEdges: exc, compatibilityEdges: com, equivalenceEdges: equ, differenceEdges: dif };
   }, [edges]);
 
   const [activeTab, setActiveTab] = useState("json");
 
+  const tabStyle = (tab) => ({
+    flex: 1,
+    padding: '12px 8px',
+    background: activeTab === tab ? '#fff' : '#f9f9f9',
+    border: 'none',
+    borderBottom: activeTab === tab ? '2px solid #5b8dee' : '2px solid transparent',
+    cursor: 'pointer',
+    fontWeight: activeTab === tab ? 'bold' : 'normal',
+    color: activeTab === tab ? '#333' : '#777',
+    transition: 'background 0.2s',
+  });
+
+  const emptyMsg = (msg) => (
+    <p style={{ fontSize: '12px', color: '#888', fontStyle: 'italic', margin: 0 }}>{msg}</p>
+  );
+
+  const edgeList = (edgeArr, renderLabel) => (
+    edgeArr.length > 0
+      ? <ul style={{ paddingLeft: '20px', fontSize: '14px', listStyleType: 'disc' }}>
+          {edgeArr.map(edge => (
+            <li key={edge.id} style={{ marginBottom: '4px' }}>{renderLabel(edge)}</li>
+          ))}
+        </ul>
+      : null
+  );
+
   return (
     <div style={{ display: 'flex', width: '100%', height: 'calc(100vh - 80px)', position: 'relative' }}>
-      {/* Bouton pour ouvrir le panneau */}
       <button
-        onClick={() => {
-          setPanelOpen(!panelOpen);
-        }}
-
+        onClick={() => setPanelOpen(!panelOpen)}
         style={{
           position: 'absolute',
           right: panelOpen ? '320px' : '0px',
@@ -453,11 +417,8 @@ function FeatureModelEditor({ isReadOnly = false }) {
       >
         {panelOpen ? '›' : '‹'}
       </button>
-      <div
-        className="reactflow-wrapper"
-        ref={reactFlowWrapper}
-        style={{ flex: 1, minWidth: 0 }}
-      >
+
+      <div className="reactflow-wrapper" ref={reactFlowWrapper} style={{ flex: 1, minWidth: 0 }}>
         <ReactFlow
           nodes={enrichedNodes}
           edges={visibleEdges}
@@ -508,38 +469,24 @@ function FeatureModelEditor({ isReadOnly = false }) {
               onClick={onPaneClick}
               onOpenPopup={(popupData) => {
                 setMenu(null);
-
-                // Clic droit sur un lien
                 if (menu.type === "edge") {
                   const edge = getEdge(popupData.edgeId ?? menu.id);
-
                   const restrictedTypes = ["xor", "or", "cardinalite"];
                   const sourceNode = nodes.find(n => n.id === edge?.source);
                   const targetNode = nodes.find(n => n.id === edge?.target);
-
-                  // Bloque l'ouverture du popup si source ou target est restreint
-                  if (restrictedTypes.includes(sourceNode?.type) || restrictedTypes.includes(targetNode?.type)) {
-                    return;
-                  }
-
+                  if (restrictedTypes.includes(sourceNode?.type) || restrictedTypes.includes(targetNode?.type)) return;
                   setPopup({
                     nodeType: "link",
                     linkId: edge?.id,
                     linkSource: edge?.source,
                     linkTarget: edge?.target,
                     data: edge?.data,
-                    isTransverseAllowed: !restrictedTypes.includes(sourceNode?.type) && !restrictedTypes.includes(targetNode?.type), // ← ajout
+                    isTransverseAllowed: !restrictedTypes.includes(sourceNode?.type) && !restrictedTypes.includes(targetNode?.type),
                   });
                   return;
                 }
-
-                // Clic droit sur un nœud (comportement existant)
                 const node = getNode(popupData.nodeId);
-                setPopup({
-                  ...popupData,
-                  nodeType: node?.type,
-                  data: node?.data,
-                });
+                setPopup({ ...popupData, nodeType: node?.type, data: node?.data });
               }}
             />
           )}
@@ -550,22 +497,14 @@ function FeatureModelEditor({ isReadOnly = false }) {
           onClose={() => setPopup(null)}
           onConfirm={(nodeData) => {
             if (popup?.nodeId && !popup?.pendingNode) {
-              setNodes((nds) =>
-                nds.map((n) =>
-                  n.id === popup.nodeId
-                    ? { ...n, data: { ...n.data, label: nodeData.nodeName } }
-                    : n
-                )
-              );
+              setNodes((nds) => nds.map((n) =>
+                n.id === popup.nodeId ? { ...n, data: { ...n.data, label: nodeData.nodeName } } : n
+              ));
               setPopup(null);
               return;
             }
             if (!popup?.pendingNode) return;
-            const newNode = {
-              ...popup.pendingNode,
-              data: { label: nodeData.nodeName },
-            };
-            setNodes((nds) => nds.concat(newNode));
+            setNodes((nds) => nds.concat({ ...popup.pendingNode, data: { label: nodeData.nodeName } }));
             setPopup(null);
           }}
         />
@@ -574,35 +513,20 @@ function FeatureModelEditor({ isReadOnly = false }) {
           popup={popup && popup.nodeType === "cardinalite" ? popup : null}
           onClose={() => setPopup(null)}
           onConfirm={(nodeData) => {
+            const cardData = {
+              label: `[${nodeData.cardinaliteMin}..${nodeData.cardinaliteMax}]`,
+              cardinaliteMin: parseInt(nodeData.cardinaliteMin),
+              cardinaliteMax: parseInt(nodeData.cardinaliteMax),
+            };
             if (popup?.nodeId && !popup?.pendingNode) {
-              setNodes((nds) =>
-                nds.map((n) =>
-                  n.id === popup.nodeId
-                    ? {
-                      ...n,
-                      data: {
-                        ...n.data,
-                        label: `[${nodeData.cardinaliteMin}..${nodeData.cardinaliteMax}]`,
-                        cardinaliteMin: parseInt(nodeData.cardinaliteMin),
-                        cardinaliteMax: parseInt(nodeData.cardinaliteMax),
-                      },
-                    }
-                    : n
-                )
-              );
+              setNodes((nds) => nds.map((n) =>
+                n.id === popup.nodeId ? { ...n, data: { ...n.data, ...cardData } } : n
+              ));
               setPopup(null);
               return;
             }
             if (!popup?.pendingNode) return;
-            const newNode = {
-              ...popup.pendingNode,
-              data: {
-                label: `[${nodeData.cardinaliteMin}..${nodeData.cardinaliteMax}]`,
-                cardinaliteMin: parseInt(nodeData.cardinaliteMin),
-                cardinaliteMax: parseInt(nodeData.cardinaliteMax),
-              },
-            };
-            setNodes((nds) => nds.concat(newNode));
+            setNodes((nds) => nds.concat({ ...popup.pendingNode, data: cardData }));
             setPopup(null);
           }}
         />
@@ -611,12 +535,9 @@ function FeatureModelEditor({ isReadOnly = false }) {
           popup={popup && popup.nodeType === "link" ? popup : null}
           onClose={() => setPopup(null)}
           onConfirm={(linkData) => {
-            const { liaisonType, isMandatory: isMandatoryRaw, isExclusion: isExclusionRaw } = linkData;
-
+            const { liaisonType, isMandatory: isMandatoryRaw, isDependancy, isExclusion, isCompatibility, isEquivalence, isDifference } = linkData;
             const isMandatory = isMandatoryRaw === "true";
-            const isExclusion = isExclusionRaw === "true";
 
-            // Calcul du style selon le type de liaison
             let edgeStyle = {};
             let edgeData = {};
 
@@ -628,28 +549,13 @@ function FeatureModelEditor({ isReadOnly = false }) {
               };
               edgeMarkers = { markerEnd: null };
             } else if (liaisonType === "transverse") {
-              const { isDependancy, isExclusion, isCompatibility, isEquivalence, isDifference } = linkData;
-
               edgeData = { liaisonType: "transverse", isDependancy, isExclusion, isCompatibility, isEquivalence, isDifference };
-
-              if (isDependancy) {
-                edgeStyle = { strokeWidth: 2, strokeDasharray: "8 3", stroke: "#5b8dee" };
-                edgeMarkers = { markerEnd: { type: MarkerType.ArrowClosed, color: "#5b8dee", width: 18, height: 18 } };
-              } else if (isExclusion) {
-                edgeStyle = { strokeWidth: 2, strokeDasharray: "2 4", stroke: "#d9534f" };
-                edgeMarkers = { markerEnd: null };
-              } else if (isCompatibility) {
-                edgeStyle = { strokeWidth: 2, strokeDasharray: "4 4", stroke: "#daac17" };
-                edgeMarkers = { markerEnd: null };
-              } else if (isEquivalence) {
-                edgeStyle = { strokeWidth: 2, strokeDasharray: "2 4", stroke: "#19b420" };
-                edgeMarkers = { markerEnd: null };
-              } else if (isDifference) {
-                edgeStyle = { strokeWidth: 1, stroke: "#d9534f" };
-                edgeMarkers = { markerEnd: null };
-              }
+              const { edgeStyle: s, edgeMarkers: m } = getTransverseStyle(edgeData);
+              edgeStyle = s;
+              edgeMarkers = m;
             }
-            // Cas modification via clic droit
+
+            // Modification via clic droit
             if (popup?.linkId && !popup?.pendingConnection) {
               setEdges((eds) =>
                 eds.map((e) =>
@@ -662,170 +568,84 @@ function FeatureModelEditor({ isReadOnly = false }) {
               return;
             }
 
-            // Cas création via drag de connexion
+            // Création via drag
             if (!popup?.pendingConnection) return;
-            onConnect({
-              ...popup.pendingConnection,
-              data: edgeData,
-              style: edgeStyle,
-              ...edgeMarkers
-            });
+            onConnect({ ...popup.pendingConnection, data: edgeData, style: edgeStyle, ...edgeMarkers });
             setPopup(null);
           }}
         />
       </div>
-      <div
-        style={{
-          width: panelOpen ? '320px' : '0px',
-          minWidth: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          transition: 'width 0.3s ease',
-          borderLeft: panelOpen ? '1px solid #e0e0e0' : 'none',
-          background: '#fff',
-        }}
-      >
+
+      {/* Panneau latéral */}
+      <div style={{
+        width: panelOpen ? '320px' : '0px',
+        minWidth: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'width 0.3s ease',
+        borderLeft: panelOpen ? '1px solid #e0e0e0' : 'none',
+        background: '#fff',
+      }}>
         <div style={{ display: 'flex', borderBottom: '1px solid #e0e0e0', minWidth: '320px' }}>
-          <button
-            onClick={() => setActiveTab("json")}
-            style={{
-              flex: 1,
-              padding: '12px 8px',
-              background: activeTab === "json" ? '#fff' : '#f9f9f9',
-              border: 'none',
-              borderBottom: activeTab === "json" ? '2px solid #5b8dee' : '2px solid transparent',
-              cursor: 'pointer',
-              fontWeight: activeTab === "json" ? 'bold' : 'normal',
-              color: activeTab === "json" ? '#333' : '#777',
-              transition: 'background 0.2s',
-            }}
-          >
-            JSON
-          </button>
-          <button
-            onClick={() => setActiveTab("rules")}
-            style={{
-              flex: 1,
-              padding: '12px 8px',
-              background: activeTab === "rules" ? '#fff' : '#f9f9f9',
-              border: 'none',
-              borderBottom: activeTab === "rules" ? '2px solid #5b8dee' : '2px solid transparent',
-              cursor: 'pointer',
-              fontWeight: activeTab === "rules" ? 'bold' : 'normal',
-              color: activeTab === "rules" ? '#333' : '#777',
-              transition: 'background 0.2s',
-            }}
-          >
-            Dépendances et Incompatibilités
-          </button>
+          <button onClick={() => setActiveTab("json")} style={tabStyle("json")}>JSON</button>
+          <button onClick={() => setActiveTab("rules")} style={tabStyle("rules")}>Contraintes transverses</button>
         </div>
 
         <div style={{ padding: '16px', overflowY: 'auto', flex: 1, minWidth: '320px' }}>
 
           {activeTab === "json" && (
-            <div>
-              <pre style={{
-                fontSize: '11px',
-                background: '#f5f5f5',
-                borderRadius: '6px',
-                padding: '10px',
-                overflowX: 'auto',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-all',
-                margin: 0
-              }}>
-                {jsonRepresentation}
-              </pre>
-            </div>
+            <pre style={{
+              fontSize: '11px', background: '#f5f5f5', borderRadius: '6px',
+              padding: '10px', overflowX: 'auto', whiteSpace: 'pre-wrap',
+              wordBreak: 'break-all', margin: 0
+            }}>
+              {jsonRepresentation}
+            </pre>
           )}
 
           {activeTab === "rules" && (
             <div>
+              {/* Inclusion */}
               <div style={{ marginBottom: '24px' }}>
-                <h3 className="font-bold mb-2">Dépendances (A =&#62; B)</h3>
-                {requiresEdges.length > 0 ? (
-                  <ul style={{ paddingLeft: '20px', fontSize: '14px', listStyleType: 'disc' }}>
-                    {requiresEdges.map(edge => (
-                      <li key={edge.id} style={{ marginBottom: '4px' }}>
-                        <strong>{nodeMap[edge.source]}</strong> nécessite <strong>{nodeMap[edge.target]}</strong>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p style={{ fontSize: '12px', color: '#888', fontStyle: 'italic', margin: 0 }}>
-                    Aucune dépendance configurée.
-                  </p>
-                )}
+                <h3 className="font-bold mb-2">Inclusion (A ⇒ B)</h3>
+                {edgeList(dependancyEdges, e => (
+                  <><strong>{nodeMap[e.source]}</strong> nécessite <strong>{nodeMap[e.target]}</strong></>
+                )) ?? emptyMsg("Aucune inclusion configurée.")}
               </div>
 
-              <div>
-                <h3 className="font-bold mb-2">Exclusions mutuelle (A /\ B = FALSE)</h3>
-                {excludesEdges.length > 0 ? (
-                  <ul style={{ paddingLeft: '20px', fontSize: '14px', listStyleType: 'disc' }}>
-                    {excludesEdges.map(edge => (
-                      <li key={edge.id} style={{ marginBottom: '4px' }}>
-                        <strong>{nodeMap[edge.source]}</strong> et <strong>{nodeMap[edge.target]}</strong> sont incompatibles
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p style={{ fontSize: '12px', color: '#888', fontStyle: 'italic', margin: 0 }}>
-                    Aucune exclusion configurée.
-                  </p>
-                )}
-              </div>
+              {/* Exclusions */}
               <div style={{ marginBottom: '24px' }}>
-                <h3 className="font-bold mb-2">Compatibilités (A \/ B = TRUE)</h3>
-                {requiresEdges.length > 0 ? (
-                  <ul style={{ paddingLeft: '20px', fontSize: '14px', listStyleType: 'disc' }}>
-                    {requiresEdges.map(edge => (
-                      <li key={edge.id} style={{ marginBottom: '4px' }}>
-                        <strong>{nodeMap[edge.source]}</strong> et <strong>{nodeMap[edge.target]}</strong> sont compatibles.
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p style={{ fontSize: '12px', color: '#888', fontStyle: 'italic', margin: 0 }}>
-                    Aucune compatibilité configurée.
-                  </p>
-                )}
+                <h3 className="font-bold mb-2">Exclusions mutuelles (A ∧ B = FALSE)</h3>
+                {edgeList(exclusionEdges, e => (
+                  <><strong>{nodeMap[e.source]}</strong> et <strong>{nodeMap[e.target]}</strong> sont compatibles</>
+                )) ?? emptyMsg("Aucune exclusion configurée.")}
               </div>
 
-              <div>
-                <h3 className="font-bold mb-2">Equivalences (A = B)</h3>
-                {excludesEdges.length > 0 ? (
-                  <ul style={{ paddingLeft: '20px', fontSize: '14px', listStyleType: 'disc' }}>
-                    {excludesEdges.map(edge => (
-                      <li key={edge.id} style={{ marginBottom: '4px' }}>
-                        <strong>{nodeMap[edge.source]}</strong> et <strong>{nodeMap[edge.target]}</strong> sont équivalents.
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p style={{ fontSize: '12px', color: '#888', fontStyle: 'italic', margin: 0 }}>
-                    Aucune équivalence configurée.
-                  </p>
-                )}
+              {/* Compatibilités */}
+              <div style={{ marginBottom: '24px' }}>
+                <h3 className="font-bold mb-2">Compatibilités (A ∨ B = TRUE)</h3>
+                {edgeList(compatibilityEdges, e => (
+                  <><strong>{nodeMap[e.source]}</strong> et <strong>{nodeMap[e.target]}</strong> sont compatibles</>
+                )) ?? emptyMsg("Aucune compatibilité configurée.")}
               </div>
+
+              {/* Équivalences */}
+              <div style={{ marginBottom: '24px' }}>
+                <h3 className="font-bold mb-2">Équivalences (A = B)</h3>
+                {edgeList(equivalenceEdges, e => (
+                  <><strong>{nodeMap[e.source]}</strong> et <strong>{nodeMap[e.target]}</strong> sont équivalents</>
+                )) ?? emptyMsg("Aucune équivalence configurée.")}
+              </div>
+
+              {/* Différences */}
               <div style={{ marginBottom: '24px' }}>
                 <h3 className="font-bold mb-2">Différences (A ≠ B)</h3>
-                {requiresEdges.length > 0 ? (
-                  <ul style={{ paddingLeft: '20px', fontSize: '14px', listStyleType: 'disc' }}>
-                    {requiresEdges.map(edge => (
-                      <li key={edge.id} style={{ marginBottom: '4px' }}>
-                        <strong>{nodeMap[edge.source]}</strong> et <strong>{nodeMap[edge.target]}</strong> sont différents.
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p style={{ fontSize: '12px', color: '#888', fontStyle: 'italic', margin: 0 }}>
-                    Aucune différence configurée.
-                  </p>
-                )}
+                {edgeList(differenceEdges, e => (
+                  <><strong>{nodeMap[e.source]}</strong> et <strong>{nodeMap[e.target]}</strong> sont différents</>
+                )) ?? emptyMsg("Aucune différence configurée.")}
               </div>
             </div>
           )}
-
         </div>
       </div>
     </div>

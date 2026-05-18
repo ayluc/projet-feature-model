@@ -31,17 +31,23 @@ func Convert(fm FeatureModel) string {
 	}
 
 	// 3. Construction des maps depuis les arcs
-	children      := make(map[int][]int)
-	mandatorySet  := make(map[int]bool)
-	incompatibles := make(map[int][]int)
-	dependents    := make(map[int][]int)
-	parentOf      := make(map[int]int)   // enfant → parent (pour trouver la racine)
-	mandatoryChildCount := make(map[int]int) // parent → nb d'enfants obligatoires
+	children             := make(map[int][]int)
+	mandatorySet         := make(map[int]bool)
+	dependents           := make(map[int][]int) // inclusion : A => B
+	excludes             := make(map[int][]int) // exclusion mutuelle : A /\ B = false (symétrique)
+	compatibles         := make(map[int][]int) // compatibilité : A \/ B = true
+	equivalents         := make(map[int][]int) // équivalence : A = B (symétrique)
+	differents          := make(map[int][]int) // différence : A ≠ B (symétrique)
+	parentOf            := make(map[int]int)
+	mandatoryChildCount := make(map[int]int)
 
 	for _, n := range fm.Nodes {
-		children[int(n.Id)]      = []int{}
-		incompatibles[int(n.Id)] = []int{}
-		dependents[int(n.Id)]    = []int{}
+		children[int(n.Id)]    = []int{}
+		dependents[int(n.Id)]  = []int{}
+		excludes[int(n.Id)]    = []int{}
+		compatibles[int(n.Id)] = []int{}
+		equivalents[int(n.Id)] = []int{}
+		differents[int(n.Id)]  = []int{}
 	}
 
 	// Arcs hiérarchiques (mandatory / optional)
@@ -54,29 +60,51 @@ func Convert(fm FeatureModel) string {
 		}
 	}
 
-	// Trouver la racine : le nœud qui n'est l'enfant d'aucun autre
+	// La racine est mandatory
 	for _, n := range fm.Nodes {
 		id := int(n.Id)
 		if _, hasParent := parentOf[id]; !hasParent {
-			mandatorySet[id] = true // FIX 1 : la racine est mandatory
+			mandatorySet[id] = true
 		}
 	}
 
-	// Arcs transversaux (dependancy / exclusion)
+	// Arcs transversaux — les 5 types
 	for _, l := range fm.Links {
-		if l.Type == "exclusion" {
-			incompatibles[l.SourceId] = append(incompatibles[l.SourceId], l.TargetId)
-			incompatibles[l.TargetId] = append(incompatibles[l.TargetId], l.SourceId) // FIX 3 : symétrie
-		}
-		if l.Type == "dependancy" {
-			dependents[l.SourceId] = append(dependents[l.SourceId], l.TargetId)
+		src, tgt := l.SourceId, l.TargetId
+		switch l.Type {
+		case "inclusion":
+			// A => B : directionnel, pas symétrique
+			dependents[src] = append(dependents[src], tgt)
+
+		case "exclusion":
+			// A /\ B = false : symétrique
+			excludes[src] = append(excludes[src], tgt)
+			excludes[tgt] = append(excludes[tgt], src)
+
+		case "compatibility":
+			// A \/ B = true : directionnel selon FM.mzn
+			compatibles[src] = append(compatibles[src], tgt)
+
+		case "equivalence":
+			// A = B : symétrique
+			equivalents[src] = append(equivalents[src], tgt)
+			equivalents[tgt] = append(equivalents[tgt], src)
+
+		case "difference":
+			// A ≠ B : symétrique
+			differents[src] = append(differents[src], tgt)
+			differents[tgt] = append(differents[tgt], src)
 		}
 	}
 
+	// Tri pour output déterministe
 	for id := range children {
 		sort.Ints(children[id])
-		sort.Ints(incompatibles[id])
 		sort.Ints(dependents[id])
+		sort.Ints(excludes[id])
+		sort.Ints(compatibles[id])
+		sort.Ints(equivalents[id])
+		sort.Ints(differents[id])
 	}
 
 	// 4. IDs triés
@@ -86,7 +114,7 @@ func Convert(fm FeatureModel) string {
 	}
 	sort.Ints(ids)
 
-	// Helper : formate une map[int][]int en liste de {x,y} ou {}
+	// Helper : formate une map[int][]int en liste de sets MiniZinc
 	formatList := func(m map[int][]int) string {
 		parts := make([]string, 0, len(ids))
 		for _, id := range ids {
@@ -132,7 +160,7 @@ func Convert(fm FeatureModel) string {
 		case OperatorTypeCardinality:
 			minC = n.CardinalityMin
 			maxC = n.CardinalityMax
-		default: // feature sans opérateur
+		default:
 			minC = mandatoryChildCount[id]
 			maxC = len(kids)
 		}
@@ -145,7 +173,10 @@ func Convert(fm FeatureModel) string {
 		fmt.Sprintf("children= [%s];\n", formatList(children)) +
 		fmt.Sprintf("mandatory= [%s];\n", strings.Join(mandatoryParts, ",")) +
 		fmt.Sprintf("dependents= [%s];\n", formatList(dependents)) +
-		fmt.Sprintf("incompatibles= [%s];\n", formatList(incompatibles)) +
+		fmt.Sprintf("excludes= [%s];\n", formatList(excludes)) +
+		fmt.Sprintf("compatibles= [%s];\n", formatList(compatibles)) +
+		fmt.Sprintf("equivalents= [%s];\n", formatList(equivalents)) +
+		fmt.Sprintf("differents= [%s];\n", formatList(differents)) +
 		fmt.Sprintf("min_children= [%s];\n", strings.Join(minChildrenParts, ",")) +
 		fmt.Sprintf("max_children= [%s];\n", strings.Join(maxChildrenParts, ","))
 }

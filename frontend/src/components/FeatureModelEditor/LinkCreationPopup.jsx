@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
   const [liaisonType, setLiaisonType] = useState(null); // "simple" | "transverse"
   const [isMandatory, setIsMandatory] = useState(null); // "true" | "false"
-  const [transverseType, setTransverseType] = useState(null); // "dependancy" | "exclusion" | "compatibility" | "equivalence" | "difference"
+  const [transverseType, setTransverseType] = useState(null); // "inclusion" | "exclusion" | "compatibility" | "equivalence" | "difference"
   const [error, setError] = useState("");
 
   const isEditing = Boolean(popup?.linkId);
@@ -20,7 +20,7 @@ export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
         } else if (typeLiaison === "transverse") {
           setIsMandatory(null);
           // Reconstitue le transverseType depuis les flags booléens
-          if (popup.data?.isDependancy)     setTransverseType("dependancy");
+          if (popup.data?.isInclusion)     setTransverseType("inclusion");
           else if (popup.data?.isExclusion) setTransverseType("exclusion");
           else if (popup.data?.isCompatibility) setTransverseType("compatibility");
           else if (popup.data?.isEquivalence)   setTransverseType("equivalence");
@@ -65,7 +65,7 @@ export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
     } else {
       // Traduit transverseType en flags booléens pour compatibilité avec l'éditeur
       payload.isMandatory     = null;
-      payload.isDependancy    = transverseType === "dependancy";
+      payload.isInclusion     = transverseType === "inclusion";
       payload.isExclusion     = transverseType === "exclusion";
       payload.isCompatibility = transverseType === "compatibility";
       payload.isEquivalence   = transverseType === "equivalence";
@@ -165,7 +165,7 @@ export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
 
         <div style={childStyle()}>
           {[
-            { value: "dependancy",    label: "Dépendance" },
+            { value: "inclusion",    label: "Inclusion" },
             { value: "exclusion",     label: "Exclusion mutuelle" },
             { value: "compatibility", label: "Compatibilité" },
             { value: "equivalence",   label: "Équivalence" },

@@ -327,7 +327,7 @@ body {
   margin: 4px 0 0 0;
 }
 
-.dependancy-legende-item {
+.inclusion-legende-item {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -340,7 +340,7 @@ body {
   border-radius: 5px;
 }
 
-.dependancy-line-dotted {
+.inclusion-line-dotted {
   border: none;
   border-top: 3px dashed #5b8dee;
   margin: 4px 0 0 0;
@@ -395,7 +395,7 @@ body {
   border-top: 2px solid #d9534f;
   margin: 4px 0 0 0;
 }
-.mandatory-line-solid, .optional-line-dotted, .exclusion-line-dotted, .compatibility-line-dotted, .equivalence-line-dotted, .difference-line-dotted, .dependancy-line-dotted {
+.mandatory-line-solid, .optional-line-dotted, .exclusion-line-dotted, .compatibility-line-dotted, .equivalence-line-dotted, .difference-line-dotted, .inclusion-line-dotted {
   width: 100%;
 }
 

@@ -32,14 +32,15 @@ const (
 )
 
 type Node struct {
-	Id             NodeId       `json:"id"           binding:"required,gte=1"`
-	Type           NodeType     `json:"type"         binding:"required,oneof=feature"`
-	OperatorType   OperatorType `json:"operatorType" binding:"omitempty,oneof=or xor cardinalite"`
+	Id             NodeId       `json:"id"             binding:"required,gte=1"`
+	Type           NodeType     `json:"type"           binding:"required,oneof=feature"`
+	OperatorType   OperatorType `json:"operatorType"   binding:"omitempty,oneof=or xor cardinalite"`
 	CardinalityMin int          `json:"cardinaliteMin" binding:"omitempty,gte=0"`
 	CardinalityMax int          `json:"cardinaliteMax" binding:"omitempty"`
 }
 
 type ArcId int
+
 type Arc struct {
 	Id       ArcId  `json:"id"     binding:"required,gte=1"`
 	SourceId int    `json:"source" binding:"required,gte=1"`
@@ -51,12 +52,12 @@ type Link struct {
 	Id       ArcId  `json:"id"     binding:"required,gte=1"`
 	SourceId int    `json:"source" binding:"required,gte=1"`
 	TargetId int    `json:"target" binding:"required,gte=1"`
-	Type     string `json:"type"   binding:"required,oneof=dependancy exclusion"`
+	Type     string `json:"type"   binding:"required,oneof=dependancy exclusion compatibility equivalence difference"`
 }
 
 type FeatureModel struct {
 	Nodes []Node `json:"nodes" binding:"required,unique=Id,dive"`
-	Arcs  []Arc  `json:"arcs" binding:"required,unique=Id,unique=TargetId,dive"`
+	Arcs  []Arc  `json:"arcs"  binding:"required,unique=Id,unique=TargetId,dive"`
 	Links []Link `json:"links" binding:"omitempty,unique=Id,dive"`
 }
 
