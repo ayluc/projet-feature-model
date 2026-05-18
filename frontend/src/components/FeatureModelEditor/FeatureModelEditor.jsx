@@ -467,6 +467,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
             <ContextMenu
               {...menu}
               onClick={onPaneClick}
+              onClose={() => setMenu(null)}
               onOpenPopup={(popupData) => {
                 setMenu(null);
                 if (menu.type === "edge") {

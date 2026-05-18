@@ -11,6 +11,7 @@ export default function ContextMenu({
   left,
   right,
   bottom,
+  onClose,
   onOpenPopup,
   onClick,
   ...rest
@@ -30,11 +31,13 @@ export default function ContextMenu({
       id: `${node.id}-copy`,
       position,
     });
+    if(onClose) onClose();
   }, [id, getNode, addNodes]);
 
   const deleteNode = useCallback(() => {
     setNodes((nodes) => nodes.filter((node) => node.id !== id));
     setEdges((edges) => edges.filter((edge) => edge.source !== id && edge.target !== id));
+    if(onClose) onClose();
   }, [id, setNodes, setEdges]);
 
   const onModifyNode = useCallback(() => {
@@ -49,6 +52,7 @@ export default function ContextMenu({
 
   const deleteEdge = useCallback(() => {
     setEdges((edges) => edges.filter((edge) => edge.id !== id));
+    if(onClose) onClose();
   }, [id, setEdges]);
 
   const onModifyEdge = useCallback(() => {
