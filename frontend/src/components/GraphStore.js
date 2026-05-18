@@ -3,6 +3,33 @@ import { temporal } from 'zundo';
 import { applyNodeChanges, applyEdgeChanges, addEdge } from '@xyflow/react';
 import { getLayoutedElements } from '@/components/utils/layout';
 
+const reindexGraph = (nodes, edges) => {
+  const featureNodes = nodes.filter(n => n.type === 'feature')
+    .sort((a,b) => parseInt(a.id.match(/\d+/)?.[0] || 0) - parseInt(b.id.match(/\d+/)?.[0] || 0));
+  const operateurNodes = nodes.filter(n => ['or', 'xor', 'cardinalite'].includes(n.type))
+    .sort((a,b) => parseInt(a.id.match(/\d+/)?.[0] || 0) - parseInt(b.id.match(/\d+/)?.[0] || 0));
+
+  const idMapping = {};
+  featureNodes.forEach((n, index) => { idMapping[n.id] = `feature-${index + 1}`; });
+  operateurNodes.forEach((n, index) => { idMapping[n.id] = `operateur-${index + 1}`; });
+
+  const newNodes = nodes.map(node => {
+    return {
+      ...node,
+      id: idMapping[node.id] || node.id
+    };
+  });
+
+  const newEdges = edges.map((edge, index) => ({
+    ...edge,
+    id: (index + 1).toString(), 
+    source: idMapping[edge.source] || edge.source,
+    target: idMapping[edge.target] || edge.target
+  }));
+
+  return { newNodes, newEdges };
+};
+
 export const useGraphStore = create()(
   temporal(
     (set, get) => ({
@@ -13,7 +40,6 @@ export const useGraphStore = create()(
       arcType: null,
 
       setIsReadOnly: (val) => set({ isReadOnly: val }),
-
       setArcType: (val) => set({ arcType: val }),
 
       setNodes: (update) => {
@@ -35,7 +61,19 @@ export const useGraphStore = create()(
       },
 
       onNodesChange: (changes) => {
-        set({ nodes: applyNodeChanges(changes, get().nodes) });
+        const state = get();
+        const hasRemoves = changes.some(c => c.type === 'remove');
+        const nextNodes = applyNodeChanges(changes, state.nodes);
+
+        if (hasRemoves) {
+          const removedIds = changes.filter(c => c.type === 'remove').map(c => c.id);
+          const remainingEdges = state.edges.filter(e => !removedIds.includes(e.source) && !removedIds.includes(e.target));
+
+          const { newNodes, newEdges } = reindexGraph(nextNodes, remainingEdges);
+          set({ nodes: newNodes, edges: newEdges });
+        } else {
+          set({ nodes: nextNodes });
+        }
       },
 
       onEdgesChange: (changes) => {
