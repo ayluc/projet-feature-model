@@ -72,12 +72,24 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
           <hr className="optional-line-dotted" />
         </div>
         <div className="line-legende-item">
-          <span className="legende-label">Arc de dépendance (source → target)</span>
+          <span className="legende-label">Arc de dépendance (A =&#62; B)</span>
           <hr className="dependancy-line-dotted" />
         </div>
         <div className="line-legende-item">
-          <span className="legende-label">Arc d'incompatibilité</span>
-          <hr className="incompatibility-line-dotted" />
+          <span className="legende-label">Arc d'exclusion mutuelle (A /\ B = FALSE)</span>
+          <hr className="exclusion-line-dotted" />
+        </div>
+        <div className="line-legende-item">
+          <span className="legende-label">Arc de compatibilité (A \/ B = TRUE)</span>
+          <hr className="compatibility-line-dotted" />
+        </div>
+        <div className="line-legende-item">
+          <span className="legende-label">Arc d'équivalence (A = B)</span>
+          <hr className="equivalence-line-dotted" />
+        </div>
+        <div className="line-legende-item">
+          <span className="legende-label">Arc de différence (A ≠ B)</span>
+          <hr className="difference-line-dotted" />
         </div>
       </div>
 
@@ -131,14 +143,15 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
               />
               Optionnel
             </label>
+
             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
               <input
                 type="radio"
                 name="arcType"
-                value="requires"
-                checked={arcType === "requires"}
+                value="dependancy"
+                checked={arcType === "dependancy"}
                 onChange={() => { }}
-                onClick={() => handleChange("requires")}
+                onClick={() => handleChange("dependancy")}
               />
               Dépendance
             </label>
@@ -146,12 +159,45 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
               <input
                 type="radio"
                 name="arcType"
-                value="excludes"
-                checked={arcType === "excludes"}
+                value="exclusion"
+                checked={arcType === "exclusion"}
                 onChange={() => { }}
-                onClick={() => handleChange("excludes")}
+                onClick={() => handleChange("exclusion")}
               />
-              Exclusion
+              Exclusion mutuelle 
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
+              <input
+                type="radio"
+                name="arcType"
+                value="compatibility"
+                checked={arcType === "compatibility"}
+                onChange={() => { }}
+                onClick={() => handleChange("compatibility")}
+              />
+              Compatibilité 
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
+              <input
+                type="radio"
+                name="arcType"
+                value="equivalence"
+                checked={arcType === "equivalence"}
+                onChange={() => { }}
+                onClick={() => handleChange("equivalence")}
+              />
+              Equivalence 
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
+              <input
+                type="radio"
+                name="arcType"
+                value="difference"
+                checked={arcType === "difference"}
+                onChange={() => { }}
+                onClick={() => handleChange("difference")}
+              />
+              Différence
             </label>
           </div>
 

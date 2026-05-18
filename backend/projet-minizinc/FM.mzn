@@ -124,6 +124,8 @@ array[FEATURE] of var bool: isIncluded;
 array[FEATURE] of var CHILDREN: nbIncludedChildrenOfI = [sum(j in children[i])(isIncluded[j]==1) | i in FEATURE];
 
 % FEATURE INCLUSIVENESS CONSTRAINTS
+
+%%%% CONTRAINTES DE BASE %%%%
 % [C1] Including a non-root active feature includes its parent (and hence activates it)
 constraint
 	forall(j in FEATURE where j!=root)(
@@ -135,47 +137,37 @@ constraint
 	forall(i in roots)(
 		isIncluded[i]
 	);
-
+	
+% [C11] Exclusion récursive des enfants de i si i est exclus
+constraint 
+  forall(i in FEATURE, j in FEATURE where i in ancestors[j])(
+    (isActivated[i] /\ not(isIncluded[i])) 
+    ->
+    (isActivated[j])
+  );
+	
+	
+%%%% CONTRAINTES SUR LES ENFANTS OBLIGATOIRES %%%%
 % [C3] Including an active feature includes all of its mandatory children (and hence activates them)
 constraint
 	forall(i,j in FEATURE where j in children[i] /\ mandatory[j]==1)(
 		isActivated[i] -> (isIncluded[i] -> isIncluded[j])
 	);
 
+
+%%%% CONTRAINTES DE CARDINALITE %%%%
 % [C4-C5] Including an active feature whose children are all active forces the number of included children to satisfy the preset lower and upper cardinality bounds
 constraint
 	forall(i in FEATURE)(
 		(isActivated[i] /\ forall(j in children[i])(isActivated[j])) -> (isIncluded[i] -> (min_children[i]<=nbIncludedChildrenOfI[i] /\ nbIncludedChildrenOfI[i]<=max_children[i]))
 	);
-
-% [C6] Including an active feature includes all its dependent features (and hence activates them)
-constraint
-	forall(i,j in FEATURE where j in dependents[i])(
-		isActivated[i] -> (isIncluded[i] -> isIncluded[j])
-	);
 	
-% [C7-1] Including an active feature excludes and also activates all its incompatible features
+% [C8] Si le nombre d'enfants non activés == nombre d'enfants manquants,
+% on active et inclut les enfants non activés
 constraint
-	forall(i,j in FEATURE where j in incompatibles[i])(
-		isActivated[i] -> (isIncluded[i] -> (not(isIncluded[j]) /\ isActivated[j]))
-	);
-	
-% [C7-2] Excluding an active feature includes (and hence activates) all its incompatible features
-% Forme simplifiée équivalente
-constraint
-    forall(i,j in FEATURE where j in incompatibles[i])(
-        (isActivated[i] /\ not(isIncluded[i])
-         /\ not(i in ancestors[j])
-         /\ not(exists(k in ancestors[i])(isActivated[k] /\ not(isIncluded[k]) /\ k in ancestors[j]))
-        )
-        -> isIncluded[j]
-    );
-	
-% [C8] Inclusion du dernier enfant non activé si le quota minimum d'enfant à inclure n'est pas rempli
-	constraint
     forall(i in FEATURE where children[i] != {})(
-        (isActivated[i] /\ isIncluded[i] /\
-         sum(j in children[i])(isActivated[j]) == card(children[i]) - 1 /\
+        (isActivated[i] /\
+         card(children[i]) - sum(j in children[i])(isActivated[j]) == min_children[i] - nbIncludedChildrenOfI[i] /\
          nbIncludedChildrenOfI[i] < min_children[i])
         ->
         forall(j in children[i])(
@@ -191,6 +183,16 @@ constraint
         (isActivated[j])
     );
     
+
+%%%% CONTRAINTES DE LIENS TRANSVERSAUX %%%%
+
+%%%%%% DEPENDANCE %%%%%%
+% [C6] Including an active feature includes all its dependent features (and hence activates them)
+constraint
+	forall(i,j in FEATURE where j in dependents[i])(
+		isActivated[i] -> (isIncluded[i] -> isIncluded[j])
+	);
+	
 % [C10] Exclusion de la source d'une dépendance si sa target est exclue
 constraint
     forall(i in FEATURE, j in dependents[i])(
@@ -198,13 +200,36 @@ constraint
         ->
         (isActivated[i] /\ not(isIncluded[i]))
     );
-
-constraint 
-  forall(i in FEATURE, j in FEATURE where i in ancestors[j])(
-    (isActivated[i] /\ not(isIncluded[i])) 
+    
+%%%%%% EXCLUSION MUTUELLE %%%%%%%
+% [C12] Exclusion de noeuds avec qui i est en exclusion si i est inclus
+constraint
+  forall(i in FEATURE, j in excludes[i])(
+    (isActivated[i] /\ isIncluded[i])
     ->
-    (isActivated[j])
-  );
+    (isActivated[j] /\ not(inIncluded[j])));
+    
+%%%%%% COMPATIBILITE %%%%%%%
+% [C13] Inclusion de j si i est exclus
+constraint
+  forall(i in FEATURE, j in compatible[i])(
+    (isActivated[i] /\ not(isIncluded[i]))
+    -> 
+    (isActivated[j] /\ isIncluded[i]));
+    
+%%%%%%% EQUIVALENCE %%%%%%%%
+% [C14] si est activé, j prend la même valeur de isIncluded
+constraint
+  forall(i in FEATURE, j in equivalent[i])(
+    (isActivated[i]) -> (isActivated[j] /\ isIncluded[j] = isIncluded[i]));
+    
+%%%%%% DIFFERENCE %%%%%%%%%
+%[C16] Si i est activé, j prend la valeur inverse de isIncluded de i
+constraint
+  forall(i in FEATURE, j in different(i))(
+    (isActivated[i]) -> (isActivated[j] /\ isIncluded[j] = not(inIncluded[i])));
+
+
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FEATURE CONFIGURATION GENERATION

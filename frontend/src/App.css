@@ -306,7 +306,6 @@ body {
   border: none;
   border-top: 3px solid #b1b1b7;
   margin: 4px 0 0 0;
-
 }
 
 .optional-legende-item {
@@ -347,7 +346,7 @@ body {
   margin: 4px 0 0 0;
 }
 
-.incompatibility-legende-item {
+.exclusion-legende-item {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -360,13 +359,43 @@ body {
   border-radius: 5px;
 }
 
-.incompatibility-line-dotted {
+.exclusion-line-dotted {
   border: none;
   border-top: 3px dotted #d9534f;
   margin: 4px 0 0 0;
 }
 
-.mandatory-line-solid, .optional-line-dotted, .incompatibility-line-dotted, .dependancy-line-dotted {
+.compatibility-legende-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: rgb(255, 255, 255, 0);
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-bottom: 5px;
+  z-index: 10;
+  border: solid 2px rgb(255, 255, 255, 0);
+  border-radius: 5px;
+}
+
+.compatibility-line-dotted {
+  border: none;
+  border-top: 2px dashed #daac17;
+  margin: 4px 0 0 0;
+}
+
+.equivalence-line-dotted {
+  border: none;
+  border-top: 3px dotted #19b420;
+  margin: 4px 0 0 0;
+}
+
+.difference-line-dotted {
+  border: none;
+  border-top: 2px solid #d9534f;
+  margin: 4px 0 0 0;
+}
+.mandatory-line-solid, .optional-line-dotted, .exclusion-line-dotted, .compatibility-line-dotted, .equivalence-line-dotted, .difference-line-dotted, .dependancy-line-dotted {
   width: 100%;
 }
 

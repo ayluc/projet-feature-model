@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 
 export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
   const [liaisonType, setLiaisonType] = useState(null); // "simple" | "transverse"
-  const [isMandatory, setIsMandatory] = useState(null);
-  const [isExclusion, setIsExclusion] = useState(null);
+  const [isMandatory, setIsMandatory] = useState(null); // "true" | "false"
+  const [transverseType, setTransverseType] = useState(null); // "dependancy" | "exclusion" | "compatibility" | "equivalence" | "difference"
   const [error, setError] = useState("");
 
   const isEditing = Boolean(popup?.linkId);
@@ -12,32 +12,29 @@ export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
     if (popup) {
       if (popup.linkId) {
         const typeLiaison = popup.data?.liaisonType || null;
-
         setLiaisonType(typeLiaison);
 
-        if(typeLiaison === "simple")
-        {
+        if (typeLiaison === "simple") {
           setIsMandatory(popup.data?.isMandatory !== undefined ? String(popup.data.isMandatory) : null);
-          setIsExclusion(null);
-        }
-        else if (typeLiaison === "transverse")
-        {
+          setTransverseType(null);
+        } else if (typeLiaison === "transverse") {
           setIsMandatory(null);
-          setIsExclusion(popup.data?.isExclusion !== undefined ? String(popup.data.isMandatory) : null);
-        }
-        else
-        {
+          // Reconstitue le transverseType depuis les flags booléens
+          if (popup.data?.isDependancy)     setTransverseType("dependancy");
+          else if (popup.data?.isExclusion) setTransverseType("exclusion");
+          else if (popup.data?.isCompatibility) setTransverseType("compatibility");
+          else if (popup.data?.isEquivalence)   setTransverseType("equivalence");
+          else if (popup.data?.isDifference)    setTransverseType("difference");
+          else setTransverseType(null);
+        } else {
           setIsMandatory(null);
-          setIsExclusion(null);
+          setTransverseType(null);
         }
-
-
       } else {
-        setIsMandatory(null);
         setLiaisonType(null);
-        setIsExclusion(null);
+        setIsMandatory(null);
+        setTransverseType(null);
       }
-
       setError("");
     }
   }, [popup]);
@@ -53,23 +50,31 @@ export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
       setError("Veuillez choisir Obligatoire ou Optionnel.");
       return;
     }
-    if (liaisonType === "transverse" && isExclusion === null) {
-      setError("Veuillez choisir Dépendance ou Exclusion.");
+    if (liaisonType === "transverse" && transverseType === null) {
+      setError("Veuillez choisir un type de liaison transverse.");
       return;
     }
     setError("");
-    onConfirm({ liaisonType, isMandatory, isExclusion });
+
+    // Construit le payload attendu par onConfirm dans FeatureModelEditor
+    const payload = { liaisonType };
+
+    if (liaisonType === "simple") {
+      payload.isMandatory = isMandatory;
+      payload.isExclusion = null;
+    } else {
+      // Traduit transverseType en flags booléens pour compatibilité avec l'éditeur
+      payload.isMandatory     = null;
+      payload.isDependancy    = transverseType === "dependancy";
+      payload.isExclusion     = transverseType === "exclusion";
+      payload.isCompatibility = transverseType === "compatibility";
+      payload.isEquivalence   = transverseType === "equivalence";
+      payload.isDifference    = transverseType === "difference";
+    }
+
+    onConfirm(payload);
     onClose();
   };
-
-  const childStyle = (enabled) => ({
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-    marginLeft: "20px",
-    borderLeft: "1.5px solid #e0e0e0",
-    paddingLeft: "12px",
-  });
 
   const labelStyle = (enabled) => ({
     display: "flex",
@@ -78,6 +83,15 @@ export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
     fontSize: "13px",
     color: enabled ? "inherit" : "#aaa",
     cursor: enabled ? "pointer" : "not-allowed",
+  });
+
+  const childStyle = () => ({
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+    marginLeft: "20px",
+    borderLeft: "1.5px solid #e0e0e0",
+    paddingLeft: "12px",
   });
 
   return (
@@ -98,20 +112,20 @@ export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
 
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
 
-        {/* Parent 1 — Liaison simple */}
-        <label style={isEditing ? (labelStyle(liaisonType === "simple")) : (labelStyle(true))}>
+        {/* Liaison simple */}
+        <label style={labelStyle(!isEditing || liaisonType === "simple")}>
           <input
             type="radio"
             name="liaisonType"
             value="simple"
             checked={liaisonType === "simple"}
-            disabled={liaisonType !== "simple" && isEditing}
-            onChange={() => { setLiaisonType("simple"); setIsExclusion(null); }}
+            disabled={isEditing && liaisonType !== "simple"}
+            onChange={() => { setLiaisonType("simple"); setTransverseType(null); }}
           />
           Liaison simple
         </label>
 
-        <div style={childStyle(liaisonType === "simple")}>
+        <div style={childStyle()}>
           <label style={labelStyle(liaisonType === "simple")}>
             <input
               type="radio"
@@ -136,52 +150,55 @@ export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
           </label>
         </div>
 
-        {/* Parent 2 — Liaison transverse */}
-        <label style={isEditing ? (labelStyle(liaisonType === "transverse")) : (labelStyle(true))}>
+        {/* Liaison transverse */}
+        <label style={labelStyle(!isEditing || liaisonType === "transverse")}>
           <input
             type="radio"
             name="liaisonType"
             value="transverse"
             checked={liaisonType === "transverse"}
-            disabled={liaisonType !== "transverse" && isEditing}
+            disabled={isEditing && liaisonType !== "transverse"}
             onChange={() => { setLiaisonType("transverse"); setIsMandatory(null); }}
           />
           Liaison transverse
         </label>
 
-        <div style={childStyle(liaisonType === "transverse")}>
-          <label style={labelStyle(liaisonType === "transverse")}>
-            <input
-              type="radio"
-              name="isExclusion"
-              value="false"
-              disabled={liaisonType !== "transverse"}
-              checked={isExclusion === "false"}
-              onChange={(e) => setIsExclusion(e.target.value)}
-            />
-            Dépendance
-          </label>
-          <label style={labelStyle(liaisonType === "transverse")}>
-            <input
-              type="radio"
-              name="isExclusion"
-              value="true"
-              disabled={liaisonType !== "transverse"}
-              checked={isExclusion === "true"}
-              onChange={(e) => setIsExclusion(e.target.value)}
-            />
-            Exclusion
-          </label>
+        <div style={childStyle()}>
+          {[
+            { value: "dependancy",    label: "Dépendance" },
+            { value: "exclusion",     label: "Exclusion mutuelle" },
+            { value: "compatibility", label: "Compatibilité" },
+            { value: "equivalence",   label: "Équivalence" },
+            { value: "difference",    label: "Différence" },
+          ].map(({ value, label }) => (
+            <label key={value} style={labelStyle(liaisonType === "transverse")}>
+              <input
+                type="radio"
+                name="transverseType"
+                value={value}
+                disabled={liaisonType !== "transverse"}
+                checked={transverseType === value}
+                onChange={() => setTransverseType(value)}
+              />
+              {label}
+            </label>
+          ))}
         </div>
 
         {error && <p style={{ color: "red", fontSize: "0.85rem" }}>{error}</p>}
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
-        <button onClick={handleSubmit} style={{ padding: "6px 12px", background: "#4CAF50", color: "white", border: "none", borderRadius: 4, cursor: "pointer" }}>
+        <button
+          onClick={handleSubmit}
+          style={{ padding: "6px 12px", background: "#4CAF50", color: "white", border: "none", borderRadius: 4, cursor: "pointer" }}
+        >
           ✓ Valider
         </button>
-        <button onClick={onClose} style={{ padding: "6px 12px", background: "#d9534f", color: "white", border: "none", borderRadius: 4, cursor: "pointer" }}>
+        <button
+          onClick={onClose}
+          style={{ padding: "6px 12px", background: "#d9534f", color: "white", border: "none", borderRadius: 4, cursor: "pointer" }}
+        >
           ✕ Annuler
         </button>
       </div>

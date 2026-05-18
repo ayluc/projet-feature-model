@@ -196,11 +196,11 @@ function FeatureModelEditor({ isReadOnly = false }) {
         return;
       }
 
-      if (arcType === "requires") {
-        console.log("Connection requires détectée, création sans popup");
+      if (arcType === "dependancy") {
+        console.log("Connection dependancy détectée, création sans popup");
         onConnect({
           ...connectionWithId,
-          data: { liaisonType: "transverse", isExclusion: false },
+          data: { liaisonType: "transverse", isDependancy: true },
           style: {
             strokeWidth: 2,
             strokeDasharray: "8 3",
@@ -216,14 +216,64 @@ function FeatureModelEditor({ isReadOnly = false }) {
         return;
       }
 
-      if (arcType === "excludes") {
-        console.log("Connection excludes détectée, création sans popup");
+      if (arcType === "exclusion") {
+        console.log("Connection exclusion détectée, création sans popup");
         onConnect({
           ...connectionWithId,
           data: { liaisonType: "transverse", isExclusion: true },
           style: {
             strokeWidth: 2,
             strokeDasharray: "2 4",
+            stroke: "#d9534f",
+          },
+          markerEnd: null,
+        });
+        return;
+      }
+
+      if (arcType === "compatibility") {
+        console.log("Connection compatibility détectée, création sans popup");
+        onConnect({
+          ...connectionWithId,
+          data: { liaisonType: "transverse", isCompatibility: true },
+          style: {
+            strokeWidth: 2,
+            strokeDasharray: "4 4",
+            stroke: "#daac17",
+          },
+          markerEnd: null,
+          // markerEnd: {
+          //   type: MarkerType.ArrowClosed,
+          //   color: "#daac17",
+          //   width: 18,
+          //   height: 18,
+          // },
+        });
+        return;
+      }
+
+      if (arcType === "equivalence") {
+        console.log("Connection equivalence détectée, création sans popup");
+        onConnect({
+          ...connectionWithId,
+          data: { liaisonType: "transverse", isEquivalence: true },
+          style: {
+            strokeWidth: 2,
+            strokeDasharray: "2 4",
+            stroke: "#19b420",
+          },
+          markerEnd: null,
+        });
+        return;
+      }
+
+      if (arcType === "difference") {
+        console.log("Connection difference détectée, création sans popup");
+        onConnect({
+          ...connectionWithId,
+          data: { liaisonType: "transverse", isDifference: true },
+          style: {
+            strokeWidth: 1,
             stroke: "#d9534f",
           },
           markerEnd: null,
@@ -578,15 +628,26 @@ function FeatureModelEditor({ isReadOnly = false }) {
               };
               edgeMarkers = { markerEnd: null };
             } else if (liaisonType === "transverse") {
-              edgeData = { liaisonType: "transverse", isExclusion };
-              edgeStyle = {
-                strokeWidth: 2,
-                strokeDasharray: isExclusion ? "2 4" : "8 3",
-                stroke: isExclusion ? "#d9534f" : "#5b8dee",
-              };
-              edgeMarkers = isExclusion
-                ? { markerEnd: null }
-                : { markerEnd: { type: MarkerType.ArrowClosed, color: "#5b8dee", width: 18, height: 18 } };
+              const { isDependancy, isExclusion, isCompatibility, isEquivalence, isDifference } = linkData;
+
+              edgeData = { liaisonType: "transverse", isDependancy, isExclusion, isCompatibility, isEquivalence, isDifference };
+
+              if (isDependancy) {
+                edgeStyle = { strokeWidth: 2, strokeDasharray: "8 3", stroke: "#5b8dee" };
+                edgeMarkers = { markerEnd: { type: MarkerType.ArrowClosed, color: "#5b8dee", width: 18, height: 18 } };
+              } else if (isExclusion) {
+                edgeStyle = { strokeWidth: 2, strokeDasharray: "2 4", stroke: "#d9534f" };
+                edgeMarkers = { markerEnd: null };
+              } else if (isCompatibility) {
+                edgeStyle = { strokeWidth: 2, strokeDasharray: "4 4", stroke: "#daac17" };
+                edgeMarkers = { markerEnd: null };
+              } else if (isEquivalence) {
+                edgeStyle = { strokeWidth: 2, strokeDasharray: "2 4", stroke: "#19b420" };
+                edgeMarkers = { markerEnd: null };
+              } else if (isDifference) {
+                edgeStyle = { strokeWidth: 1, stroke: "#d9534f" };
+                edgeMarkers = { markerEnd: null };
+              }
             }
             // Cas modification via clic droit
             if (popup?.linkId && !popup?.pendingConnection) {
@@ -681,7 +742,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
           {activeTab === "rules" && (
             <div>
               <div style={{ marginBottom: '24px' }}>
-                <h3 className="font-bold mb-2">Dépendances (Requires)</h3>
+                <h3 className="font-bold mb-2">Dépendances (A =&#62; B)</h3>
                 {requiresEdges.length > 0 ? (
                   <ul style={{ paddingLeft: '20px', fontSize: '14px', listStyleType: 'disc' }}>
                     {requiresEdges.map(edge => (
@@ -698,7 +759,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
               </div>
 
               <div>
-                <h3 className="font-bold mb-2">Incompatibilités (Excludes)</h3>
+                <h3 className="font-bold mb-2">Exclusions mutuelle (A /\ B = FALSE)</h3>
                 {excludesEdges.length > 0 ? (
                   <ul style={{ paddingLeft: '20px', fontSize: '14px', listStyleType: 'disc' }}>
                     {excludesEdges.map(edge => (
@@ -710,6 +771,55 @@ function FeatureModelEditor({ isReadOnly = false }) {
                 ) : (
                   <p style={{ fontSize: '12px', color: '#888', fontStyle: 'italic', margin: 0 }}>
                     Aucune exclusion configurée.
+                  </p>
+                )}
+              </div>
+              <div style={{ marginBottom: '24px' }}>
+                <h3 className="font-bold mb-2">Compatibilités (A \/ B = TRUE)</h3>
+                {requiresEdges.length > 0 ? (
+                  <ul style={{ paddingLeft: '20px', fontSize: '14px', listStyleType: 'disc' }}>
+                    {requiresEdges.map(edge => (
+                      <li key={edge.id} style={{ marginBottom: '4px' }}>
+                        <strong>{nodeMap[edge.source]}</strong> et <strong>{nodeMap[edge.target]}</strong> sont compatibles.
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p style={{ fontSize: '12px', color: '#888', fontStyle: 'italic', margin: 0 }}>
+                    Aucune compatibilité configurée.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <h3 className="font-bold mb-2">Equivalences (A = B)</h3>
+                {excludesEdges.length > 0 ? (
+                  <ul style={{ paddingLeft: '20px', fontSize: '14px', listStyleType: 'disc' }}>
+                    {excludesEdges.map(edge => (
+                      <li key={edge.id} style={{ marginBottom: '4px' }}>
+                        <strong>{nodeMap[edge.source]}</strong> et <strong>{nodeMap[edge.target]}</strong> sont équivalents.
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p style={{ fontSize: '12px', color: '#888', fontStyle: 'italic', margin: 0 }}>
+                    Aucune équivalence configurée.
+                  </p>
+                )}
+              </div>
+              <div style={{ marginBottom: '24px' }}>
+                <h3 className="font-bold mb-2">Différences (A ≠ B)</h3>
+                {requiresEdges.length > 0 ? (
+                  <ul style={{ paddingLeft: '20px', fontSize: '14px', listStyleType: 'disc' }}>
+                    {requiresEdges.map(edge => (
+                      <li key={edge.id} style={{ marginBottom: '4px' }}>
+                        <strong>{nodeMap[edge.source]}</strong> et <strong>{nodeMap[edge.target]}</strong> sont différents.
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p style={{ fontSize: '12px', color: '#888', fontStyle: 'italic', margin: 0 }}>
+                    Aucune différence configurée.
                   </p>
                 )}
               </div>
