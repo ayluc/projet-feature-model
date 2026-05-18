@@ -616,7 +616,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
               {/* Exclusions */}
               <div style={{ marginBottom: '24px' }}>
-                <h3 className="font-bold mb-2">Exclusions mutuelles (A ∧ B = FALSE)</h3>
+                <h3 className="font-bold mb-2">Exclusion mutuelle (A ∧ B = FALSE)</h3>
                 {edgeList(exclusionEdges, e => (
                   <><strong>{nodeMap[e.source]}</strong> et <strong>{nodeMap[e.target]}</strong> sont compatibles</>
                 )) ?? emptyMsg("Aucune exclusion configurée.")}
@@ -624,7 +624,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
               {/* Compatibilités */}
               <div style={{ marginBottom: '24px' }}>
-                <h3 className="font-bold mb-2">Compatibilités (A ∨ B = TRUE)</h3>
+                <h3 className="font-bold mb-2">Compatibilité (A ∨ B = TRUE)</h3>
                 {edgeList(compatibilityEdges, e => (
                   <><strong>{nodeMap[e.source]}</strong> et <strong>{nodeMap[e.target]}</strong> sont compatibles</>
                 )) ?? emptyMsg("Aucune compatibilité configurée.")}
@@ -632,7 +632,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
               {/* Équivalences */}
               <div style={{ marginBottom: '24px' }}>
-                <h3 className="font-bold mb-2">Équivalences (A = B)</h3>
+                <h3 className="font-bold mb-2">Équivalence (A = B)</h3>
                 {edgeList(equivalenceEdges, e => (
                   <><strong>{nodeMap[e.source]}</strong> et <strong>{nodeMap[e.target]}</strong> sont équivalents</>
                 )) ?? emptyMsg("Aucune équivalence configurée.")}
@@ -640,7 +640,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
               {/* Différences */}
               <div style={{ marginBottom: '24px' }}>
-                <h3 className="font-bold mb-2">Différences (A ≠ B)</h3>
+                <h3 className="font-bold mb-2">Différence (A ≠ B)</h3>
                 {edgeList(differenceEdges, e => (
                   <><strong>{nodeMap[e.source]}</strong> et <strong>{nodeMap[e.target]}</strong> sont différents</>
                 )) ?? emptyMsg("Aucune différence configurée.")}

@@ -175,10 +175,18 @@ constraint
 	
 	
 %%%% CONTRAINTES SUR LES ENFANTS OBLIGATOIRES %%%%
-% [C3] Including an active feature includes all of its mandatory children (and hence activates them)
+% [C3-1] Including an active feature includes all of its mandatory children (and hence activates them)
 constraint
 	forall(i,j in FEATURE where j in children[i] /\ mandatory[j]==1)(
 		isActivated[i] -> (isIncluded[i] -> isIncluded[j])
+	);
+	
+% [C3-2] Excluding a mandatory child feature forces the parent to be activated and excluded
+constraint
+	forall(i,j in FEATURE where j in children[i] /\ mandatory[j]==1)(
+		isActivated[j] /\ not(isIncluded[j]) 
+		-> 
+		not(isIncluded[i]) /\ isActivated[i]
 	);
 
 
