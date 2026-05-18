@@ -84,6 +84,7 @@ func Convert(fm FeatureModel) string {
 		case "compatibility":
 			// A \/ B = true : directionnel selon FM.mzn
 			compatibles[src] = append(compatibles[src], tgt)
+			compatibles[tgt] = append(compatibles[tgt], src)
 
 		case "equivalence":
 			// A = B : symétrique

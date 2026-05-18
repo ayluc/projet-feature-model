@@ -191,35 +191,37 @@ constraint
 	
 % [C8-1] Si le nombre d'enfants non activés == nombre d'enfants manquants,
 % on active et inclut les enfants non activés
-constraint
-    forall(i in FEATURE where children[i] != {})(
-        (isActivated[i] /\
-         card(children[i]) - sum(j in children[i])(isActivated[j]) == min_children[i] - nbIncludedChildrenOfI[i] /\
-         nbIncludedChildrenOfI[i] < min_children[i])
-        ->
-        forall(j in children[i])(
-            not(isActivated[j]) -> isActivated[j] /\ isIncluded[j]
-        )
-    );
+% constraint
+%     forall(i in FEATURE where children[i] != {})(
+%         (
+%          card(children[i]) - sum(j in children[i])(isActivated[j]) == min_children[i] - nbIncludedChildrenOfI[i] 
+%           /\ nbIncludedChildrenOfI[i] < min_children[i]
+%          )
+%         ->
+%         forall(j in children[i])(
+%             not(isActivated[j]) -> isIncluded[j]
+%         )
+%     );
     
 % [C8-2] Si le nombre d'enfants de i - nombre d'enfants exclus == cardinalité max de i,
 % on active et inclut les enfants non activés
-constraint
-    forall(i in FEATURE where children[i] != {})(
-        (card(children[i]) - sum(j in children[i])(isActivated[j] /\ not(isIncluded[j])) == max_children[i])
-        ->
-        forall(j in children[i])(
-            not(isActivated[j]) -> isActivated[j] /\ isIncluded[j]
-        )
-    );
+% constraint
+%     forall(i in FEATURE where children[i] != {})(
+%         (isActivated[i] /\ isIncluded[i] /\
+%          card(children[i]) - sum(j in children[i])(isActivated[j] /\ not(isIncluded[j])) == max_children[i])
+%         ->
+%         forall(j in children[i])(
+%             not(isActivated[j]) -> isActivated[j] /\ isIncluded[j]
+%         )
+%     );
     
 % [C9] Exclusion des autres enfants non activés lorsqu'un des enfants d'un XOR est inclus
-% constraint
-%     forall(i in FEATURE, j in children[i])(
-%         (isActivated[i] /\ isIncluded[i] /\ nbIncludedChildrenOfI[i] >= max_children[i])
-%         ->
-%         (isActivated[j])
-%     );
+constraint
+    forall(i in FEATURE, j in children[i])(
+        (isActivated[i] /\ isIncluded[i] /\ nbIncludedChildrenOfI[i] >= max_children[i])
+        ->
+        (isActivated[j])
+    );
     
 
 %%%% CONTRAINTES DE LIENS TRANSVERSAUX %%%%
@@ -253,7 +255,7 @@ constraint
   forall(i in FEATURE, j in compatibles[i])(
     (isActivated[i] /\ not(isIncluded[i]))
     -> 
-    (isActivated[j] /\ isIncluded[i]));
+    (isActivated[j] /\ isIncluded[j]));
     
 %%%%%%% EQUIVALENCE %%%%%%%%
 % [C14] si est activé, j prend la même valeur de isIncluded
