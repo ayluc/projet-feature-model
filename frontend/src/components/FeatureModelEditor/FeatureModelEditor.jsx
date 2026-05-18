@@ -233,7 +233,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         onConnect({
           ...connectionWithId,
           data: { liaisonType: "transverse", isEquivalence: true },
-          style: { strokeWidth: 5, stroke: "#19b420" },
+          style: { strokeWidth: 2, strokeDasharray: "2 4", stroke: "#19b420" },
           markerEnd: null,
         });
         return;
