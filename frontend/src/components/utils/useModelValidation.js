@@ -48,7 +48,7 @@ const validateGraph = (nodes, edges) => {
 		return nbFils;
 	}
 
-	// Si il y a moins de fils que la car min d'un noeud, alors le graphe n'est pas valide
+	// S'il y a moins de fils que la card min d'un noeud, alors le graphe n'est pas valide
 	var noeudBool = false;
 	nodes.forEach(n => {
 		if(n.data.cardinaliteMin > trouverNbFils(n))
