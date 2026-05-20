@@ -70,7 +70,14 @@ export const useGraphStore = create()(
           const remainingEdges = state.edges.filter(e => !removedIds.includes(e.source) && !removedIds.includes(e.target));
 
           const { newNodes, newEdges } = reindexGraph(nextNodes, remainingEdges);
-          set({ nodes: newNodes, edges: newEdges });
+          if (state.isLayoutAuto) {
+            setTimeout(() => {
+              const { layoutedNodes } = getLayoutedElements(newNodes, newEdges);
+              set({ nodes: layoutedNodes, edges: newEdges });
+            }, 10);
+          } else {
+            set({ nodes: newNodes, edges: newEdges });
+          }
         } else {
           set({ nodes: nextNodes });
         }
@@ -92,16 +99,8 @@ export const useGraphStore = create()(
         else {
           set({ edges: newEdges });
         }
-      },
-
-      onDelete: () => {
-        if (get().isLayoutAuto) {
-          setTimeout(() => {
-            const { layoutedNodes } = getLayoutedElements(get().nodes, get().edges);
-            set({ nodes: layoutedNodes });
-          }, 10);
-        }
       }
+      
     }),
     {
       limit: 50,

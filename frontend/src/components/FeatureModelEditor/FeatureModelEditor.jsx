@@ -53,7 +53,6 @@ function FeatureModelEditor({ isReadOnly = false }) {
   const setEdges = useGraphStore((state) => state.setEdges);
   const onEdgesChange = useGraphStore((state) => state.onEdgesChange);
   const onConnect = useGraphStore((state) => state.onConnect);
-  const onDelete = useGraphStore((state) => state.onDelete);
 
   const undo = useTemporalStore((state) => state.undo);
   const redo = useTemporalStore((state) => state.redo);
@@ -436,7 +435,6 @@ function FeatureModelEditor({ isReadOnly = false }) {
           fitView
           nodesDraggable={!isReadOnly}
           nodesConnectable={!isReadOnly}
-          onDelete={isReadOnly ? undefined : onDelete}
           onNodeClick={onNodeClick}
           multiSelectionKeyCode={null}
           deselectOnClick={true}
