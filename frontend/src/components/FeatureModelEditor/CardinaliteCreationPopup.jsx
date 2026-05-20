@@ -76,6 +76,7 @@ useEffect(() => {
             className="border border-solid"
             value={cardinaliteMin}
             onChange={(e) => setCardinaliteMin(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             style={{
               padding: "6px 8px",
               borderRadius: 4,
@@ -89,6 +90,7 @@ useEffect(() => {
             className="border border-solid"
             value={cardinaliteMax}
             onChange={(e) => setCardinaliteMax(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             style={{
               padding: "6px 8px",
               borderRadius: 4,

@@ -63,7 +63,7 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
         <div className="operator-legende-item">
           <span className="legende-label">Noeud opérateur</span>
         </div>
-                {isReadOnly && (
+        {isReadOnly && (
           <>
             <div className="feature-included-legende-item">
               <span className="legende-label">Noeud feature inclus</span>

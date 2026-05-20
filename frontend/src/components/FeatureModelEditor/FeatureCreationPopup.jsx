@@ -70,6 +70,7 @@ export default function FeatureCreationPopup({ popup, onClose, onConfirm }) {
             className="border border-solid"
             value={nodeName}
             onChange={(e) => setNodeName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             style={{
               padding: "6px 8px",
               borderRadius: 4,
