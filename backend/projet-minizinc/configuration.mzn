@@ -25,7 +25,3 @@ include "FM.mzn";
 
 
 
-
-
-
-

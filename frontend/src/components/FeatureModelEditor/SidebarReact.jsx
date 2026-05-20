@@ -63,6 +63,16 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
         <div className="operator-legende-item">
           <span className="legende-label">Noeud opérateur</span>
         </div>
+                {isReadOnly && (
+          <>
+            <div className="feature-included-legende-item">
+              <span className="legende-label">Noeud feature inclus</span>
+            </div>
+            <div className="feature-excluded-legende-item">
+              <span className="legende-label">Noeud feature exclus</span>
+            </div>
+          </>
+        )}
         <div className="line-legende-item">
           <span className="legende-label">Arc obligatoire</span>
           <hr className="mandatory-line-solid" />
@@ -164,7 +174,7 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
                 onChange={() => { }}
                 onClick={() => handleChange("exclusion")}
               />
-              Exclusion mutuelle 
+              Exclusion mutuelle
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
               <input
@@ -175,7 +185,7 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
                 onChange={() => { }}
                 onClick={() => handleChange("compatibility")}
               />
-              Compatibilité 
+              Compatibilité
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
               <input
@@ -186,7 +196,7 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
                 onChange={() => { }}
                 onClick={() => handleChange("equivalence")}
               />
-              Equivalence 
+              Equivalence
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
               <input

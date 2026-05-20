@@ -289,6 +289,49 @@ body {
   z-index: 10;
 }
 
+.feature-included-legende-item {
+  height: 30px;
+  display: flex;
+  height: 30px;
+  align-items: center;
+  margin-bottom: 5px;
+  background: #dcfce7;
+  border: solid 2px #22c55e;
+  border-radius: 5px;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 10%);
+  padding: 10px;
+  z-index: 10;
+}
+
+.feature-excluded-legende-item {
+  height: 30px;
+  display: flex;
+  height: 30px;
+  align-items: center;
+  margin-bottom: 5px;
+  background: #fee2e2;
+  border: solid 2px #ef4444;
+  border-radius: 5px;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 10%);
+  padding: 10px;
+  z-index: 10;
+}
+
+
+.feature-legende-item {
+  height: 30px;
+  display: flex;
+  height: 30px;
+  align-items: center;
+  margin-bottom: 5px;
+  background: #e6f1fb;
+  border: solid 2px #185fa5;
+  border-radius: 5px;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 10%);
+  padding: 10px;
+  z-index: 10;
+}
+
 .line-legende-item {
   display: flex; 
   flex-direction: column; 
