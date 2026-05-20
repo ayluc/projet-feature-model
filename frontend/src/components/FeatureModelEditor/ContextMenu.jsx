@@ -2,6 +2,8 @@ import React, { useCallback } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import { CopyPlus, Trash2, Pencil } from 'lucide-react';
 
+import { useGraphStore } from '@/components/GraphStore';
+
 export default function ContextMenu({
   id,
   label,
@@ -18,6 +20,8 @@ export default function ContextMenu({
 }) {
   const { getNode, setNodes, addNodes, setEdges } = useReactFlow();
 
+  const onNodesChange = useGraphStore((state) => state.onNodesChange);
+
   const duplicateNode = useCallback(() => {
     const node = getNode(id);
     const position = {
@@ -31,14 +35,13 @@ export default function ContextMenu({
       id: `${node.id}-copy`,
       position,
     });
-    if(onClose) onClose();
+    if (onClose) onClose();
   }, [id, getNode, addNodes]);
 
   const deleteNode = useCallback(() => {
-    setNodes((nodes) => nodes.filter((node) => node.id !== id));
-    setEdges((edges) => edges.filter((edge) => edge.source !== id && edge.target !== id));
-    if(onClose) onClose();
-  }, [id, setNodes, setEdges]);
+    onNodesChange([{ type: 'remove', id }]);
+    if (onClose) onClose();
+  }, [id, onNodesChange, onClose]);
 
   const onModifyNode = useCallback(() => {
     const node = getNode(id);
@@ -52,7 +55,7 @@ export default function ContextMenu({
 
   const deleteEdge = useCallback(() => {
     setEdges((edges) => edges.filter((edge) => edge.id !== id));
-    if(onClose) onClose();
+    if (onClose) onClose();
   }, [id, setEdges]);
 
   const onModifyEdge = useCallback(() => {
