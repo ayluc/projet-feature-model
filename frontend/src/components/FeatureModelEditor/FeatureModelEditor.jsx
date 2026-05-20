@@ -85,7 +85,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
     // event.stopPropagation();
     setNodes((nds) =>
       nds.map((n) =>
-        n.id === clickedNode.id ? { ...n, selected: !n.selected } : { ...n, selected: false }
+        n.id === clickedNode.id ? { ...n, selected: true } : { ...n, selected: false }
       )
     );
   }, [setNodes, isReadOnly]);
