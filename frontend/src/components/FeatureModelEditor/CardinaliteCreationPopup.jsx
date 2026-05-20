@@ -34,9 +34,18 @@ useEffect(() => {
   };
 
   return (
+    <>
+      <div
+        onClick={onCancel}
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 999,
+        }}
+      />
     <div
       style={{
-        position: "absolute",
+        position: "fixed",
         top: "50%",
         left: "50%",
         transform: "translate(-50%, -50%)",
@@ -122,5 +131,6 @@ useEffect(() => {
           }}>✕ Annuler</button>
       </div>
     </div>
+    </>
   );
 }

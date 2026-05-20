@@ -95,17 +95,26 @@ export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
   });
 
   return (
-    <div
-      onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-      style={{
-        position: "absolute", top: "50%", left: "50%",
-        transform: "translate(-50%, -50%)",
-        background: "white", border: "1px solid #ddd",
-        borderRadius: 10, padding: 24, zIndex: 1000,
-        boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
-        display: "flex", flexDirection: "column", gap: "16px",
-      }}
-    >
+    <>
+      <div
+        onClick={onClose}
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 999,
+        }}
+      />
+      <div
+        onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+        style={{
+          position: "fixed", top: "50%", left: "50%",
+          transform: "translate(-50%, -50%)",
+          background: "white", border: "1px solid #ddd",
+          borderRadius: 10, padding: 24, zIndex: 1000,
+          boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+          display: "flex", flexDirection: "column", gap: "16px",
+        }}
+      >
       <div style={{ textAlign: "center" }}>
         <strong style={{ fontSize: "1.25rem", fontWeight: "bold" }}>
           {popup.nodeType}
@@ -205,6 +214,7 @@ export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
           ✕ Annuler
         </button>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
