@@ -173,3 +173,65 @@
   border-color: #ef4444;
   border-width: 2px;
 }
+
+/* === Nœuds activés manuellement (bordure solide) === */
+
+.react-flow__node-feature.node-included {
+  background-color: #dcfce7;
+  border-color: #22c55e;
+  border-width: 2px;
+}
+
+.react-flow__node-feature.node-excluded {
+  background-color: #fee2e2;
+  border-color: #ef4444;
+  border-width: 2px;
+}
+
+/* === Nœuds activés par inférence du solveur (bordure en pointillés) === */
+
+.react-flow__node-feature.node-included-inferred {
+  background-color: #f0fdf4;
+  border-color: #22c55e;
+  border-width: 2px;
+  border-style: dashed;
+  opacity: 0.85;
+}
+
+.react-flow__node-feature.node-excluded-inferred {
+  background-color: #fff5f5;
+  border-color: #ef4444;
+  border-width: 2px;
+  border-style: dashed;
+  opacity: 0.85;
+}
+
+/* === Entrées de légende pour les états inférés === */
+
+.feature-included-inferred-legende-item {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+  background: #f0fdf4;
+  border: dashed 2px #22c55e;
+  border-radius: 5px;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 10%);
+  padding: 10px;
+  z-index: 10;
+  opacity: 0.85;
+}
+
+.feature-excluded-inferred-legende-item {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+  background: #fff5f5;
+  border: dashed 2px #ef4444;
+  border-radius: 5px;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 10%);
+  padding: 10px;
+  z-index: 10;
+  opacity: 0.85;
+}

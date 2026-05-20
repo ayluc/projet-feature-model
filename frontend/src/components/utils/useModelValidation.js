@@ -243,7 +243,13 @@ export const useModelValidation = (isReadOnly) => {
 								const included = isIncluded[numericId - 1];
 								const newStatus = active ? (included ? 'included' : 'excluded') : null;
 
-								return { ...n, data: { ...n.data, configStatus: newStatus } };
+								
+								const currentSource = n.data?.configSource;
+								const newSource = newStatus !== null
+									? (currentSource === 'manual' ? 'manual' : 'inferred')
+									: null;
+
+								return { ...n, data: { ...n.data, configStatus: newStatus, configSource: newSource } };
 							}
 						}
 						return n;

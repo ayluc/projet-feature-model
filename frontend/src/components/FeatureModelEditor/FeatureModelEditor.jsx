@@ -33,7 +33,7 @@ function getTransverseStyle(data) {
     edgeMarkers: { markerEnd: null },
   };
   if (data?.isEquivalence) return {
-    edgeStyle: { strokeWidth: 5, stroke: "#19b420" }, // double ligne gérée via edgeType custom
+    edgeStyle: { strokeWidth: 5, stroke: "#19b420" },
     edgeMarkers: { markerEnd: null },
   };
   if (data?.isDifference) return {
@@ -41,6 +41,17 @@ function getTransverseStyle(data) {
     edgeMarkers: { markerEnd: null },
   };
   return { edgeStyle: {}, edgeMarkers: {} };
+}
+
+function getNodeClassName(n) {
+  const { configStatus, configSource } = n.data;
+  if (configStatus === 'included') {
+    return configSource === 'inferred' ? 'node-included-inferred' : 'node-included';
+  }
+  if (configStatus === 'excluded') {
+    return configSource === 'inferred' ? 'node-excluded-inferred' : 'node-excluded';
+  }
+  return '';
 }
 
 function FeatureModelEditor({ isReadOnly = false }) {
@@ -291,12 +302,12 @@ function FeatureModelEditor({ isReadOnly = false }) {
     if (isMinorChange) pause();
     const modifiedChanges = isReadOnly
       ? changes.map((change) => {
-          if (change.type === 'select' && !change.selected) {
-            const node = nodes.find(n => n.id === change.id);
-            if (node?.selected) return { ...change, selected: true };
-          }
-          return change;
-        })
+        if (change.type === 'select' && !change.selected) {
+          const node = nodes.find(n => n.id === change.id);
+          if (node?.selected) return { ...change, selected: true };
+        }
+        return change;
+      })
       : changes;
     onNodesChange(modifiedChanges);
     if (isMinorChange) resume();
@@ -315,7 +326,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
       setNodes(nds => nds.map(n => ({
         ...n,
         className: '',
-        data: { ...n.data, configStatus: null }
+        data: { ...n.data, configStatus: null, configSource: null }
       })));
     }
   }, [isReadOnly]);
@@ -323,17 +334,23 @@ function FeatureModelEditor({ isReadOnly = false }) {
   const enrichedNodes = useMemo(() => {
     return nodes.map(n => ({
       ...n,
-      className: n.data.configStatus === 'included' ? 'node-included'
-        : n.data.configStatus === 'excluded' ? 'node-excluded' : '',
+      className: getNodeClassName(n),
       data: {
         ...n.data,
         isReadOnly,
         onConfigChange: (nodeId, status) => {
-          setNodes(nds => nds.map(nd =>
-            nd.id === nodeId
-              ? { ...nd, data: { ...nd.data, configStatus: nd.data.configStatus === status ? null : status } }
-              : nd
-          ));
+          setNodes(nds => nds.map(nd => {
+            if (nd.id !== nodeId) return nd;
+            const isToggleOff = nd.data.configStatus === status;
+            return {
+              ...nd,
+              data: {
+                ...nd.data,
+                configStatus: isToggleOff ? null : status,
+                configSource: isToggleOff ? null : 'manual',
+              }
+            };
+          }));
         }
       }
     }));
@@ -357,11 +374,11 @@ function FeatureModelEditor({ isReadOnly = false }) {
     const inc = [], exc = [], com = [], equ = [], dif = [];
     edges.forEach((e) => {
       if (e.data?.liaisonType === "transverse") {
-        if (e.data?.isInclusion)     inc.push(e);
-        else if (e.data?.isExclusion)     exc.push(e);
+        if (e.data?.isInclusion) inc.push(e);
+        else if (e.data?.isExclusion) exc.push(e);
         else if (e.data?.isCompatibility) com.push(e);
-        else if (e.data?.isEquivalence)   equ.push(e);
-        else if (e.data?.isDifference)    dif.push(e);
+        else if (e.data?.isEquivalence) equ.push(e);
+        else if (e.data?.isDifference) dif.push(e);
       }
     });
     return { inclusionEdges: inc, exclusionEdges: exc, compatibilityEdges: com, equivalenceEdges: equ, differenceEdges: dif };
@@ -388,10 +405,10 @@ function FeatureModelEditor({ isReadOnly = false }) {
   const edgeList = (edgeArr, renderLabel) => (
     edgeArr.length > 0
       ? <ul style={{ paddingLeft: '20px', fontSize: '14px', listStyleType: 'disc' }}>
-          {edgeArr.map(edge => (
-            <li key={edge.id} style={{ marginBottom: '4px' }}>{renderLabel(edge)}</li>
-          ))}
-        </ul>
+        {edgeArr.map(edge => (
+          <li key={edge.id} style={{ marginBottom: '4px' }}>{renderLabel(edge)}</li>
+        ))}
+      </ul>
       : null
   );
 

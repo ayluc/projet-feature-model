@@ -7,7 +7,7 @@ import { getLayoutedElements } from '@/components/utils/layout';
 import { useGraphStore } from '@/components/GraphStore';
 import { useModelValidation } from '../utils/useModelValidation';
 
-export default ({ isReadOnly = false }) => {  // ← prop ajoutée
+export default ({ isReadOnly = false }) => {
   const [_, setType] = useDnD();
 
   const onDragStart = (event, nodeType) => {
@@ -66,10 +66,16 @@ export default ({ isReadOnly = false }) => {  // ← prop ajoutée
         {isReadOnly && (
           <>
             <div className="feature-included-legende-item">
-              <span className="legende-label">Noeud feature inclus</span>
+              <span className="legende-label">Noeud feature inclus <em style={{ fontSize: '11px', opacity: 0.7 }}>(manuel)</em></span>
             </div>
             <div className="feature-excluded-legende-item">
-              <span className="legende-label">Noeud feature exclus</span>
+              <span className="legende-label">Noeud feature exclus <em style={{ fontSize: '11px', opacity: 0.7 }}>(manuel)</em></span>
+            </div>
+            <div className="feature-included-inferred-legende-item">
+              <span className="legende-label">Noeud feature inclus <em style={{ fontSize: '11px', opacity: 0.7 }}>(inféré)</em></span>
+            </div>
+            <div className="feature-excluded-inferred-legende-item">
+              <span className="legende-label">Noeud feature exclus <em style={{ fontSize: '11px', opacity: 0.7 }}>(inféré)</em></span>
             </div>
           </>
         )}

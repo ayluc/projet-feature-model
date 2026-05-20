@@ -5,6 +5,7 @@ import { useGraphStore } from '../GraphStore';
 export function NodeFeature({ id, data, isConnectable, selected }) {
 
   const configStatus = data.configStatus; // 'included' | 'excluded' | null
+  const configSource = data.configSource; // 'manual' | 'inferred' | null
 
   const borderColor = configStatus === 'included' ? '#22c55e'
     : configStatus === 'excluded' ? '#ef4444'
@@ -17,7 +18,6 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
   const isReadOnly = data.isReadOnly;
 
   const { validate } = useModelValidation(isReadOnly);
-
 
   return (
     <div style={{
