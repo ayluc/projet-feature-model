@@ -118,7 +118,7 @@ export const useModelValidation = (isReadOnly) => {
 				.map((edge, i) => {
 					const d = edge.data;
 					let type = null;
-					if (d.isDependancy) type = "dependancy";
+					if (d.isInclusion) type = "inclusion";
 					else if (d.isExclusion) type = "exclusion";
 					else if (d.isCompatibility) type = "compatibility";
 					else if (d.isEquivalence) type = "equivalence";
