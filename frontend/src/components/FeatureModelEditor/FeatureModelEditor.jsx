@@ -84,7 +84,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
     // event.stopPropagation();
     setNodes((nds) =>
       nds.map((n) =>
-        n.id === clickedNode.id ? { ...n, selected: true } : { ...n, selected: false }
+        n.id === clickedNode.id ? { ...n, selected: !n.selected } : { ...n, selected: false }
       )
     );
   }, [setNodes, isReadOnly]);
@@ -291,12 +291,12 @@ function FeatureModelEditor({ isReadOnly = false }) {
     if (isMinorChange) pause();
     const modifiedChanges = isReadOnly
       ? changes.map((change) => {
-          if (change.type === 'select' && !change.selected) {
-            const node = nodes.find(n => n.id === change.id);
-            if (node?.selected) return { ...change, selected: true };
-          }
-          return change;
-        })
+        if (change.type === 'select' && !change.selected) {
+          const node = nodes.find(n => n.id === change.id);
+          if (node?.selected) return { ...change, selected: true };
+        }
+        return change;
+      })
       : changes;
     onNodesChange(modifiedChanges);
     if (isMinorChange) resume();
@@ -323,12 +323,22 @@ function FeatureModelEditor({ isReadOnly = false }) {
   useEffect(() => {
     if (isReadOnly) return;
     const handleKeyDown = (event) => {
-      if (event.key !== 'Backspace') return;
-      const tag = document.activeElement?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-      const selectedNodes = nodes.filter(n => n.selected);
-      if (selectedNodes.length === 0) return;
-      onNodesChange(selectedNodes.map(n => ({ type: 'remove', id: n.id })));
+      if (event.key == 'Backspace') {
+        const tag = document.activeElement?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+        const selectedNodes = nodes.filter(n => n.selected);
+        if (selectedNodes.length === 0) return;
+        onNodesChange(selectedNodes.map(n => ({ type: 'remove', id: n.id })));
+      }
+      else if (event.key === 'z' && (event.ctrlKey || event.metaKey)) {
+        undo();
+      }
+      else if (event.key === 'y' && (event.ctrlKey || event.metaKey)) {
+        redo();
+      }
+      else {
+        return;
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -371,11 +381,11 @@ function FeatureModelEditor({ isReadOnly = false }) {
     const inc = [], exc = [], com = [], equ = [], dif = [];
     edges.forEach((e) => {
       if (e.data?.liaisonType === "transverse") {
-        if (e.data?.isInclusion)     inc.push(e);
-        else if (e.data?.isExclusion)     exc.push(e);
+        if (e.data?.isInclusion) inc.push(e);
+        else if (e.data?.isExclusion) exc.push(e);
         else if (e.data?.isCompatibility) com.push(e);
-        else if (e.data?.isEquivalence)   equ.push(e);
-        else if (e.data?.isDifference)    dif.push(e);
+        else if (e.data?.isEquivalence) equ.push(e);
+        else if (e.data?.isDifference) dif.push(e);
       }
     });
     return { inclusionEdges: inc, exclusionEdges: exc, compatibilityEdges: com, equivalenceEdges: equ, differenceEdges: dif };
@@ -402,10 +412,10 @@ function FeatureModelEditor({ isReadOnly = false }) {
   const edgeList = (edgeArr, renderLabel) => (
     edgeArr.length > 0
       ? <ul style={{ paddingLeft: '20px', fontSize: '14px', listStyleType: 'disc' }}>
-          {edgeArr.map(edge => (
-            <li key={edge.id} style={{ marginBottom: '4px' }}>{renderLabel(edge)}</li>
-          ))}
-        </ul>
+        {edgeArr.map(edge => (
+          <li key={edge.id} style={{ marginBottom: '4px' }}>{renderLabel(edge)}</li>
+        ))}
+      </ul>
       : null
   );
 
