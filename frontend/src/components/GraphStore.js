@@ -84,7 +84,11 @@ export const useGraphStore = create()(
       },
 
       onEdgesChange: (changes) => {
-        set({ edges: applyEdgeChanges(changes, get().edges) });
+        const newEdges = applyEdgeChanges(changes, get().edges)
+
+        const { layoutedNodes } = getLayoutedElements(get().nodes, newEdges);
+
+        set({ nodes: layoutedNodes, edges: newEdges });
       },
 
       onConnect: (connection) => {
@@ -100,7 +104,7 @@ export const useGraphStore = create()(
           set({ edges: newEdges });
         }
       }
-      
+
     }),
     {
       limit: 50,
