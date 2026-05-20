@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import { CopyPlus, Trash2, Pencil } from 'lucide-react';
 
-import { useGraphStore } from '@/components/GraphStore';
+import { useGraphStore } from '@/components/store/GraphStore';
 
 export default function ContextMenu({
   id,

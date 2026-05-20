@@ -2,15 +2,15 @@ import React, { useRef, useCallback, useState, useEffect, useMemo } from "react"
 import { ReactFlow, Controls, Background, useReactFlow, ControlButton, MarkerType } from "@xyflow/react";
 import { Undo2, Redo2 } from "lucide-react";
 
-import { useDnD } from '@/components/DnDContext';
-import { useGraphStore, useTemporalStore } from '@/components/GraphStore';
+import { useDnD } from '@/components/utils/DnDContext';
+import { useGraphStore, useTemporalStore } from '@/components/store/GraphStore';
 import { NodeFeature, NodeXOR, NodeOR, NodeCardinalite } from "@/components/nodes";
 import PanneauLateral from "./PanneauLateral";
 
-import FeatureCreationPopup from "./FeatureCreationPopup";
-import CardinaliteCreationPopup from "./CardinaliteCreationPopup";
-import LinkCreationPopup from "./LinkCreationPopup";
-import ContextMenu from "./ContextMenu";
+import FeatureCreationPopup from "../popups/FeatureCreationPopup";
+import CardinaliteCreationPopup from "../popups/CardinaliteCreationPopup";
+import LinkCreationPopup from "../popups/LinkCreationPopup";
+import ContextMenu from "../popups/ContextMenu";
 
 const nodeTypes = {
   feature: NodeFeature,

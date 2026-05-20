@@ -3,9 +3,9 @@ import { ReactFlowProvider } from '@xyflow/react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 
-import { DnDProvider } from '@/components/DnDContext';
+import { DnDProvider } from '@/components/utils/DnDContext';
 
-import Toolbar from "@/components/Toolbar";
+import Toolbar from "@/components/editor-ui/Toolbar";
 import Creation from './pages/Creation';
 import Configuration from './pages/Configuration';
 

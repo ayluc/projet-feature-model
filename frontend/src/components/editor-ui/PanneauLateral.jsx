@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useReactFlow } from "@xyflow/react";
-import { useGraphStore } from "@/components/GraphStore";
+import { useGraphStore } from "@/components/store/GraphStore";
 
 function PanneauLateral({ isOpen }) {
     const setActiveTab = useGraphStore((state) => state.setPanelTab);

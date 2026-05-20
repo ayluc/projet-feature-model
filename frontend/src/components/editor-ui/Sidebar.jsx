@@ -1,10 +1,10 @@
 import React from 'react';
 import { useState } from 'react';
 
-import { useDnD } from '@/components/DnDContext';
-import { Button } from "@/components/ui/button";
+import { useDnD } from '@/components/utils/DnDContext';
+import { Button } from "@/components/shadcn-ui/button";
 import { getLayoutedElements } from '@/components/utils/layout';
-import { useGraphStore } from '@/components/GraphStore';
+import { useGraphStore } from '@/components/store/GraphStore';
 import { useModelValidation } from '../utils/useModelValidation';
 
 export default ({ isReadOnly = false }) => {

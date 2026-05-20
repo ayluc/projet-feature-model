@@ -1,6 +1,6 @@
 import { Position, Handle, NodeToolbar } from '@xyflow/react';
 import { useModelValidation } from '../utils/useModelValidation';
-import { useGraphStore } from '../GraphStore';
+import { useGraphStore } from '../store/GraphStore';
 
 export function NodeFeature({ id, data, isConnectable, selected }) {
 

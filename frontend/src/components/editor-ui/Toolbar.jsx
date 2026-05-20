@@ -1,16 +1,16 @@
 import { useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useReactFlow } from "@xyflow/react";
-import { useGraphStore } from "@/components/GraphStore";
-import { Button } from "@/components/ui/button";
+import { useGraphStore } from "@/components/store/GraphStore";
+import { Button } from "@/components/shadcn-ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuGroup,
   DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
+} from "@/components/shadcn-ui/dropdown-menu";
 import { Menu, ArrowDownToLine, Plus, Trash2, FileUp, FileDown } from "lucide-react";
-import { useModelValidation } from './utils/useModelValidation';
-import CustomPopup from './FeatureModelEditor/CustomPopup';
-import CustomToast from "./FeatureModelEditor/CustomToast";
+import { useModelValidation } from '../utils/useModelValidation';
+import CustomPopup from '../popups/CustomPopup';
+import CustomToast from "../popups/CustomToast";
 
 function Toolbar() {
   const navigate = useNavigate();

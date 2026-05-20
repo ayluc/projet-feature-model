@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGraphStore } from '@/components/GraphStore';
+import { useGraphStore } from '@/components/store/GraphStore';
 
 const validateGraph = (nodes, edges) => {
 	const operatorTypes = ["or", "xor", "cardinalite"];
