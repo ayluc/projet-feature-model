@@ -54,6 +54,7 @@ function Toolbar() {
       setNodes([]);
       setEdges([]);
       setViewport({ x: 0, y: 0, zoom: 1 });
+      if (location.pathname !== "/creation") navigate("/creation");
     });
   };
 
@@ -65,6 +66,7 @@ function Toolbar() {
         const flow = JSON.parse(e.target.result);
         setNodes([]);
         setEdges([]);
+        if (location.pathname !== "/creation") navigate("/creation");
         setTimeout(() => {
           if (flow.nodes) setNodes(flow.nodes);
           if (flow.edges) setEdges(flow.edges);
