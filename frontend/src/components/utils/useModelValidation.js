@@ -13,6 +13,22 @@ const validateGraph = (nodes, edges) => {
 	// Il doit y avoir exactement une racine
 	if (roots.length !== 1) return false;
 
+	
+	// Récupère les IDs de tous les noeuds qui sont parents
+	const parentIds = new Set(edges.map(e => e.source));
+	// Récupère tous les noeuds opérateurs qui n'ont pas d'enfant
+	const operators = nodes.filter(n => operatorTypes.includes(n.type) && !parentIds.has(n.id));
+	// Il ne doit pas y avoir d'opérateurs sans enfant
+	if (operators.length > 0) return false;
+
+
+	// Récupère les noeuds qui sont isolés (sans enfant ni parent)
+	const isolatedNodes = nodes.filter(n => !parentIds.has(n.id) && !childIds.has(n.id));
+	// Il ne doit pas y en avoir
+	if(isolatedNodes.length > 0) return false
+
+
+
 	// TODO: ajouter d'autres validations ici
 	// ex: vérifier qu'aucun nœud feature n'est isolé (sans parent ET sans enfant)
 	// ex: vérifier qu'il n'y a pas de cycles
@@ -34,6 +50,9 @@ export const useModelValidation = (isReadOnly) => {
 
 		setIsLoading(true);
 		setError(null);
+
+		const isGraphValid = validateGraph(currentNodes, currentEdges);
+		console.log("graphe valide ?", isGraphValid);
 
 		try {
 
@@ -152,7 +171,7 @@ export const useModelValidation = (isReadOnly) => {
 			console.log("Réponse création :", data);
 			setResult(data);
 
-			const isGraphValid = validateGraph(currentNodes, currentEdges);
+
 			if (isReadOnly) {
 				// ── Mode configuration ──────────────────────────────────────
 				console.log("Validation du modèle en mode configuration");
