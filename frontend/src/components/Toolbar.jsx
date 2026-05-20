@@ -10,6 +10,7 @@ import {
 import { Menu, ArrowDownToLine, Plus, Trash2, FileUp, FileDown } from "lucide-react";
 import { useModelValidation } from './utils/useModelValidation';
 import CustomPopup from './FeatureModelEditor/CustomPopup';
+import CustomToast from "./FeatureModelEditor/CustomToast";
 
 function Toolbar() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ function Toolbar() {
   const setEdges = useGraphStore((state) => state.setEdges);
   const fileInputRef = useRef(null);
   const [customPopup, setCustomPopup] = useState(null);
+  const [toast, setToast] = useState(null);
 
   const showAlert = (message) => {
     setCustomPopup({ type: "alert", message });
@@ -137,6 +139,8 @@ function Toolbar() {
               const isValid = await validate();
               if (isValid) {
                 navigate("/configuration");
+              } else {
+                setToast({ type: "warning", message: "Le feature model est invalide. Vérifiez qu'il y a une seule racine, pas de nœuds isolés et que tous les opérateurs ont des enfants." });
               }
             }}
           >
@@ -151,6 +155,7 @@ function Toolbar() {
       </div>
 
       <CustomPopup dialog={customPopup} onClose={() => setCustomPopup(null)} />
+      <CustomToast dialog={toast} onClose={() => setToast(null)} />
     </>
   );
 }
