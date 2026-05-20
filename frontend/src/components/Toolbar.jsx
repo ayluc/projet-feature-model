@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useReactFlow } from "@xyflow/react";
 import { useGraphStore } from "@/components/GraphStore";
@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Menu, ArrowDownToLine, Plus, Trash2, FileUp, FileDown } from "lucide-react";
 import { useModelValidation } from './utils/useModelValidation';
+import CustomPopup from './FeatureModelEditor/CustomPopup';
 
 function Toolbar() {
   const navigate = useNavigate();
@@ -18,6 +19,15 @@ function Toolbar() {
   const nodes = useGraphStore((state) => state.nodes);
   const setEdges = useGraphStore((state) => state.setEdges);
   const fileInputRef = useRef(null);
+  const [customPopup, setCustomPopup] = useState(null);
+
+  const showAlert = (message) => {
+    setCustomPopup({ type: "alert", message });
+  };
+
+  const showConfirm = (message, onConfirm) => {
+    setCustomPopup({ type: "confirm", message, onConfirm });
+  };
 
   const handleExport = () => {
     const flowData = toObject();
@@ -38,36 +48,42 @@ function Toolbar() {
   };
 
   const handleClear = () => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer votre feature model actuel ?")) {
+    showConfirm("Êtes-vous sûr de vouloir supprimer votre feature model actuel ?", () => {
       setNodes([]);
       setEdges([]);
       setViewport({ x: 0, y: 0, zoom: 1 });
-    }
+    });
+  };
+
+  const doImport = (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const flow = JSON.parse(e.target.result);
+        setNodes([]);
+        setEdges([]);
+        setTimeout(() => {
+          if (flow.nodes) setNodes(flow.nodes);
+          if (flow.edges) setEdges(flow.edges);
+          if (flow.viewport) setViewport(flow.viewport);
+        }, 50);
+      } catch (err) {
+        console.error("Fichier JSON invalide :", err);
+        showAlert("Le fichier sélectionné n'est pas un JSON valide.");
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = "";
   };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (!file) return;
-    if (nodes.length > 0 && window.confirm("Êtes-vous sûr de vouloir écraser votre feature model actuel ?") || nodes.length === 0) {
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const flow = JSON.parse(e.target.result);
-          setNodes([]);
-          setEdges([]);
-          setTimeout(() => {
-            if (flow.nodes) setNodes(flow.nodes);
-            if (flow.edges) setEdges(flow.edges);
-            if (flow.viewport) setViewport(flow.viewport);
-          }, 50);
-        } catch (err) {
-          console.error("Fichier JSON invalide :", err);
-          alert("Le fichier sélectionné n'est pas un JSON valide.");
-        }
-      };
-      reader.readAsText(file);
-      event.target.value = "";
+    if (nodes.length > 0) {
+      showConfirm("Êtes-vous sûr de vouloir écraser votre feature model actuel ?", () => doImport(event));
+    } else {
+      doImport(event);
     }
   };
 
@@ -133,6 +149,8 @@ function Toolbar() {
           </Button>
         </div>
       </div>
+
+      <CustomPopup dialog={customPopup} onClose={() => setCustomPopup(null)} />
     </>
   );
 }
