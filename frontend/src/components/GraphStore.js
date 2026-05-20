@@ -113,9 +113,10 @@ export const useGraphStore = create()(
     {
       limit: 50,
       partialize: (state) => ({
-        nodes: state.nodes,
+        nodes: state.nodes.map(({ selected, ...n }) => n),
         edges: state.edges
       }),
+      equality: (a, b) => JSON.stringify(a) === JSON.stringify(b),
     }
   )
 );
