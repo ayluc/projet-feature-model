@@ -28,7 +28,7 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
       <NodeToolbar isVisible={isReadOnly && selected}>
         <div style={{ display: 'flex', gap: '6px' }}>
           <button
-            onClick={() => { data.onConfigChange(id, 'included'); if (configStatus === null || configStatus === "excluded") validate(); }}
+            onClick={(e) => { e.stopPropagation(); data.onConfigChange(id, 'included'); if (configStatus === null || configStatus === "excluded") validate(); }}
             style={{
               width: 22,
               height: 22,
@@ -41,7 +41,7 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
           >✓</button>
 
           <button
-            onClick={() => { data.onConfigChange(id, 'excluded'); if (configStatus === null || configStatus === "included") validate(); }}
+            onClick={(e) => { e.stopPropagation(); data.onConfigChange(id, 'excluded'); if (configStatus === null || configStatus === "included") validate(); }}
             style={{
               width: 22, height: 22, borderRadius: '50%', border: 'none', cursor: 'pointer',
               background: configStatus === 'excluded' ? '#d1d5db' : '#ef4444',

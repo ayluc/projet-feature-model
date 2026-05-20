@@ -14,6 +14,9 @@ include "FM.mzn";
 
 
 
+constraint isActivated[7] == true;
+constraint isIncluded[7] == true;
+
 
 
 

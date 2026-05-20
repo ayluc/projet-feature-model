@@ -91,7 +91,11 @@
   box-shadow:
       0px 3.54px 4.55px 0px #00000052, 0px 3.54px 4.55px 0px #0000000d,
     0px 0.51px 1.01px 0px #00000079;
+}
 
+.react-flow.read-only .react-flow__node.selectable.selected {
+  border-color: var(--xy-theme-color-focus);
+  box-shadow: var(--xy-node-boxshadow-default);
 }
 
 .react-flow__node-group {

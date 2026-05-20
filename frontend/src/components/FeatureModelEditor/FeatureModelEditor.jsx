@@ -369,6 +369,8 @@ function FeatureModelEditor({ isReadOnly = false }) {
             const isToggleOff = nd.data.configStatus === status;
             return {
               ...nd,
+              selected: false,
+              focused: false,
               data: {
                 ...nd.data,
                 configStatus: isToggleOff ? null : status,
@@ -394,7 +396,6 @@ function FeatureModelEditor({ isReadOnly = false }) {
       : edges.filter(e => e.data?.liaisonType !== "transverse");
   }, [edges, isTransverseVisible]);
 
-  // ✅ Correction : chaque type transverse est filtré indépendamment
   const { inclusionEdges, exclusionEdges, compatibilityEdges, equivalenceEdges, differenceEdges } = useMemo(() => {
     const inc = [], exc = [], com = [], equ = [], dif = [];
     edges.forEach((e) => {
@@ -462,6 +463,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
       <div className="reactflow-wrapper" ref={reactFlowWrapper} style={{ flex: 1, minWidth: 0 }}>
         <ReactFlow
+          className={isReadOnly ? 'read-only' : ''}
           nodes={enrichedNodes}
           edges={visibleEdges}
           nodeTypes={nodeTypes}
