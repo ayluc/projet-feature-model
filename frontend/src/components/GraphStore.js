@@ -38,9 +38,13 @@ export const useGraphStore = create()(
       isLayoutAuto: true,
       isTransverseVisible: true,
       arcType: null,
+      panelOpen: false,
+      panelTab: "json",
 
       setIsReadOnly: (val) => set({ isReadOnly: val }),
       setArcType: (val) => set({ arcType: val }),
+      setPanelOpen: (val) => set({ panelOpen: val }),
+      setPanelTab: (val) => set({ panelTab: val }),
 
       setNodes: (update) => {
         const nextNodes = typeof update === 'function' ? update(get().nodes) : update;
@@ -109,9 +113,10 @@ export const useGraphStore = create()(
     {
       limit: 50,
       partialize: (state) => ({
-        nodes: state.nodes,
+        nodes: state.nodes.map(({ selected, ...n }) => n),
         edges: state.edges
       }),
+      equality: (a, b) => JSON.stringify(a) === JSON.stringify(b),
     }
   )
 );
