@@ -23,7 +23,7 @@ function getTransverseStyle(data) {
   if (data?.isInclusion) return {
     edgeStyle: { strokeWidth: 2, strokeDasharray: "8 3", stroke: "#5b8dee" },
     edgeMarkers: { markerEnd: { type: MarkerType.ArrowClosed, color: "#5b8dee", width: 18, height: 18 } },
-  };
+  };// double ligne gérée via edgeType custom
   if (data?.isExclusion) return {
     edgeStyle: { strokeWidth: 2, strokeDasharray: "2 4", stroke: "#d9534f" },
     edgeMarkers: { markerEnd: null },
@@ -33,7 +33,7 @@ function getTransverseStyle(data) {
     edgeMarkers: { markerEnd: null },
   };
   if (data?.isEquivalence) return {
-    edgeStyle: { strokeWidth: 5, stroke: "#19b420" }, // double ligne gérée via edgeType custom
+    edgeStyle: { strokeWidth: 5, stroke: "#19b420" },
     edgeMarkers: { markerEnd: null },
   };
   if (data?.isDifference) return {
@@ -81,10 +81,10 @@ function FeatureModelEditor({ isReadOnly = false }) {
   let edgeMarkers = {};
 
   const onNodeClick = useCallback((event, clickedNode) => {
-    event.stopPropagation();
+    // event.stopPropagation();
     setNodes((nds) =>
       nds.map((n) =>
-        n.id === clickedNode.id ? { ...n, selected: !n.selected } : { ...n, selected: false }
+        n.id === clickedNode.id ? { ...n, selected: true } : { ...n, selected: false }
       )
     );
   }, [setNodes, isReadOnly]);
@@ -319,6 +319,20 @@ function FeatureModelEditor({ isReadOnly = false }) {
       })));
     }
   }, [isReadOnly]);
+
+  useEffect(() => {
+    if (isReadOnly) return;
+    const handleKeyDown = (event) => {
+      if (event.key !== 'Backspace') return;
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      const selectedNodes = nodes.filter(n => n.selected);
+      if (selectedNodes.length === 0) return;
+      onNodesChange(selectedNodes.map(n => ({ type: 'remove', id: n.id })));
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isReadOnly, nodes, onNodesChange]);
 
   const enrichedNodes = useMemo(() => {
     return nodes.map(n => ({
