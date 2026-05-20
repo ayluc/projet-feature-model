@@ -69,7 +69,8 @@ function FeatureModelEditor({ isReadOnly = false }) {
   const [type] = useDnD();
   const isDragging = useRef(false);
 
-  const [panelOpen, setPanelOpen] = useState(false);
+  const panelOpen = useGraphStore((state) => state.panelOpen);
+  const setPanelOpen = useGraphStore((state) => state.setPanelOpen);
   const arcType = useGraphStore((state) => state.arcType);
   const [jsonRepresentation, setJsonRepresentation] = useState("");
 
@@ -391,7 +392,8 @@ function FeatureModelEditor({ isReadOnly = false }) {
     return { inclusionEdges: inc, exclusionEdges: exc, compatibilityEdges: com, equivalenceEdges: equ, differenceEdges: dif };
   }, [edges]);
 
-  const [activeTab, setActiveTab] = useState("json");
+  const activeTab = useGraphStore((state) => state.panelTab);
+  const setActiveTab = useGraphStore((state) => state.setPanelTab);
 
   const tabStyle = (tab) => ({
     flex: 1,
@@ -612,6 +614,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         <div style={{ display: 'flex', borderBottom: '1px solid #e0e0e0', minWidth: '320px' }}>
           <button onClick={() => setActiveTab("json")} style={tabStyle("json")}>JSON</button>
           <button onClick={() => setActiveTab("rules")} style={tabStyle("rules")}>Contraintes transverses</button>
+          <button onClick={() => setActiveTab("validation")} style={tabStyle("validation")}>Règles de validation</button>
         </div>
 
         <div style={{ padding: '16px', overflowY: 'auto', flex: 1, minWidth: '320px' }}>
@@ -667,6 +670,14 @@ function FeatureModelEditor({ isReadOnly = false }) {
                   <><strong>{nodeMap[e.source]}</strong> et <strong>{nodeMap[e.target]}</strong> sont différents</>
                 )) ?? emptyMsg("Aucune différence configurée.")}
               </div>
+            </div>
+          )}
+          {activeTab === "validation" && (
+            <div>
+              <li>Il ne doit exister qu'une seule racine</li>
+              <li>Un noeud doit avoir un unique parent (sauf pour la racine qui n'en a pas)</li>
+              <li>Un noeud opérateur doit avoir au moins 1 enfant</li>
+              <li>Un noeud cardinalité doit avoir au minimum le nombre d'enfants de sa cardinalité minimum (ex : pour un noeud [2..5], le noeud doit avoir au moins 2 enfants)</li>
             </div>
           )}
         </div>
