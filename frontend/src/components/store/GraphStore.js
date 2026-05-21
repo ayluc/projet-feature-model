@@ -94,7 +94,7 @@ export const useGraphStore = create()(
           }
           else
           {
-            set({ nodes: get().nodes, edges: newEdges });
+            set({ edges: newEdges });
           }
         }, 10);
       },
