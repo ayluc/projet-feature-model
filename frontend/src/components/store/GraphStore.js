@@ -3,6 +3,7 @@ import { temporal } from 'zundo';
 import { applyNodeChanges, applyEdgeChanges, addEdge } from '@xyflow/react';
 import { getLayoutedElements } from '@/components/utils/layout';
 
+// Fonction permettant de réindexer les noeuds du graphe après la suppression d'un noeud
 const reindexGraph = (nodes, edges) => {
   const featureNodes = nodes.filter(n => n.type === 'feature')
     .sort((a,b) => parseInt(a.id.match(/\d+/)?.[0] || 0) - parseInt(b.id.match(/\d+/)?.[0] || 0));
@@ -30,18 +31,19 @@ const reindexGraph = (nodes, edges) => {
   return { newNodes, newEdges };
 };
 
+// Structure permettant de gérer les différents états de l'interface et du graphe.
+// On crée un store "vanilla" zustand puis on lui ajoute des capacités temporelles avec zundo pour avoir accès aux undo/redo
 export const useGraphStore = create()(
   temporal(
     (set, get) => ({
-      nodes: [],
-      edges: [],
-      isLayoutAuto: true,
-      isTransverseVisible: true,
+      nodes: [], // liste des noeuds du graphe
+      edges: [], // liste des arcs du graphe
+      isLayoutAuto: true, // disposition automatique des noeuds du graphe activée ou non
+      isTransverseVisible: true, // affichage des liens transverses ou non
       arcType: null,
       panelOpen: false,
       panelTab: "json",
 
-      setIsReadOnly: (val) => set({ isReadOnly: val }),
       setArcType: (val) => set({ arcType: val }),
       setPanelOpen: (val) => set({ panelOpen: val }),
       setPanelTab: (val) => set({ panelTab: val }),
@@ -111,7 +113,7 @@ export const useGraphStore = create()(
 
     }),
     {
-      limit: 50,
+      limit: 50, // taille de l'historique pour les undo/redo en nombre d'actions
       partialize: (state) => ({
         nodes: state.nodes.map(({ selected, ...n }) => n),
         edges: state.edges
