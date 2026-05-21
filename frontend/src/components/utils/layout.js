@@ -1,9 +1,7 @@
 import dagre from 'dagre';
 
+// Disposition automatiques des noeuds et arcs du graphe
 export const getLayoutedElements = (nodes, edges, direction = 'TB') => {
-  console.log('Tous les edges :', edges);
-  console.log('Edges filtrés :', edges.filter(e => e.type === 'mandatory' || e.type === 'optional'));
-
   if (nodes.length === 0) return { layoutedNodes: [], layoutedEdges: [] };
 
   const layoutEdges = edges.filter(

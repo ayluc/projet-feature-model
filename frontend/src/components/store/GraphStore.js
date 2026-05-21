@@ -47,6 +47,8 @@ export const useGraphStore = create()(
       setArcType: (val) => set({ arcType: val }),
       setPanelOpen: (val) => set({ panelOpen: val }),
       setPanelTab: (val) => set({ panelTab: val }),
+      setLayout: (val) => set({ isLayoutAuto: val }),
+      setTransverseVisible: (val) => set({ isTransverseVisible: val }),
 
       setNodes: (update) => {
         const nextNodes = typeof update === 'function' ? update(get().nodes) : update;
@@ -58,13 +60,6 @@ export const useGraphStore = create()(
         set({ edges: nextEdges });
       },
 
-      setLayout: (update) => {
-        set({ isLayoutAuto: update })
-      },
-
-      setTransverseVisible: (update) => {
-        set({ isTransverseVisible: update })
-      },
 
       onNodesChange: (changes) => {
         const state = get();
