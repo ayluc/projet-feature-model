@@ -292,7 +292,9 @@ function FeatureModelEditor({ isReadOnly = false }) {
   }, [onNodesChange, pause, resume, nodes, isReadOnly]);
 
   useEffect(() => {
-    if (!isReadOnly) {
+    if (isReadOnly) {
+      setNodes(nds => nds.map(n => ({ ...n, selected: false })));
+    } else {
       setNodes(nds => nds.map(n => ({
         ...n,
         className: '',

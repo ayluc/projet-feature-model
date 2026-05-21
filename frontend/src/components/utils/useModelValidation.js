@@ -249,7 +249,7 @@ export const useModelValidation = (isReadOnly) => {
 									? (currentSource === 'manual' ? 'manual' : 'inferred')
 									: null;
 
-								return { ...n, data: { ...n.data, configStatus: newStatus, configSource: newSource } };
+								return { ...n, selected: false, data: { ...n.data, configStatus: newStatus, configSource: newSource } };
 							}
 						}
 						return n;
