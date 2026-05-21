@@ -6,9 +6,9 @@ import { getLayoutedElements } from '@/components/utils/layout';
 // Fonction permettant de réindexer les noeuds du graphe après la suppression d'un noeud
 const reindexGraph = (nodes, edges) => {
   const featureNodes = nodes.filter(n => n.type === 'feature')
-    .sort((a,b) => parseInt(a.id.match(/\d+/)?.[0] || 0) - parseInt(b.id.match(/\d+/)?.[0] || 0));
+    .sort((a, b) => parseInt(a.id.match(/\d+/)?.[0] || 0) - parseInt(b.id.match(/\d+/)?.[0] || 0));
   const operateurNodes = nodes.filter(n => ['or', 'xor', 'cardinalite'].includes(n.type))
-    .sort((a,b) => parseInt(a.id.match(/\d+/)?.[0] || 0) - parseInt(b.id.match(/\d+/)?.[0] || 0));
+    .sort((a, b) => parseInt(a.id.match(/\d+/)?.[0] || 0) - parseInt(b.id.match(/\d+/)?.[0] || 0));
 
   const idMapping = {};
   featureNodes.forEach((n, index) => { idMapping[n.id] = `feature-${index + 1}`; });
@@ -23,7 +23,7 @@ const reindexGraph = (nodes, edges) => {
 
   const newEdges = edges.map((edge, index) => ({
     ...edge,
-    id: (index + 1).toString(), 
+    id: (index + 1).toString(),
     source: idMapping[edge.source] || edge.source,
     target: idMapping[edge.target] || edge.target
   }));
@@ -89,7 +89,7 @@ export const useGraphStore = create()(
         setTimeout(() => {
           const { layoutedNodes } = getLayoutedElements(get().nodes, newEdges);
           set({ nodes: layoutedNodes, edges: newEdges });
-        },10);
+        }, 10);
       },
 
       onConnect: (connection) => {
