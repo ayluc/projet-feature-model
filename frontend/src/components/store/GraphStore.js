@@ -87,8 +87,15 @@ export const useGraphStore = create()(
       onEdgesChange: (changes) => {
         const newEdges = applyEdgeChanges(changes, get().edges)
         setTimeout(() => {
-          const { layoutedNodes } = getLayoutedElements(get().nodes, newEdges);
-          set({ nodes: layoutedNodes, edges: newEdges });
+          if(get().isLayoutAuto)
+          {
+            const { layoutedNodes } = getLayoutedElements(get().nodes, newEdges);
+            set({ nodes: layoutedNodes, edges: newEdges });
+          }
+          else
+          {
+            set({ nodes: get().nodes, edges: newEdges });
+          }
         }, 10);
       },
 
