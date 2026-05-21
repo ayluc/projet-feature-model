@@ -24,23 +24,23 @@ const nodeTypes = {
 // Retourne le style et les markers selon le type transverse
 function getTransverseStyle(data) {
   if (data?.isInclusion) return {
-    edgeStyle: { strokeWidth: 2, strokeDasharray: "8 3", stroke: "#5b8dee" },
-    edgeMarkers: { markerEnd: { type: MarkerType.ArrowClosed, color: "#5b8dee", width: 18, height: 18 } },
+    edgeStyle: { strokeWidth: 2, strokeDasharray: "8 3", stroke: "#3B82F6" },
+    edgeMarkers: { markerEnd: { type: MarkerType.ArrowClosed, color: "#3B82F6", width: 18, height: 18 } },
   };// double ligne gérée via edgeType custom
   if (data?.isExclusion) return {
-    edgeStyle: { strokeWidth: 2, strokeDasharray: "2 4", stroke: "#d9534f" },
+    edgeStyle: { strokeWidth: 2, strokeDasharray: "2 4", stroke: "#D97706" },
     edgeMarkers: { markerEnd: null },
   };
   if (data?.isCompatibility) return {
-    edgeStyle: { strokeWidth: 2, strokeDasharray: "4 4", stroke: "#daac17" },
+    edgeStyle: { strokeWidth: 2, strokeDasharray: "4 4", stroke: "#14B8A6" },
     edgeMarkers: { markerEnd: null },
   };
   if (data?.isEquivalence) return {
-    edgeStyle: { strokeWidth: 5, stroke: "#19b420" },
+    edgeStyle: { strokeWidth: 5, stroke: "#8B5CF6" },
     edgeMarkers: { markerEnd: null },
   };
   if (data?.isDifference) return {
-    edgeStyle: { strokeWidth: 1, stroke: "#d9534f" },
+    edgeStyle: { strokeWidth: 1, stroke: "#D97706" },
     edgeMarkers: { markerEnd: null },
   };
   return { edgeStyle: {}, edgeMarkers: {} };
@@ -191,8 +191,8 @@ function FeatureModelEditor({ isReadOnly = false }) {
         onConnect({
           ...connectionWithId,
           data: { liaisonType: "transverse", isInclusion: true },
-          style: { strokeWidth: 2, strokeDasharray: "8 3", stroke: "#5b8dee" },
-          markerEnd: { type: MarkerType.ArrowClosed, color: "#5b8dee", width: 18, height: 18 },
+          style: { strokeWidth: 2, strokeDasharray: "8 3", stroke: "#3B82F6" },
+          markerEnd: { type: MarkerType.ArrowClosed, color: "#3B82F6", width: 18, height: 18 },
         });
         return;
       }
@@ -201,7 +201,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         onConnect({
           ...connectionWithId,
           data: { liaisonType: "transverse", isExclusion: true },
-          style: { strokeWidth: 2, strokeDasharray: "2 4", stroke: "#d9534f" },
+          style: { strokeWidth: 2, strokeDasharray: "2 4", stroke: "#D97706" },
           markerEnd: null,
         });
         return;
@@ -211,7 +211,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         onConnect({
           ...connectionWithId,
           data: { liaisonType: "transverse", isCompatibility: true },
-          style: { strokeWidth: 2, strokeDasharray: "4 4", stroke: "#daac17" },
+          style: { strokeWidth: 2, strokeDasharray: "4 4", stroke: "#14B8A6" },
           markerEnd: null,
         });
         return;
@@ -221,7 +221,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         onConnect({
           ...connectionWithId,
           data: { liaisonType: "transverse", isEquivalence: true },
-          style: { strokeWidth: 2, strokeDasharray: "2 4", stroke: "#19b420" },
+          style: { strokeWidth: 2, strokeDasharray: "2 4", stroke: "#8B5CF6" },
           markerEnd: null,
         });
         return;
@@ -231,7 +231,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         onConnect({
           ...connectionWithId,
           data: { liaisonType: "transverse", isDifference: true },
-          style: { strokeWidth: 1, stroke: "#d9534f" },
+          style: { strokeWidth: 1, stroke: "#D97706" },
           markerEnd: null,
         });
         return;
