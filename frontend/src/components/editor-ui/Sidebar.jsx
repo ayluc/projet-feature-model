@@ -6,6 +6,7 @@ import { Button } from "@/components/shadcn-ui/button";
 import { getLayoutedElements } from '@/components/utils/layout';
 import { useGraphStore } from '@/components/store/GraphStore';
 import { useModelValidation } from '../utils/useModelValidation';
+import CustomPopup from '../popups/CustomPopup';
 
 export default ({ isReadOnly = false }) => {
   const [_, setType] = useDnD();
@@ -36,7 +37,7 @@ export default ({ isReadOnly = false }) => {
     setNodes(layoutedNodes);
   };
 
-  const { validate } = useModelValidation(isReadOnly);
+  const { validate, customPopup, setCustomPopup } = useModelValidation(isReadOnly);
 
   const toggleTransverse = (
     <div className="toggle-wrapper">
@@ -53,6 +54,7 @@ export default ({ isReadOnly = false }) => {
   );
 
   return (
+    <>
     <aside>
       {/* LÉGENDE */}
       <h2 className="text-lg font-bold mb-3">LÉGENDE</h2>
@@ -238,12 +240,12 @@ export default ({ isReadOnly = false }) => {
         </>
       )}
 
-      <h4 className="text-sm font-semibold mb-2 text-[#6e6d68] uppercase tracking-wide">Back-end</h4>
+      {/* <h4 className="text-sm font-semibold mb-2 text-[#6e6d68] uppercase tracking-wide">Back-end</h4>
       <Button variant="outline" onClick={validate} className="reorganize-button mb-4">
         Validation du graphe
-      </Button>
+      </Button> */}
     </aside>
-
-
+    <CustomPopup dialog={customPopup} onClose={() => setCustomPopup(null)} />
+    </>
   );
 };

@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { TriangleAlert, Info } from "lucide-react";
 
 export default function CustomPopup({ dialog, onClose }) {
@@ -10,7 +11,7 @@ export default function CustomPopup({ dialog, onClose }) {
     onClose();
   };
 
-  return (
+  return createPortal(
     <>
       <div
         onClick={onClose}
@@ -78,6 +79,7 @@ export default function CustomPopup({ dialog, onClose }) {
           </button>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }

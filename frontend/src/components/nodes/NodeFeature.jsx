@@ -1,6 +1,7 @@
 import { Position, Handle, NodeToolbar } from '@xyflow/react';
 import { useModelValidation } from '../utils/useModelValidation';
 import { useGraphStore } from '../store/GraphStore';
+import CustomPopup from '../popups/CustomPopup';
 
 export function NodeFeature({ id, data, isConnectable, selected }) {
 
@@ -17,7 +18,8 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
 
   const isReadOnly = data.isReadOnly;
 
-  const { validate } = useModelValidation(isReadOnly);
+  const { validate, customPopup, setCustomPopup } = useModelValidation(isReadOnly);
+  const setNodes = useGraphStore((state) => state.setNodes);
 
   return (
     <div style={{
@@ -28,7 +30,20 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
       <NodeToolbar isVisible={isReadOnly && selected}>
         <div style={{ display: 'flex', gap: '6px' }}>
           <button
-            onClick={(e) => { e.stopPropagation(); data.onConfigChange(id, 'included'); if (configStatus === null || configStatus === "excluded") validate(); }}
+            onClick={async (e) => {
+              e.stopPropagation();
+              data.onConfigChange(id, 'included');
+              if (configStatus === null || configStatus === "excluded") {
+                const isValid = await validate();
+                if (!isValid) {
+                  setNodes(nds => nds.map(nd =>
+                    nd.id === id
+                      ? { ...nd, selected: true, data: { ...nd.data, configStatus: null, configSource: null } }
+                      : nd
+                  ));
+                }
+              }
+            }}
             style={{
               width: 22,
               height: 22,
@@ -41,7 +56,20 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
           >✓</button>
 
           <button
-            onClick={(e) => { e.stopPropagation(); data.onConfigChange(id, 'excluded'); if (configStatus === null || configStatus === "included") validate(); }}
+            onClick={async (e) => {
+              e.stopPropagation();
+              data.onConfigChange(id, 'excluded');
+              if (configStatus === null || configStatus === "included") {
+                const isValid = await validate();
+                if (!isValid) {
+                  setNodes(nds => nds.map(nd =>
+                    nd.id === id
+                      ? { ...nd, selected: true, data: { ...nd.data, configStatus: null, configSource: null } }
+                      : nd
+                  ));
+                }
+              }
+            }}
             style={{
               width: 22, height: 22, borderRadius: '50%', border: 'none', cursor: 'pointer',
               background: configStatus === 'excluded' ? '#d1d5db' : '#ef4444',
@@ -55,6 +83,7 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
       {/* <input type="checkbox"/> */}
       <Handle type="source" position={Position.Bottom} isConnectable={isConnectable} />
       <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
+      <CustomPopup dialog={customPopup} onClose={() => setCustomPopup(null)} />
     </div>
   );
 }

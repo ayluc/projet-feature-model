@@ -145,7 +145,7 @@ function Toolbar() {
               if (isValid) {
                 navigate("/configuration");
               } else {
-                setToast({ type: "warning", message: (<>Le feature model est invalide. Vérifiez qu'il y a une seule racine, pas de nœuds isolés et que tous les opérateurs ont des enfants.{" "}<span onClick={() => { setPanelOpen(true); setPanelTab("validation"); setToast(null); }} style={{ textDecoration: "underline", cursor: "pointer" }}>Voir les règles</span></>) });
+                setToast({ type: "warning", message: (<>Le feature model est invalide.{" "}<span onClick={() => { setPanelOpen(true); setPanelTab("validation"); setToast(null); }} style={{ textDecoration: "underline", cursor: "pointer" }}>Vérifiez les règles de validation.</span></>) });
               }
             }}
           >

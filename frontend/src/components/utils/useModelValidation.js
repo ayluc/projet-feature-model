@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useGraphStore } from '@/components/store/GraphStore';
+import CustomPopup from '../popups/CustomPopup';
 
 const validateGraph = (nodes, edges) => {
 	const operatorTypes = ["or", "xor", "cardinalite"];
@@ -13,7 +14,7 @@ const validateGraph = (nodes, edges) => {
 	// Il doit y avoir exactement une racine
 	if (roots.length !== 1) return false;
 
-	
+
 	// Récupère les IDs de tous les noeuds qui sont parents
 	const parentIds = new Set(edges.map(e => e.source));
 	// Récupère tous les noeuds opérateurs qui n'ont pas d'enfant
@@ -25,7 +26,7 @@ const validateGraph = (nodes, edges) => {
 	// Récupère les noeuds qui sont isolés (sans enfant ni parent)
 	const isolatedNodes = nodes.filter(n => !parentIds.has(n.id) && !childIds.has(n.id));
 	// Il ne doit pas y avoir de noeuds isolés
-	if(isolatedNodes.length > 0) return false;
+	if (isolatedNodes.length > 0) return false;
 
 
 	// Récupère les noeuds opérateurs
@@ -33,15 +34,14 @@ const validateGraph = (nodes, edges) => {
 	// Récupère les liens entre deux noeuds opérateurs
 	const edgesBetweenOperators = edges.filter(e => operators.some(o => o.id === e.source) && operators.some(o => o.id === e.target));
 	// Il ne doit pas y avoir de lien entre deux noeuds opérateurs
-	if(edgesBetweenOperators.length > 0) return false;
+	if (edgesBetweenOperators.length > 0) return false;
 
 	// Fonction pour trouver le nb de fils à partir d'un noeud
 	const trouverNbFils = (noeud) => {
 		var nbFils = 0;
 		for (let index = 0; index < edges.length; index++) {
 			const element = edges[index];
-			if (element.source == noeud.id)
-			{
+			if (element.source == noeud.id) {
 				nbFils++;
 			}
 		}
@@ -51,12 +51,11 @@ const validateGraph = (nodes, edges) => {
 	// S'il y a moins de fils que la card min d'un noeud, alors le graphe n'est pas valide
 	var noeudBool = false;
 	nodes.forEach(n => {
-		if(n.data.cardinaliteMin > trouverNbFils(n))
-		{
+		if (n.data.cardinaliteMin > trouverNbFils(n)) {
 			noeudBool = true;
 		}
 	});
-	if(noeudBool) return false
+	if (noeudBool) return false
 
 	// TODO: ajouter d'autres validations ici
 	// ex: vérifier qu'il n'y a pas de cycles
@@ -68,6 +67,7 @@ export const useModelValidation = (isReadOnly) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const [result, setResult] = useState(null);
+	const [customPopup, setCustomPopup] = useState(null);
 
 	const setNodes = useGraphStore((state) => state.setNodes);
 
@@ -200,6 +200,7 @@ export const useModelValidation = (isReadOnly) => {
 			setResult(data);
 
 
+			let configData = null;
 			if (isReadOnly) {
 				// ── Mode configuration ──────────────────────────────────────
 				console.log("Validation du modèle en mode configuration");
@@ -222,16 +223,16 @@ export const useModelValidation = (isReadOnly) => {
 					body: JSON.stringify(payload),
 				});
 
-				const data = await response.json();
+				configData = await response.json();
 
 				if (!response.ok) {
-					throw new Error(data.error || 'Erreur lors de la validation');
+					throw new Error(configData.error || 'Erreur lors de la validation');
 				}
 
-				console.log("Réponse configuration :", data);
+				console.log("Réponse configuration :", configData);
 
-				if (data.valid && data.solution) {
-					const { isIncluded, isActivated } = data.solution;
+				if (configData.valid && configData.solution) {
+					const { isIncluded, isActivated } = configData.solution;
 
 					setNodes((nds) => nds.map((n) => {
 						if (n.type === "feature") {
@@ -243,7 +244,6 @@ export const useModelValidation = (isReadOnly) => {
 								const included = isIncluded[numericId - 1];
 								const newStatus = active ? (included ? 'included' : 'excluded') : null;
 
-								
 								const currentSource = n.data?.configSource;
 								const newSource = newStatus !== null
 									? (currentSource === 'manual' ? 'manual' : 'inferred')
@@ -255,9 +255,13 @@ export const useModelValidation = (isReadOnly) => {
 						return n;
 					}));
 				}
-				setResult(data);
+				setResult(configData);
 			}
-			return data.valid === true && isGraphValid;
+			const finalData = configData ?? data;
+			if (finalData.valid === false) {
+				setCustomPopup({ type: "alert", message: "Le feature model est insatisfiable. Veuillez le configurer autrement." });
+			}
+			return finalData.valid === true && isGraphValid;
 
 		} catch (err) {
 			console.error("Erreur de validation :", err);
@@ -269,5 +273,5 @@ export const useModelValidation = (isReadOnly) => {
 		}
 	};
 
-	return { validate, isLoading, error, result };
+	return { validate, isLoading, error, result, customPopup, setCustomPopup };
 };
