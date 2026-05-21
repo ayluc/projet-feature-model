@@ -23,7 +23,7 @@ function PanneauLateral({ isOpen }) {
         padding: '12px 8px',
         background: activeTab === tab ? '#fff' : '#f9f9f9',
         border: 'none',
-        borderBottom: activeTab === tab ? '2px solid #5b8dee' : '2px solid transparent',
+        borderBottom: activeTab === tab ? '2px solid #3B82F6' : '2px solid transparent',
         cursor: 'pointer',
         fontWeight: activeTab === tab ? 'bold' : 'normal',
         color: activeTab === tab ? '#333' : '#777',

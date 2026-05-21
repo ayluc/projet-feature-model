@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useReactFlow } from "@xyflow/react";
+import { useReactFlow, getViewportForBounds } from "@xyflow/react";
+import { toPng } from "html-to-image";
 import { useGraphStore } from "@/components/store/GraphStore";
 import { Button } from "@/components/shadcn-ui/button";
 import {
@@ -11,12 +12,14 @@ import { Menu, ArrowDownToLine, Plus, Trash2, FileUp, FileDown } from "lucide-re
 import { useModelValidation } from '../utils/useModelValidation';
 import CustomPopup from '../popups/CustomPopup';
 import CustomToast from "../popups/CustomToast";
+import DownloadPopup from "../popups/DownloadPopup";
 import { Input } from "../ui/input";
+import { buildMinizincPayload, convertToMinizincDzn, generateConfigMzn } from "../utils/minizincUtils";
 
 function Toolbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toObject, setViewport } = useReactFlow();
+  const { toObject, setViewport, getNodes, getNodesBounds } = useReactFlow();
   const setNodes = useGraphStore((state) => state.setNodes);
   const nodes = useGraphStore((state) => state.nodes);
   const setEdges = useGraphStore((state) => state.setEdges);
@@ -24,6 +27,7 @@ function Toolbar() {
   const [customPopup, setCustomPopup] = useState(null);
   const [toast, setToast] = useState(null);
   const [modelName, setModelName] = useState("");
+  const [showDownloadPopup, setShowDownloadPopup] = useState(false);
 
   const showAlert = (message) => {
     setCustomPopup({ type: "alert", message });
@@ -33,16 +37,92 @@ function Toolbar() {
     setCustomPopup({ type: "confirm", message, onConfirm });
   };
 
-  const handleExport = () => {
-    const flowData = toObject();
-    const json = JSON.stringify(flowData, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
+  const downloadBlob = (content, filename, mime) => {
+    const blob = new Blob([content], { type: mime });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${modelName.trim() || "feature-model"}.json`;
+    link.download = filename;
     link.click();
     URL.revokeObjectURL(url);
+  };
+
+  const baseName = modelName.trim() || "feature-model";
+
+  const handleDownload = (selected) => {
+    if (selected.json) {
+      const json = JSON.stringify(toObject(), null, 2);
+      downloadBlob(json, `${baseName}.json`, "application/json");
+    }
+
+    if (selected.image) {
+      const PADDING = 0.05;
+      const MAX_SIDE = 4096;
+
+      const nodesBounds = getNodesBounds(getNodes());
+
+      // Dimensions calées sur le contenu, avec marge et min 1920×1080
+      let imgW = Math.ceil(nodesBounds.width * (1 + PADDING * 2));
+      let imgH = Math.ceil(nodesBounds.height * (1 + PADDING * 2));
+      imgW = Math.max(imgW, 1920);
+      imgH = Math.max(imgH, 1080);
+
+      // Plafond pour éviter des images hors mémoire
+      if (imgW > MAX_SIDE || imgH > MAX_SIDE) {
+        const s = Math.min(MAX_SIDE / imgW, MAX_SIDE / imgH);
+        imgW = Math.round(imgW * s);
+        imgH = Math.round(imgH * s);
+      }
+
+      const viewport = getViewportForBounds(nodesBounds, imgW, imgH, 0.01, 4, PADDING);
+      const viewportEl = document.querySelector(".react-flow__viewport");
+
+      if (viewportEl) {
+        const edgePaths = Array.from(
+          viewportEl.querySelectorAll(".react-flow__edge-path")
+        );
+        const savedStrokes = edgePaths.map((p) => p.style.stroke);
+        edgePaths.forEach((p) => {
+          if (!p.style.stroke) {
+            p.style.stroke = window.getComputedStyle(p).stroke || "#b1b1b7";
+          }
+        });
+        const restoreStrokes = () =>
+          edgePaths.forEach((p, i) => { p.style.stroke = savedStrokes[i]; });
+
+        toPng(viewportEl, {
+          backgroundColor: "#ffffff",
+          width: imgW,
+          height: imgH,
+          fontEmbedCSS: "",
+          style: {
+            width: imgW,
+            height: imgH,
+            transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+          },
+        }).then((dataUrl) => {
+          restoreStrokes();
+          const a = document.createElement("a");
+          a.download = `${baseName}.png`;
+          a.href = dataUrl;
+          a.click();
+        }).catch(restoreStrokes);
+      }
+    }
+
+    if (selected.dzn) {
+      const currentNodes = useGraphStore.getState().nodes;
+      const currentEdges = useGraphStore.getState().edges;
+      const payload = buildMinizincPayload(currentNodes, currentEdges);
+      const dzn = convertToMinizincDzn(payload);
+      downloadBlob(dzn, `${baseName}-feature-model.dzn`, "text/plain");
+    }
+
+    if (selected.mzn) {
+      const currentNodes = useGraphStore.getState().nodes;
+      const mzn = generateConfigMzn(currentNodes);
+      downloadBlob(mzn, `${baseName}-configuration.mzn`, "text/plain");
+    }
   };
 
   const handleImportClick = () => {
@@ -125,7 +205,7 @@ function Toolbar() {
                   <FileUp className="mr-2 h-4 w-4" />
                   <span>Importer</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={handleExport}>
+                <DropdownMenuItem onSelect={() => setShowDownloadPopup(true)}>
                   <FileDown className="mr-2 h-4 w-4" />
                   <span>Exporter</span>
                 </DropdownMenuItem>
@@ -156,7 +236,7 @@ function Toolbar() {
         </div>
 
         <div className="ml-auto">
-          <Button onClick={handleExport}>
+          <Button onClick={() => setShowDownloadPopup(true)}>
             <ArrowDownToLine />
           </Button>
         </div>
@@ -164,6 +244,12 @@ function Toolbar() {
 
       <CustomPopup dialog={customPopup} onClose={() => setCustomPopup(null)} />
       <CustomToast dialog={toast} onClose={() => setToast(null)} />
+      {showDownloadPopup && (
+        <DownloadPopup
+          onClose={() => setShowDownloadPopup(false)}
+          onDownload={handleDownload}
+        />
+      )}
     </>
   );
 }

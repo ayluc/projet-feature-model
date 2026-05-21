@@ -8,8 +8,8 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
   const configStatus = data.configStatus; // 'included' | 'excluded' | null
   const configSource = data.configSource; // 'manual' | 'inferred' | null
 
-  const borderColor = configStatus === 'included' ? '#22c55e'
-    : configStatus === 'excluded' ? '#ef4444'
+  const borderColor = configStatus === 'included' ? '#029C70'
+    : configStatus === 'excluded' ? '#FF667A'
       : '#185fa5';
 
   const bgColor = configStatus === 'included' ? '#dcfce7'
@@ -50,7 +50,7 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
               borderRadius: '50%',
               border: 'none',
               cursor: 'pointer',
-              background: configStatus === 'included' ? '#d1d5db' : '#22c55e',
+              background: configStatus === 'included' ? '#d1d5db' : '#029C70',
             }}
             title="Inclure"
           >✓</button>
@@ -72,7 +72,7 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
             }}
             style={{
               width: 22, height: 22, borderRadius: '50%', border: 'none', cursor: 'pointer',
-              background: configStatus === 'excluded' ? '#d1d5db' : '#ef4444',
+              background: configStatus === 'excluded' ? '#d1d5db' : '#FF667A',
             }}
             title="Exclure"
           >✕</button>
