@@ -20,6 +20,32 @@ export default function ContextMenu({
 }) {
   const { getNode, setNodes, addNodes, setEdges } = useReactFlow();
 
+  const nodes = useGraphStore((state) => state.nodes);
+
+  const getNextNodeFeatureId = useCallback(() => {
+    const maxId = nodes
+      .filter(n => n.type === "feature")
+      .reduce((max, node) => {
+        const regex = /[0-9]+/;
+        const match = String(node.id).match(regex);
+        const idNum = match ? parseInt(match[0], 10) : 0;
+        return Math.max(max, idNum);
+      }, 0);
+    return "feature-" + (maxId + 1).toString();
+  }, [nodes]);
+
+  const getNextNodeOperateurId = useCallback(() => {
+    const maxId = nodes
+      .filter(n => n.type === "or" || n.type === "xor" || n.type === "cardinalite")
+      .reduce((max, node) => {
+        const regex = /[0-9]+/;
+        const match = String(node.id).match(regex);
+        const idNum = match ? parseInt(match[0], 10) : 0;
+        return Math.max(max, idNum);
+      }, 0);
+    return "operateur-" + (maxId + 1).toString();
+  }, [nodes]);
+
   const onNodesChange = useGraphStore((state) => state.onNodesChange);
 
   const duplicateNode = useCallback(() => {
@@ -28,13 +54,27 @@ export default function ContextMenu({
       x: node.position.x + 50,
       y: node.position.y + 50,
     };
-    addNodes({
-      ...node,
-      selected: false,
-      dragging: false,
-      id: `${node.id}-copy`,
-      position,
-    });
+    if(node.type === 'feature')
+    {
+      addNodes({
+        ...node,
+        selected: false,
+        dragging: false,
+        id: getNextNodeFeatureId(),
+        position,
+      });
+    }
+    else
+    {
+      addNodes({
+        ...node,
+        selected: false,
+        dragging: false,
+        id: getNextNodeOperateurId(),
+        position,
+      });
+    }
+    
     if (onClose) onClose();
   }, [id, getNode, addNodes]);
 
