@@ -11,6 +11,7 @@ import { Menu, ArrowDownToLine, Plus, Trash2, FileUp, FileDown } from "lucide-re
 import { useModelValidation } from '../utils/useModelValidation';
 import CustomPopup from '../popups/CustomPopup';
 import CustomToast from "../popups/CustomToast";
+import { Input } from "../ui/input";
 
 function Toolbar() {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ function Toolbar() {
   const fileInputRef = useRef(null);
   const [customPopup, setCustomPopup] = useState(null);
   const [toast, setToast] = useState(null);
+  const [modelName, setModelName] = useState("");
 
   const showAlert = (message) => {
     setCustomPopup({ type: "alert", message });
@@ -38,7 +40,7 @@ function Toolbar() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "feature-model.json";
+    link.download = `${modelName.trim() || "feature-model"}.json`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -106,8 +108,8 @@ function Toolbar() {
         onChange={handleFileChange}
       />
 
-      <div className="grid grid-row-1 gap-4 grid-cols-4 p-4">
-        <div className="col-span-1 flex justify-start">
+      <div className="relative flex items-center p-4">
+        <div className="flex items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger render={<Button />}>
               <Menu />
@@ -130,14 +132,14 @@ function Toolbar() {
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
+          <Input placeholder="Nommer le feature model" id="feature-model-name" type="text" value={modelName} onChange={(e) => setModelName(e.target.value)} />
         </div>
-        <div className="col-span-1 flex justify-end">
+
+        <div className="absolute left-1/2 -translate-x-1/2 flex gap-4">
           <Button variant={location.pathname === "/creation" ? "default" : "outline"}
             onClick={() => navigate("/creation")}>
             Création
           </Button>
-        </div>
-        <div className="col-span-1 flex justify-start">
           <Button
             variant={location.pathname === "/configuration" ? "default" : "outline"}
             onClick={async () => {
@@ -152,7 +154,8 @@ function Toolbar() {
             Configuration
           </Button>
         </div>
-        <div className="col-span-1 flex justify-end">
+
+        <div className="ml-auto">
           <Button onClick={handleExport}>
             <ArrowDownToLine />
           </Button>
