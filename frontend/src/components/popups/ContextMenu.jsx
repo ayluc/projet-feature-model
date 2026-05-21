@@ -3,6 +3,7 @@ import { useReactFlow } from '@xyflow/react';
 import { CopyPlus, Trash2, Pencil } from 'lucide-react';
 
 import { useGraphStore } from '@/components/store/GraphStore';
+import { getNextNodeFeatureId, getNextNodeOperateurId } from '@/components/utils/getIds';
 
 export default function ContextMenu({
   id,
@@ -22,29 +23,6 @@ export default function ContextMenu({
 
   const nodes = useGraphStore((state) => state.nodes);
 
-  const getNextNodeFeatureId = useCallback(() => {
-    const maxId = nodes
-      .filter(n => n.type === "feature")
-      .reduce((max, node) => {
-        const regex = /[0-9]+/;
-        const match = String(node.id).match(regex);
-        const idNum = match ? parseInt(match[0], 10) : 0;
-        return Math.max(max, idNum);
-      }, 0);
-    return "feature-" + (maxId + 1).toString();
-  }, [nodes]);
-
-  const getNextNodeOperateurId = useCallback(() => {
-    const maxId = nodes
-      .filter(n => n.type === "or" || n.type === "xor" || n.type === "cardinalite")
-      .reduce((max, node) => {
-        const regex = /[0-9]+/;
-        const match = String(node.id).match(regex);
-        const idNum = match ? parseInt(match[0], 10) : 0;
-        return Math.max(max, idNum);
-      }, 0);
-    return "operateur-" + (maxId + 1).toString();
-  }, [nodes]);
 
   const onNodesChange = useGraphStore((state) => state.onNodesChange);
 
@@ -54,29 +32,27 @@ export default function ContextMenu({
       x: node.position.x + 50,
       y: node.position.y + 50,
     };
-    if(node.type === 'feature')
-    {
+    if (node.type === 'feature') {
       addNodes({
         ...node,
         selected: false,
         dragging: false,
-        id: getNextNodeFeatureId(),
+        id: getNextNodeFeatureId(nodes),
         position,
       });
     }
-    else
-    {
+    else {
       addNodes({
         ...node,
         selected: false,
         dragging: false,
-        id: getNextNodeOperateurId(),
+        id: getNextNodeOperateurId(nodes),
         position,
       });
     }
-    
+
     if (onClose) onClose();
-  }, [id, getNode, addNodes]);
+  }, [id, getNode, addNodes, nodes]);
 
   const deleteNode = useCallback(() => {
     onNodesChange([{ type: 'remove', id }]);

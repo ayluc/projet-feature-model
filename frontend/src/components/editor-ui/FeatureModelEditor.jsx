@@ -6,6 +6,8 @@ import { useDnD } from '@/components/utils/DnDContext';
 import { useGraphStore, useTemporalStore } from '@/components/store/GraphStore';
 import { NodeFeature, NodeXOR, NodeOR, NodeCardinalite } from "@/components/nodes";
 import PanneauLateral from "./PanneauLateral";
+import { getNextNodeFeatureId, getNextNodeOperateurId } from '@/components/utils/getIds';
+
 
 import FeatureCreationPopup from "../popups/FeatureCreationPopup";
 import CardinaliteCreationPopup from "../popups/CardinaliteCreationPopup";
@@ -99,29 +101,6 @@ function FeatureModelEditor({ isReadOnly = false }) {
     );
   }, [setNodes, isReadOnly]);
 
-  const getNextNodeFeatureId = useCallback(() => {
-    const maxId = nodes
-      .filter(n => n.type === "feature")
-      .reduce((max, node) => {
-        const regex = /[0-9]+/;
-        const match = String(node.id).match(regex);
-        const idNum = match ? parseInt(match[0], 10) : 0;
-        return Math.max(max, idNum);
-      }, 0);
-    return "feature-" + (maxId + 1).toString();
-  }, [nodes]);
-
-  const getNextNodeOperateurId = useCallback(() => {
-    const maxId = nodes
-      .filter(n => n.type === "or" || n.type === "xor" || n.type === "cardinalite")
-      .reduce((max, node) => {
-        const regex = /[0-9]+/;
-        const match = String(node.id).match(regex);
-        const idNum = match ? parseInt(match[0], 10) : 0;
-        return Math.max(max, idNum);
-      }, 0);
-    return "operateur-" + (maxId + 1).toString();
-  }, [nodes]);
 
   const getNextEdgeId = useCallback(() => {
     const maxId = edges.reduce((max, edge) => {
@@ -285,7 +264,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
       if (!type || isReadOnly) return;
 
       const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
-      const newId = type === "feature" ? getNextNodeFeatureId() : getNextNodeOperateurId();
+      const newId = type === "feature" ? getNextNodeFeatureId(nodes) : getNextNodeOperateurId(nodes);
 
       if (type === "feature" || type === "cardinalite") {
         setPopup({ pendingNode: { id: newId, type, position }, nodeType: type });
@@ -293,7 +272,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         setNodes((nds) => nds.concat({ id: newId, type, position, data: { label: type.toUpperCase() } }));
       }
     },
-    [screenToFlowPosition, type, setNodes, isReadOnly, getNextNodeFeatureId, getNextNodeOperateurId]
+    [screenToFlowPosition, type, setNodes, isReadOnly, nodes]
   );
 
   const handleNodesChange = useCallback((changes) => {
