@@ -37,6 +37,14 @@ export default ({ isReadOnly = false }) => {
     setNodes(layoutedNodes);
   };
 
+  const handleReinit = () => {
+    setNodes(nds => nds.map(n => ({
+      ...n,
+      className: '',
+      data: { ...n.data, configStatus: null, configSource: null }
+    })));
+  }
+
   const { validate, customPopup, setCustomPopup } = useModelValidation(isReadOnly);
 
   const toggleTransverse = (
@@ -65,7 +73,7 @@ export default ({ isReadOnly = false }) => {
       const data = await response.json();
 
       console.log(data);
-    } catch(error) {
+    } catch (error) {
       console.error("Erreur de validation :", error);
     }
   }
@@ -139,9 +147,13 @@ export default ({ isReadOnly = false }) => {
         </div>
 
         <hr style={{ border: "1px solid #e0e0e0", marginBottom: "16px" }} />
-
         {isReadOnly ? toggleTransverse : null}
 
+        {isReadOnly && (
+          <div>
+            <Button variant="outline" className="reinit-button mb-4" onClick={handleReinit}>Réinitialiser la configuration</Button>
+          </div>
+        )}
         {isReadOnly && (
           <div>
             <Button variant="outline" className="assemblage-button mb-4" onClick={callAssemblage}>Assemblage</Button>
@@ -153,130 +165,126 @@ export default ({ isReadOnly = false }) => {
             {/* CRÉATION */}
             <h2 className="text-lg font-bold mb-3">CRÉATION</h2>
 
-            <h4 className="text-sm font-semibold mb-2 text-[#6e6d68] uppercase tracking-wide">Noeuds</h4>
-            <p className="description mb-3">Faire glisser les noeuds à ajouter au modèle</p>
-            <div className="dndnode feature" onDragStart={(event) => onDragStart(event, 'feature')} draggable>
-              Feature
-            </div>
-            <div className="dndnode" onDragStart={(event) => onDragStart(event, 'or')} draggable>
-              OR
-            </div>
-            <div className="dndnode" onDragStart={(event) => onDragStart(event, 'xor')} draggable>
-              XOR
-            </div>
-            <div className="dndnode" onDragStart={(event) => onDragStart(event, 'cardinalite')} draggable>
-              CARDINALITÉ
-            </div>
+                <h4 className="text-sm font-semibold mb-2 text-[#6e6d68] uppercase tracking-wide">Noeuds</h4>
+                <p className="description mb-3">Faire glisser les noeuds à ajouter au modèle</p>
+                <div className="dndnode feature" onDragStart={(event) => onDragStart(event, 'feature')} draggable>
+                  Feature
+                </div>
+                <div className="dndnode" onDragStart={(event) => onDragStart(event, 'or')} draggable>
+                  OR
+                </div>
+                <div className="dndnode" onDragStart={(event) => onDragStart(event, 'xor')} draggable>
+                  XOR
+                </div>
+                <div className="dndnode" onDragStart={(event) => onDragStart(event, 'cardinalite')} draggable>
+                  CARDINALITÉ
+                </div>
 
-            <h4 className="text-sm font-semibold mt-4 mb-2 text-[#6e6d68] uppercase tracking-wide">Liaisons</h4>
-            {toggleTransverse}
-            <p className="description mb-3">Sélectionner le type d'arc à appliquer automatiquement entre deux noeuds feature.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
-                <input
-                  type="radio"
-                  name="arcType"
-                  value="mandatory"
-                  checked={arcType === "mandatory"}
-                  onChange={() => { }}
-                  onClick={() => handleChange("mandatory")}
-                />
-                Obligatoire
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
-                <input
-                  type="radio"
-                  name="arcType"
-                  value="optional"
-                  checked={arcType === "optional"}
-                  onChange={() => { }}
-                  onClick={() => handleChange("optional")}
-                />
-                Optionnel
-              </label>
+                <h4 className="text-sm font-semibold mt-4 mb-2 text-[#6e6d68] uppercase tracking-wide">Liaisons</h4>
+                {toggleTransverse}
+                <p className="description mb-3">Sélectionner le type d'arc à appliquer automatiquement entre deux noeuds feature.</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="arcType"
+                      value="mandatory"
+                      checked={arcType === "mandatory"}
+                      onChange={() => { }}
+                      onClick={() => handleChange("mandatory")}
+                    />
+                    Obligatoire
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="arcType"
+                      value="optional"
+                      checked={arcType === "optional"}
+                      onChange={() => { }}
+                      onClick={() => handleChange("optional")}
+                    />
+                    Optionnel
+                  </label>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
-                <input
-                  type="radio"
-                  name="arcType"
-                  value="inclusion"
-                  checked={arcType === "inclusion"}
-                  onChange={() => { }}
-                  onClick={() => handleChange("inclusion")}
-                />
-                Inclusion
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
-                <input
-                  type="radio"
-                  name="arcType"
-                  value="exclusion"
-                  checked={arcType === "exclusion"}
-                  onChange={() => { }}
-                  onClick={() => handleChange("exclusion")}
-                />
-                Exclusion mutuelle
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
-                <input
-                  type="radio"
-                  name="arcType"
-                  value="compatibility"
-                  checked={arcType === "compatibility"}
-                  onChange={() => { }}
-                  onClick={() => handleChange("compatibility")}
-                />
-                Compatibilité
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
-                <input
-                  type="radio"
-                  name="arcType"
-                  value="equivalence"
-                  checked={arcType === "equivalence"}
-                  onChange={() => { }}
-                  onClick={() => handleChange("equivalence")}
-                />
-                Equivalence
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
-                <input
-                  type="radio"
-                  name="arcType"
-                  value="difference"
-                  checked={arcType === "difference"}
-                  onChange={() => { }}
-                  onClick={() => handleChange("difference")}
-                />
-                Différence
-              </label>
-            </div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="arcType"
+                      value="inclusion"
+                      checked={arcType === "inclusion"}
+                      onChange={() => { }}
+                      onClick={() => handleChange("inclusion")}
+                    />
+                    Inclusion
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="arcType"
+                      value="exclusion"
+                      checked={arcType === "exclusion"}
+                      onChange={() => { }}
+                      onClick={() => handleChange("exclusion")}
+                    />
+                    Exclusion mutuelle
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="arcType"
+                      value="compatibility"
+                      checked={arcType === "compatibility"}
+                      onChange={() => { }}
+                      onClick={() => handleChange("compatibility")}
+                    />
+                    Compatibilité
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="arcType"
+                      value="equivalence"
+                      checked={arcType === "equivalence"}
+                      onChange={() => { }}
+                      onClick={() => handleChange("equivalence")}
+                    />
+                    Equivalence
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6e6d68', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="arcType"
+                      value="difference"
+                      checked={arcType === "difference"}
+                      onChange={() => { }}
+                      onClick={() => handleChange("difference")}
+                    />
+                    Différence
+                  </label>
+                </div>
 
-            <h4 className="text-sm font-semibold mb-2 text-[#6e6d68] uppercase tracking-wide">Réorganisation</h4>
-            <Button variant="outline" onClick={handleNoeuds} className="reorganize-button mb-4">
-              Réorganisation du graphe
-            </Button>
+                <h4 className="text-sm font-semibold mb-2 text-[#6e6d68] uppercase tracking-wide">Réorganisation</h4>
+                <Button variant="outline" onClick={handleNoeuds} className="reorganize-button mb-4">
+                  Réorganisation du graphe
+                </Button>
 
-            <div className="toggle-wrapper">
-              <label className="toggle-label">Disposition automatique du graphe</label>
-              <label className="toggle-switch">
-                <input
-                  type="checkbox"
-                  defaultChecked={isLayoutAuto}
-                  onChange={() => setLayout(!isLayoutAuto)}
-                />
-                <span className="toggle-slider" />
-              </label>
-            </div>
+                <div className="toggle-wrapper">
+                  <label className="toggle-label">Disposition automatique du graphe</label>
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      defaultChecked={isLayoutAuto}
+                      onChange={() => setLayout(!isLayoutAuto)}
+                    />
+                    <span className="toggle-slider" />
+                  </label>
+                </div>
+            
 
+              </>
+            )}
 
-          </>
-        )}
-
-        {/* <h4 className="text-sm font-semibold mb-2 text-[#6e6d68] uppercase tracking-wide">Back-end</h4>
-      <Button variant="outline" onClick={validate} className="reorganize-button mb-4">
-        Validation du graphe
-      </Button> */}
       </aside>
       <CustomPopup dialog={customPopup} onClose={() => setCustomPopup(null)} />
     </>
