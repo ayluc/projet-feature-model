@@ -47,6 +47,7 @@ export default ({ isReadOnly = false }) => {
           type="checkbox"
           defaultChecked={isTransverseVisible}
           onChange={() => setTransverseVisible(!isTransverseVisible)}
+          checked={isTransverseVisible}
         />
         <span className="toggle-slider" />
       </label>

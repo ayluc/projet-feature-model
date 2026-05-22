@@ -75,6 +75,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
   const pause = useTemporalStore((state) => state.pause);
   const resume = useTemporalStore((state) => state.resume);
   const isTransverseVisible = useGraphStore((state) => state.isTransverseVisible);
+  const setIsTransverseVisible = useGraphStore((state) => state.setTransverseVisible);
 
   const [menu, setMenu] = useState(null);
   const [popup, setPopup] = useState(null);
@@ -186,7 +187,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         });
         return;
       }
-
+      setIsTransverseVisible(true);
       if (arcType === "inclusion") {
         onConnect({
           ...connectionWithId,
@@ -520,6 +521,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
               const { edgeStyle: s, edgeMarkers: m } = getTransverseStyle(edgeData);
               edgeStyle = s;
               edgeMarkers = m;
+              setIsTransverseVisible(true);
             }
 
             // Modification via clic droit
