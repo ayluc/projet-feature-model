@@ -4,9 +4,10 @@ import CustomPopup from '../popups/CustomPopup';
 
 export const validateGraph = (nodes, edges) => {
 	const operatorTypes = ["or", "xor", "cardinalite"];
+	const structuralEdges = edges.filter(e => e.data?.liaisonType !== "transverse");
 
-	const childIds = new Set(edges.map(e => e.target));
-	const parentIds = new Set(edges.map(e => e.source));
+	const childIds = new Set(structuralEdges.map(e => e.target));
+	const parentIds = new Set(structuralEdges.map(e => e.source));
 	const operators = nodes.filter(n => operatorTypes.includes(n.type));
 
 	const isolatedNodes = nodes.filter(n => !parentIds.has(n.id) && !childIds.has(n.id));
@@ -15,17 +16,17 @@ export const validateGraph = (nodes, edges) => {
 	const roots = nodes.filter(n => !childIds.has(n.id));
 	if (roots.length !== 1) return "noUniqueRoot";
 
-	const hasMultipleParents = [...childIds].some(childId => edges.filter(e => e.target === childId).length > 1);
+	const hasMultipleParents = [...childIds].some(childId => structuralEdges.filter(e => e.target === childId).length > 1);
 	if (hasMultipleParents) return "noSingleParent";
 
-	const edgesBetweenOperators = edges.filter(e => operators.some(o => o.id === e.source) && operators.some(o => o.id === e.target));
+	const edgesBetweenOperators = structuralEdges.filter(e => operators.some(o => o.id === e.source) && operators.some(o => o.id === e.target));
 	if (edgesBetweenOperators.length > 0) return "operatorsLink";
 
 	const operatorsWithouChild = nodes.filter(n => operatorTypes.includes(n.type) && !parentIds.has(n.id));
 	if (operatorsWithouChild.length > 0) return "noChildOperator";
 
 	const childCountPerParent = {};
-	edges.forEach(e => { childCountPerParent[e.source] = (childCountPerParent[e.source] || 0) + 1; });
+	structuralEdges.forEach(e => { childCountPerParent[e.source] = (childCountPerParent[e.source] || 0) + 1; });
 	const hasTooFewChildren = nodes.some(n => n.data.cardinaliteMin > (childCountPerParent[n.id] || 0));
 	if (hasTooFewChildren) return "noEnoughChildren";
 
