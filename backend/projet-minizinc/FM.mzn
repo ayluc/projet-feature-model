@@ -196,20 +196,36 @@ constraint
 	forall(i in FEATURE)(
 		(isActivated[i] /\ forall(j in children[i])(isActivated[j])) -> (isIncluded[i] -> (min_children[i]<=nbIncludedChildrenOfI[i] /\ nbIncludedChildrenOfI[i]<=max_children[i]))
 	);
+
+% [C4bis-min] Le nombre d'enfants non exclus (inclus + non activés) doit rester >= min_children
+% Empêche le solveur d'exclure plus d'enfants que ce que la cardinalité min permet
+constraint
+    forall(i in FEATURE where children[i] != {})(
+        isIncluded[i] ->
+        card(children[i]) - sum(j in children[i])(isActivated[j] /\ not(isIncluded[j])) >= min_children[i]
+    );
+
+% [C4bis-max] Le nombre d'enfants inclus ne peut pas dépasser max_children
+constraint
+    forall(i in FEATURE where children[i] != {})(
+        isIncluded[i] ->
+        nbIncludedChildrenOfI[i] <= max_children[i]
+    );
 	
 % [C8-1] Si le nombre d'enfants non activés == nombre d'enfants manquants,
 % on active et inclut les enfants non activés
-% constraint
-%     forall(i in FEATURE where children[i] != {})(
-%         (
-%          card(children[i]) - sum(j in children[i])(isActivated[j]) == min_children[i] - nbIncludedChildrenOfI[i] 
-%           /\ nbIncludedChildrenOfI[i] < min_children[i]
-%          )
-%         ->
-%         forall(j in children[i])(
-%             not(isActivated[j]) -> isIncluded[j]
-%         )
-%     );
+constraint
+    forall(i in FEATURE where children[i] != {})(
+        (
+          isActivated[i] /\ isIncluded[i] /\
+         card(children[i]) - sum(j in children[i])(isActivated[j]) == min_children[i] - nbIncludedChildrenOfI[i] 
+          /\ nbIncludedChildrenOfI[i] < min_children[i]
+         )
+        ->
+        forall(j in children[i])(
+            not(isActivated[j]) -> isIncluded[j]
+        )
+    );
     
 % [C8-2] Si le nombre d'enfants de i - nombre d'enfants exclus == cardinalité max de i,
 % on active et inclut les enfants non activés
@@ -223,12 +239,13 @@ constraint
 %         )
 %     );
     
-% [C9] Exclusion des autres enfants non activés lorsqu'un des enfants d'un XOR est inclus
+% [C9] Activation des enfants restants quand le max de cardinalité est atteint
+% (leur exclusion est ensuite inférée par [C4-C5] une fois tous activés)
 constraint
     forall(i in FEATURE, j in children[i])(
         (isActivated[i] /\ isIncluded[i] /\ nbIncludedChildrenOfI[i] >= max_children[i])
         ->
-        (isActivated[j])
+        isActivated[j]
     );
     
 
