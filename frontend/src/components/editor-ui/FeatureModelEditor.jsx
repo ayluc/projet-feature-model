@@ -80,7 +80,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
   const [menu, setMenu] = useState(null);
   const [popup, setPopup] = useState(null);
 
-  const { screenToFlowPosition, getNode, getEdge, getEdges } = useReactFlow();
+  const { screenToFlowPosition, getNode, getEdge } = useReactFlow();
   const [type] = useDnD();
   const isDragging = useRef(false);
 
@@ -314,7 +314,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         const tag = document.activeElement?.tagName;
 
         if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-        
+
         const selectedNodes = nodes.filter(n => n.selected);
         const selectedEdges = edges.filter(e => e.selected);
         
