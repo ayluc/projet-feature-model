@@ -81,8 +81,8 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
       <label style={{ fontSize: "6px", fontWeight: "bold" }}>FEATURE</label>
       <label>{data?.label ?? 'Feature'}</label>
       {/* <input type="checkbox"/> */}
-      <Handle type="source" position={Position.Bottom} isConnectable={isConnectable} />
-      <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
+      <Handle type="source" position={Position.Bottom} isConnectable={isConnectable} style={{width: '0.70em',height: '0.70em'}}/>
+      <Handle type="target" position={Position.Top} isConnectable={isConnectable} style={{width: '0.70em',height: '0.70em'}}/>
       <CustomPopup dialog={customPopup} onClose={() => setCustomPopup(null)} />
     </div>
   );

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useGraphStore } from "@/components/store/GraphStore";
 
 export default function CardinaliteCreationPopup({ popup, onClose, onConfirm }) {
+  const isColorblind = useGraphStore((state) => state.isColorblind);
   const [cardinaliteMin, setCardinaliteMin] = useState("");
   const [cardinaliteMax, setCardinaliteMax] = useState(""); 
   const [error, setError] = useState("");
@@ -68,7 +70,7 @@ useEffect(() => {
       </div>
       
       {error && (
-        <p style={{ color: "red", fontSize: "0.85rem", marginTop: "-8px" }}>
+        <p style={{ color: isColorblind ? "#a16207" : "red", fontSize: "0.85rem", marginTop: "-8px" }}>
           {error}
         </p>
       )}

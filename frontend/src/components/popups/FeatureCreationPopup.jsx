@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useGraphStore } from "@/components/store/GraphStore";
 
 export default function FeatureCreationPopup({ popup, onClose, onConfirm }) {
+  const isColorblind = useGraphStore((state) => state.isColorblind);
   // const [isMandatory, setIsMandatory] = useState(null);
   const [nodeName, setNodeName] = useState("");
   const [error, setError] = useState("");
@@ -106,7 +108,7 @@ export default function FeatureCreationPopup({ popup, onClose, onConfirm }) {
           </div> */}
 
           {error && (
-            <p style={{ color: "red", fontSize: "0.85rem", marginTop: "-8px" }}>
+            <p style={{ color: isColorblind ? "#a16207" : "red", fontSize: "0.85rem", marginTop: "-8px" }}>
               {error}
             </p>
           )}

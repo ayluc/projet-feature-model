@@ -40,6 +40,7 @@ export const useGraphStore = create()(
       edges: [], // liste des arcs du graphe
       isLayoutAuto: true, // disposition automatique des noeuds du graphe activée ou non
       isTransverseVisible: true, // affichage des liens transverses ou non
+      isColorblind: false,
       arcType: null,
       panelOpen: false,
       panelTab: "json",
@@ -49,6 +50,7 @@ export const useGraphStore = create()(
       setPanelTab: (val) => set({ panelTab: val }),
       setLayout: (val) => set({ isLayoutAuto: val }),
       setTransverseVisible: (val) => set({ isTransverseVisible: val }),
+      setColorblind: (val) => set({ isColorblind: val }),
 
       setNodes: (update) => {
         const nextNodes = typeof update === 'function' ? update(get().nodes) : update;

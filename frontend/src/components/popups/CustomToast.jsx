@@ -1,9 +1,11 @@
 import { useEffect } from "react";
 import { TriangleAlert, Info, X } from "lucide-react";
+import { useGraphStore } from "@/components/store/GraphStore";
 
 const AUTO_DISMISS_MS = 4000;
 
 export default function CustomToast({ dialog, onClose }) {
+  const isColorblind = useGraphStore((state) => state.isColorblind);
   const isConfirm = dialog?.type === "confirm";
 
   useEffect(() => {
@@ -69,7 +71,7 @@ export default function CustomToast({ dialog, onClose }) {
           </button>
           <button
             onClick={() => { dialog.onConfirm?.(); onClose(); }}
-            style={{ padding: "4px 12px", background: "#d9534f", color: "white", border: "none", borderRadius: 4, cursor: "pointer", fontSize: "0.8rem" }}
+            style={{ padding: "4px 12px", background: isColorblind ? "#ca8a04" : "#d9534f", color: "white", border: "none", borderRadius: 4, cursor: "pointer", fontSize: "0.8rem" }}
           >
             Confirmer
           </button>

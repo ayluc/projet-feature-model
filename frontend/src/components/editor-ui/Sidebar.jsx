@@ -91,7 +91,16 @@ export default ({ isReadOnly = false }) => {
         </div>
         <div className="line-legende-item">
           <span className="legende-label">Arc d'inclusion (A =&#62; B)</span>
-          <hr className="inclusion-line-dotted" />
+          <svg width="100%" height="10" style={{ display: "block", marginTop: "4px" }}>
+            <defs>
+              <marker id="legend-inclusion-arrow" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+                <polygon points="0 0, 7 3, 0 6" fill="#3B82F6" />
+              </marker>
+            </defs>
+            <line x1="2" y1="5" x2="94%" y2="5"
+              stroke="#3B82F6" strokeWidth="2" strokeDasharray="8 3"
+              markerEnd="url(#legend-inclusion-arrow)" />
+          </svg>
         </div>
         <div className="line-legende-item">
           <span className="legende-label">Arc d'exclusion mutuelle (A /\ B = FALSE)</span>

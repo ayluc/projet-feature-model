@@ -5,6 +5,7 @@ import { Undo2, Redo2 } from "lucide-react";
 import { useDnD } from '@/components/utils/DnDContext';
 import { useGraphStore, useTemporalStore } from '@/components/store/GraphStore';
 import { NodeFeature, NodeXOR, NodeOR, NodeCardinalite } from "@/components/nodes";
+import { DoubleLineEdge } from "@/components/edges";
 import PanneauLateral from "./PanneauLateral";
 import { getNextNodeFeatureId, getNextNodeOperateurId } from '@/components/utils/getIds';
 
@@ -21,29 +22,30 @@ const nodeTypes = {
   cardinalite: NodeCardinalite
 };
 
-// Retourne le style et les markers selon le type transverse
+const edgeTypes = {
+  doubleLine: DoubleLineEdge,
+};
+
+const EDGE_STYLES = {
+  mandatory:     { strokeWidth: 2.5, strokeDasharray: "none" },
+  optional:      { strokeWidth: 2,   strokeDasharray: "6 3" },
+  inclusion:     { strokeWidth: 2,   strokeDasharray: "8 3", stroke: "#3B82F6" },
+  exclusion:     { strokeWidth: 2,   strokeDasharray: "2 4", stroke: "#d90606ff" },
+  compatibility: { strokeWidth: 2,   strokeDasharray: "4 4", stroke: "#da6e0aff" },
+  equivalence:   { strokeWidth: 2,                           stroke: "#09a109ff" },
+  difference:    { strokeWidth: 2,                           stroke: "#d90606ff" },
+};
+
+const MARKER_INCLUSION = { markerEnd: { type: MarkerType.ArrowClosed, color: "#3B82F6", width: 18, height: 18 } };
+const MARKER_NONE = { markerEnd: null };
+
 function getTransverseStyle(data) {
-  if (data?.isInclusion) return {
-    edgeStyle: { strokeWidth: 2, strokeDasharray: "8 3", stroke: "#3B82F6" },
-    edgeMarkers: { markerEnd: { type: MarkerType.ArrowClosed, color: "#3B82F6", width: 18, height: 18 } },
-  };// double ligne gérée via edgeType custom
-  if (data?.isExclusion) return {
-    edgeStyle: { strokeWidth: 2, strokeDasharray: "2 4", stroke: "#D97706" },
-    edgeMarkers: { markerEnd: null },
-  };
-  if (data?.isCompatibility) return {
-    edgeStyle: { strokeWidth: 2, strokeDasharray: "4 4", stroke: "#14B8A6" },
-    edgeMarkers: { markerEnd: null },
-  };
-  if (data?.isEquivalence) return {
-    edgeStyle: { strokeWidth: 5, stroke: "#8B5CF6" },
-    edgeMarkers: { markerEnd: null },
-  };
-  if (data?.isDifference) return {
-    edgeStyle: { strokeWidth: 1, stroke: "#D97706" },
-    edgeMarkers: { markerEnd: null },
-  };
-  return { edgeStyle: {}, edgeMarkers: {} };
+  if (data?.isInclusion)     return { edgeStyle: EDGE_STYLES.inclusion,     edgeMarkers: MARKER_INCLUSION, edgeType: undefined };
+  if (data?.isExclusion)     return { edgeStyle: EDGE_STYLES.exclusion,     edgeMarkers: MARKER_NONE,      edgeType: undefined };
+  if (data?.isCompatibility) return { edgeStyle: EDGE_STYLES.compatibility, edgeMarkers: MARKER_NONE,      edgeType: undefined };
+  if (data?.isEquivalence)   return { edgeStyle: EDGE_STYLES.equivalence,   edgeMarkers: MARKER_NONE,      edgeType: "doubleLine" };
+  if (data?.isDifference)    return { edgeStyle: EDGE_STYLES.difference,    edgeMarkers: MARKER_NONE,      edgeType: undefined };
+  return { edgeStyle: {}, edgeMarkers: {}, edgeType: undefined };
 }
 
 function getNodeClassName(n) {
@@ -161,79 +163,42 @@ function FeatureModelEditor({ isReadOnly = false }) {
       const connectionWithId = { ...connection, id: newEdgeId };
 
       if (restrictedTypes.includes(sourceNode?.type) || restrictedTypes.includes(targetNode?.type)) {
-        onConnect({
-          ...connectionWithId,
-          data: { isMandatory: false },
-          style: { strokeWidth: 2, strokeDasharray: "6 3" },
-        });
+        onConnect({ ...connectionWithId, data: { isMandatory: false }, style: EDGE_STYLES.optional });
         return;
       }
 
       if (arcType === "mandatory") {
-        onConnect({
-          ...connectionWithId,
-          data: { liaisonType: "simple", isMandatory: true },
-          style: { strokeWidth: 2.5, strokeDasharray: "none" },
-        });
+        onConnect({ ...connectionWithId, data: { liaisonType: "simple", isMandatory: true }, style: EDGE_STYLES.mandatory });
         return;
       }
 
       if (arcType === "optional") {
-        onConnect({
-          ...connectionWithId,
-          data: { liaisonType: "simple", isMandatory: false },
-          style: { strokeWidth: 2, strokeDasharray: "6 3" },
-        });
+        onConnect({ ...connectionWithId, data: { liaisonType: "simple", isMandatory: false }, style: EDGE_STYLES.optional });
         return;
       }
 
       if (arcType === "inclusion") {
-        onConnect({
-          ...connectionWithId,
-          data: { liaisonType: "transverse", isInclusion: true },
-          style: { strokeWidth: 2, strokeDasharray: "8 3", stroke: "#3B82F6" },
-          markerEnd: { type: MarkerType.ArrowClosed, color: "#3B82F6", width: 18, height: 18 },
-        });
+        onConnect({ ...connectionWithId, data: { liaisonType: "transverse", isInclusion: true }, style: EDGE_STYLES.inclusion, ...MARKER_INCLUSION });
         return;
       }
 
       if (arcType === "exclusion") {
-        onConnect({
-          ...connectionWithId,
-          data: { liaisonType: "transverse", isExclusion: true },
-          style: { strokeWidth: 2, strokeDasharray: "2 4", stroke: "#D97706" },
-          markerEnd: null,
-        });
+        onConnect({ ...connectionWithId, data: { liaisonType: "transverse", isExclusion: true }, style: EDGE_STYLES.exclusion, ...MARKER_NONE });
         return;
       }
 
       if (arcType === "compatibility") {
-        onConnect({
-          ...connectionWithId,
-          data: { liaisonType: "transverse", isCompatibility: true },
-          style: { strokeWidth: 2, strokeDasharray: "4 4", stroke: "#14B8A6" },
-          markerEnd: null,
-        });
+        onConnect({ ...connectionWithId, data: { liaisonType: "transverse", isCompatibility: true }, style: EDGE_STYLES.compatibility, ...MARKER_NONE });
         return;
       }
 
       if (arcType === "equivalence") {
-        onConnect({
-          ...connectionWithId,
-          data: { liaisonType: "transverse", isEquivalence: true },
-          style: { strokeWidth: 2, strokeDasharray: "2 4", stroke: "#8B5CF6" },
-          markerEnd: null,
-        });
+        onConnect({ ...connectionWithId, data: { liaisonType: "transverse", isEquivalence: true }, style: EDGE_STYLES.equivalence, type: "doubleLine", ...MARKER_NONE });
         return;
       }
 
       if (arcType === "difference") {
-        onConnect({
-          ...connectionWithId,
-          data: { liaisonType: "transverse", isDifference: true },
-          style: { strokeWidth: 1, stroke: "#D97706" },
-          markerEnd: null,
-        });
+        onConnect({ ...connectionWithId, data: { liaisonType: "transverse", isDifference: true }, style: EDGE_STYLES.difference, ...MARKER_NONE });
         return;
       }
 
@@ -389,6 +354,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
           nodes={enrichedNodes}
           edges={visibleEdges}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           onNodesChange={isReadOnly ? undefined : handleNodesChange}
           onEdgesChange={isReadOnly ? undefined : onEdgesChange}
           onConnect={onConnection}
@@ -507,19 +473,18 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
             let edgeStyle = {};
             let edgeData = {};
+            let edgeType = undefined;
 
             if (liaisonType === "simple") {
               edgeData = { liaisonType: "simple", isMandatory };
-              edgeStyle = {
-                strokeWidth: isMandatory ? 2.5 : 2,
-                strokeDasharray: isMandatory ? "none" : "6 3",
-              };
-              edgeMarkers = { markerEnd: null };
+              edgeStyle = isMandatory ? EDGE_STYLES.mandatory : EDGE_STYLES.optional;
+              edgeMarkers = MARKER_NONE;
             } else if (liaisonType === "transverse") {
               edgeData = { liaisonType: "transverse", isInclusion, isExclusion, isCompatibility, isEquivalence, isDifference };
-              const { edgeStyle: s, edgeMarkers: m } = getTransverseStyle(edgeData);
+              const { edgeStyle: s, edgeMarkers: m, edgeType: t } = getTransverseStyle(edgeData);
               edgeStyle = s;
               edgeMarkers = m;
+              edgeType = t;
             }
 
             // Modification via clic droit
@@ -527,7 +492,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
               setEdges((eds) =>
                 eds.map((e) =>
                   e.id === popup.linkId
-                    ? { ...e, data: { ...e.data, ...edgeData }, style: edgeStyle, ...edgeMarkers }
+                    ? { ...e, type: edgeType, data: { ...e.data, ...edgeData }, style: edgeStyle, ...edgeMarkers }
                     : e
                 )
               );
@@ -537,7 +502,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
             // Création via drag
             if (!popup?.pendingConnection) return;
-            onConnect({ ...popup.pendingConnection, data: edgeData, style: edgeStyle, ...edgeMarkers });
+            onConnect({ ...popup.pendingConnection, type: edgeType, data: edgeData, style: edgeStyle, ...edgeMarkers });
             setPopup(null);
           }}
         />

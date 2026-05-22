@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useGraphStore } from "@/components/store/GraphStore";
 
 export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
+  const isColorblind = useGraphStore((state) => state.isColorblind);
   const [liaisonType, setLiaisonType] = useState(null); // "simple" | "transverse"
   const [isMandatory, setIsMandatory] = useState(null); // "true" | "false"
   const [transverseType, setTransverseType] = useState(null); // "inclusion" | "exclusion" | "compatibility" | "equivalence" | "difference"
@@ -197,7 +199,7 @@ export default function LinkCreationPopup({ popup, onClose, onConfirm }) {
           ))}
         </div>
 
-        {error && <p style={{ color: "red", fontSize: "0.85rem" }}>{error}</p>}
+        {error && <p style={{ color: isColorblind ? "#a16207" : "red", fontSize: "0.85rem" }}>{error}</p>}
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>

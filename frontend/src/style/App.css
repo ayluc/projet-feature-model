@@ -413,7 +413,7 @@ body {
 
 .inclusion-line-dotted {
   border: none;
-  border-top: 3px dashed #5b8dee;
+  border-top: 3px dashed #3B82F6;
   margin: 4px 0 0 0;
 }
 
@@ -432,7 +432,7 @@ body {
 
 .exclusion-line-dotted {
   border: none;
-  border-top: 3px dotted #d9534f;
+  border-top: 3px dotted #d90606ff;
   margin: 4px 0 0 0;
 }
 
@@ -451,19 +451,25 @@ body {
 
 .compatibility-line-dotted {
   border: none;
-  border-top: 2px dashed #daac17;
+  border-top: 2px dashed #da6e0aff;
   margin: 4px 0 0 0;
 }
 
 .equivalence-line-dotted {
   border: none;
-  border-top: 3px dotted #19b420;
+  height: 6px;
+  background-image:
+    linear-gradient(#09a109ff, #09a109ff),
+    linear-gradient(#09a109ff, #09a109ff);
+  background-size: 100% 2px, 100% 2px;
+  background-position: top, bottom;
+  background-repeat: no-repeat;
   margin: 4px 0 0 0;
 }
 
 .difference-line-dotted {
   border: none;
-  border-top: 2px solid #d9534f;
+  border-top: 2px solid #d90606ff;
   margin: 4px 0 0 0;
 }
 .mandatory-line-solid, .optional-line-dotted, .exclusion-line-dotted, .compatibility-line-dotted, .equivalence-line-dotted, .difference-line-dotted, .inclusion-line-dotted {
@@ -544,4 +550,25 @@ body {
 
 #scrollable {
   overflow-y: scroll;
+}
+
+/* Mode daltonien : vert → bleu, rouge → jaune */
+body.colorblind .feature-included-legende-item,
+body.colorblind .feature-included-inferred-legende-item {
+  background: #dbeafe;
+  border-color: #3b82f6;
+}
+
+body.colorblind .feature-excluded-legende-item,
+body.colorblind .feature-excluded-inferred-legende-item {
+  background: #fef9c3;
+  border-color: #eab308;
+}
+
+
+body.colorblind .dndflow .dndnode.feature,
+body.colorblind .feature-legende-item {
+  border-color: #6b7280;
+  background-color: #f3f4f6;
+  color: #374151;
 }

@@ -13,14 +13,13 @@ import { useModelValidation } from '../utils/useModelValidation';
 import CustomPopup from '../popups/CustomPopup';
 import CustomToast from "../popups/CustomToast";
 import DownloadPopup from "../popups/DownloadPopup";
-import { Input } from "../ui/input";
-
+import { Input } from "../shadcn-ui/input";
 import { useDownload } from "../utils/download-utils";
 
 function Toolbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toObject, setViewport, getNodes, getNodesBounds } = useReactFlow();
+  const { setViewport } = useReactFlow();
   const setNodes = useGraphStore((state) => state.setNodes);
   const nodes = useGraphStore((state) => state.nodes);
   const setEdges = useGraphStore((state) => state.setEdges);
@@ -90,6 +89,9 @@ function Toolbar() {
   const setPanelOpen = useGraphStore((state) => state.setPanelOpen);
   const setPanelTab = useGraphStore((state) => state.setPanelTab);
 
+  const isColorblind = useGraphStore((state) => state.isColorblind);
+  const setColorblind = useGraphStore((state) => state.setColorblind);
+
   const { validate } = useModelValidation(true);
   const handleDownload = useDownload(modelName);
 
@@ -150,13 +152,23 @@ function Toolbar() {
           </Button>
         </div>
 
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-3">
+          <span>Mode daltonien</span>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              role="switch"
+              checked={isColorblind}
+              onChange={(e) => setColorblind(e.target.checked)}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-black after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
+          </label>
           <Button onClick={() => setShowDownloadPopup(true)}>
             <ArrowDownToLine />
           </Button>
         </div>
       </div>
-
       <CustomPopup dialog={customPopup} onClose={() => setCustomPopup(null)} />
       <CustomToast dialog={toast} onClose={() => setToast(null)} />
       {showDownloadPopup && (
