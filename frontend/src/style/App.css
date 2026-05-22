@@ -487,7 +487,11 @@ body {
 .mandatory-legende-item,
 .optional-legende-item,
 .inclusion-legende-item,
-.exclusion-legende-item {
+.exclusion-legende-item,
+.feature-included-legende-item,
+.feature-excluded-legende-item,
+.feature-included-inferred-legende-item,
+.feature-excluded-inferred-legende-item {
   margin-bottom: 8px;
 }
 

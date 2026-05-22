@@ -96,33 +96,57 @@ function PanneauLateral({ isOpen }) {
                     <div>
                         <div style={{ marginBottom: '24px' }}>
                             <h3 className="font-bold mb-2">Inclusion (A ⇒ B)</h3>
-                            {edgeList(inclusionEdges, e => (
-                                <><strong>{nodeMap[e.source]}</strong> nécessite <strong>{nodeMap[e.target]}</strong></>
-                            )) ?? emptyMsg("Aucune inclusion configurée.")}
+                            <svg width="100%" height="10" style={{ display: "block", marginTop: "4px" }}>
+                                <defs>
+                                    <marker id="legend-inclusion-arrow" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+                                        <polygon points="0 0, 7 3, 0 6" fill="#3B82F6" />
+                                    </marker>
+                                </defs>
+                                <line x1="2" y1="5" x2="94%" y2="5"
+                                    stroke="#3B82F6" strokeWidth="2" strokeDasharray="8 3"
+                                    markerEnd="url(#legend-inclusion-arrow)" />
+                            </svg>
+                            <div style={{ marginTop: '8px' }}>
+                                {edgeList(inclusionEdges, e => (
+                                    <><strong>{nodeMap[e.source]}</strong> nécessite <strong>{nodeMap[e.target]}</strong></>
+                                )) ?? emptyMsg("Aucune inclusion configurée.")}
+                            </div>
                         </div>
                         <div style={{ marginBottom: '24px' }}>
                             <h3 className="font-bold mb-2">Exclusion mutuelle (A ∧ B = FALSE)</h3>
-                            {edgeList(exclusionEdges, e => (
-                                <><strong>{nodeMap[e.source]}</strong> et <strong>{nodeMap[e.target]}</strong> sont incompatibles</>
-                            )) ?? emptyMsg("Aucune exclusion configurée.")}
+                            <hr className="exclusion-line-dotted" />
+                            <div style={{ marginTop: '8px' }}>
+                                {edgeList(exclusionEdges, e => (
+                                    <><strong>{nodeMap[e.source]}</strong> et <strong>{nodeMap[e.target]}</strong> sont incompatibles</>
+                                )) ?? emptyMsg("Aucune exclusion configurée.")}
+                            </div>
                         </div>
                         <div style={{ marginBottom: '24px' }}>
                             <h3 className="font-bold mb-2">Compatibilité (A ∨ B = TRUE)</h3>
-                            {edgeList(compatibilityEdges, e => (
-                                <><strong>{nodeMap[e.source]}</strong> et <strong>{nodeMap[e.target]}</strong> sont compatibles</>
-                            )) ?? emptyMsg("Aucune compatibilité configurée.")}
+                            <hr className="compatibility-line-dotted" />
+                            <div style={{ marginTop: '8px' }}>
+                                {edgeList(compatibilityEdges, e => (
+                                    <><strong>{nodeMap[e.source]}</strong> et <strong>{nodeMap[e.target]}</strong> sont compatibles</>
+                                )) ?? emptyMsg("Aucune compatibilité configurée.")}
+                            </div>
                         </div>
                         <div style={{ marginBottom: '24px' }}>
                             <h3 className="font-bold mb-2">Équivalence (A = B)</h3>
-                            {edgeList(equivalenceEdges, e => (
-                                <><strong>{nodeMap[e.source]}</strong> et <strong>{nodeMap[e.target]}</strong> sont équivalents</>
-                            )) ?? emptyMsg("Aucune équivalence configurée.")}
+                            <hr className="equivalence-line-dotted" />
+                            <div style={{ marginTop: '8px' }}>
+                                {edgeList(equivalenceEdges, e => (
+                                    <><strong>{nodeMap[e.source]}</strong> et <strong>{nodeMap[e.target]}</strong> sont équivalents</>
+                                )) ?? emptyMsg("Aucune équivalence configurée.")}
+                            </div>
                         </div>
                         <div style={{ marginBottom: '24px' }}>
                             <h3 className="font-bold mb-2">Différence (A ≠ B)</h3>
-                            {edgeList(differenceEdges, e => (
-                                <><strong>{nodeMap[e.source]}</strong> et <strong>{nodeMap[e.target]}</strong> sont différents</>
-                            )) ?? emptyMsg("Aucune différence configurée.")}
+                            <hr className="difference-line-dotted" />
+                            <div style={{ marginTop: '8px' }}>
+                                {edgeList(differenceEdges, e => (
+                                    <><strong>{nodeMap[e.source]}</strong> et <strong>{nodeMap[e.target]}</strong> sont différents</>
+                                )) ?? emptyMsg("Aucune différence configurée.")}
+                            </div>
                         </div>
                     </div>
                 )}

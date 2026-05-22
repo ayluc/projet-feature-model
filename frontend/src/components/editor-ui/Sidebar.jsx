@@ -67,7 +67,7 @@ export default ({ isReadOnly = false }) => {
           <span className="legende-label">Noeud opérateur</span>
         </div>
         {isReadOnly && (
-          <>
+          <div className="legende mb-4">
             <div className="feature-included-legende-item">
               <span className="legende-label">Noeud feature inclus <em style={{ fontSize: '11px', opacity: 0.7 }}>(manuel)</em></span>
             </div>
@@ -80,7 +80,7 @@ export default ({ isReadOnly = false }) => {
             <div className="feature-excluded-inferred-legende-item">
               <span className="legende-label">Noeud feature exclus <em style={{ fontSize: '11px', opacity: 0.7 }}>(inféré)</em></span>
             </div>
-          </>
+          </div>
         )}
         <div className="line-legende-item">
           <span className="legende-label">Arc obligatoire</span>
