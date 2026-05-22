@@ -48,7 +48,7 @@ export default ({ isReadOnly = false }) => {
 
   const { validate, customPopup, setCustomPopup } = useModelValidation(isReadOnly);
 
-  const isModelValid = useMemo(() => validateGraph(nodes, edges), [nodes, edges]);
+  const validationError = useMemo(() => validateGraph(nodes, edges), [nodes, edges]);
 
   const featureNodes = nodes.filter(n => n.type === 'feature');
   const isConfigComplete = featureNodes.length > 0 && featureNodes.every(n => n.data.configStatus !== null);
@@ -90,7 +90,7 @@ export default ({ isReadOnly = false }) => {
         {!isReadOnly && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
             <h2 className="text-xs font-bold">VALIDITÉ DU MODÈLE</h2>
-            {isModelValid
+            {validationError === null
               ? <CheckCircle size={20} color="#22c55e" />
               : <XCircle size={20} color="#ef4444" />}
           </div>

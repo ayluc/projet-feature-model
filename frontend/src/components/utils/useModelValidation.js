@@ -5,62 +5,31 @@ import CustomPopup from '../popups/CustomPopup';
 export const validateGraph = (nodes, edges) => {
 	const operatorTypes = ["or", "xor", "cardinalite"];
 
-	// Récupère les IDs de tous les noeuds enfants (qui ont un parent)
 	const childIds = new Set(edges.map(e => e.target));
-
-	// Tous les noeuds non-opérateurs qui n'ont pas de parent = racines candidates
-	const roots = nodes.filter(n => !operatorTypes.includes(n.type) && !childIds.has(n.id));
-
-	// Il doit y avoir exactement une racine
-	if (roots.length !== 1) return false;
-
-
-	// Récupère les IDs de tous les noeuds qui sont parents
 	const parentIds = new Set(edges.map(e => e.source));
-	// Récupère tous les noeuds opérateurs qui n'ont pas d'enfant
-	const operatorsWithouChild = nodes.filter(n => operatorTypes.includes(n.type) && !parentIds.has(n.id));
-	// Il ne doit pas y avoir d'opérateurs sans enfant
-	if (operatorsWithouChild.length > 0) return false;
-
-
-	// Récupère les noeuds qui sont isolés (sans enfant ni parent)
-	const isolatedNodes = nodes.filter(n => !parentIds.has(n.id) && !childIds.has(n.id));
-	// Il ne doit pas y avoir de noeuds isolés
-	if (isolatedNodes.length > 0) return false;
-
-
-	// Récupère les noeuds opérateurs
 	const operators = nodes.filter(n => operatorTypes.includes(n.type));
-	// Récupère les liens entre deux noeuds opérateurs
+
+	const isolatedNodes = nodes.filter(n => !parentIds.has(n.id) && !childIds.has(n.id));
+	if (isolatedNodes.length > 0) return "isolatedNode";
+
+	const roots = nodes.filter(n => !operatorTypes.includes(n.type) && !childIds.has(n.id));
+	if (roots.length !== 1) return "noUniqueRoot";
+
+	const hasMultipleParents = [...childIds].some(childId => edges.filter(e => e.target === childId).length > 1);
+	if (hasMultipleParents) return "noSingleParent";
+
 	const edgesBetweenOperators = edges.filter(e => operators.some(o => o.id === e.source) && operators.some(o => o.id === e.target));
-	// Il ne doit pas y avoir de lien entre deux noeuds opérateurs
-	if (edgesBetweenOperators.length > 0) return false;
+	if (edgesBetweenOperators.length > 0) return "operatorsLink";
 
-	// Fonction pour trouver le nb de fils à partir d'un noeud
-	const trouverNbFils = (noeud) => {
-		var nbFils = 0;
-		for (let index = 0; index < edges.length; index++) {
-			const element = edges[index];
-			if (element.source == noeud.id) {
-				nbFils++;
-			}
-		}
-		return nbFils;
-	}
+	const operatorsWithouChild = nodes.filter(n => operatorTypes.includes(n.type) && !parentIds.has(n.id));
+	if (operatorsWithouChild.length > 0) return "noChildOperator";
 
-	// S'il y a moins de fils que la card min d'un noeud, alors le graphe n'est pas valide
-	var noeudBool = false;
-	nodes.forEach(n => {
-		if (n.data.cardinaliteMin > trouverNbFils(n)) {
-			noeudBool = true;
-		}
-	});
-	if (noeudBool) return false
+	const childCountPerParent = {};
+	edges.forEach(e => { childCountPerParent[e.source] = (childCountPerParent[e.source] || 0) + 1; });
+	const hasTooFewChildren = nodes.some(n => n.data.cardinaliteMin > (childCountPerParent[n.id] || 0));
+	if (hasTooFewChildren) return "noEnoughChildren";
 
-	// TODO: ajouter d'autres validations ici
-	// ex: vérifier qu'il n'y a pas de cycles
-
-	return true;
+	return null;
 };
 
 export const useModelValidation = (isReadOnly) => {
@@ -79,8 +48,8 @@ export const useModelValidation = (isReadOnly) => {
 		setIsLoading(true);
 		setError(null);
 
-		const isGraphValid = validateGraph(currentNodes, currentEdges);
-		console.log("graphe valide ?", isGraphValid);
+		const graphError = validateGraph(currentNodes, currentEdges);
+		console.log("graphe valide ?", graphError ?? "oui");
 
 		try {
 
@@ -261,7 +230,7 @@ export const useModelValidation = (isReadOnly) => {
 			if (finalData.valid === false) {
 				setCustomPopup({ type: "alert", message: "Le feature model est insatisfiable. Veuillez le configurer autrement." });
 			}
-			return finalData.valid === true && isGraphValid;
+			return finalData.valid === true && graphError === null;
 
 		} catch (err) {
 			console.error("Erreur de validation :", err);

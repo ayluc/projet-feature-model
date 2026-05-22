@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { useReactFlow } from "@xyflow/react";
+import { CheckCircle, XCircle } from 'lucide-react';
 import { useGraphStore } from "@/components/store/GraphStore";
+import { validateGraph } from "@/components/utils/useModelValidation";
 
 function PanneauLateral({ isOpen }) {
     const setActiveTab = useGraphStore((state) => state.setPanelTab);
@@ -64,6 +66,17 @@ function PanneauLateral({ isOpen }) {
             return acc;
         }, {});
     }, [nodes]);
+
+    const validationError = useMemo(() => validateGraph(nodes, edges), [nodes, edges]);
+
+    const validationRules = [
+        { code: 'isolatedNode',     label: 'Aucun nœud ne doit être isolé (sans enfant ni parent)' },
+        { code: 'noUniqueRoot',     label: 'Le modèle doit avoir exactement une racine (noeud sans parent)' },
+        { code: 'noSingleParent',   label: 'Chaque nœud a au plus un parent' },
+        { code: 'noChildOperator',  label: 'Tout nœud opérateur a au moins un enfant' },
+        { code: 'operatorsLink',    label: 'Pas de lien direct entre deux opérateurs' },
+        { code: 'noEnoughChildren', label: 'La cardinalité minimale doit être respectée (nb enfants ≥ cardMin)' },
+    ];
 
     return (
         <div style={{
@@ -151,11 +164,18 @@ function PanneauLateral({ isOpen }) {
                     </div>
                 )}
                 {activeTab === "validation" && (
-                    <div>
-                        <li>Il ne doit exister qu'une seule racine</li>
-                        <li>Un noeud doit avoir un unique parent (sauf pour la racine qui n'en a pas)</li>
-                        <li>Un noeud opérateur doit avoir au moins 1 enfant</li>
-                        <li>Un noeud cardinalité doit avoir au minimum le nombre d'enfants de sa cardinalité minimum (ex : pour un noeud [2..5], le noeud doit avoir au moins 2 enfants)</li>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {validationRules.map(({ code, label }) => {
+                            const violated = validationError === code;
+                            return (
+                                <div key={code} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    {violated
+                                        ? <XCircle size={16} color="#ef4444" style={{ flexShrink: 0 }} />
+                                        : <CheckCircle size={16} color="#22c55e" style={{ flexShrink: 0 }} />}
+                                    <span style={{ fontSize: '13px', color: violated ? '#ef4444' : '#374151' }}>{label}</span>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </div>
