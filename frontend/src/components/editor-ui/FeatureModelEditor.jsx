@@ -77,6 +77,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
   const pause = useTemporalStore((state) => state.pause);
   const resume = useTemporalStore((state) => state.resume);
   const isTransverseVisible = useGraphStore((state) => state.isTransverseVisible);
+  const setIsTransverseVisible = useGraphStore((state) => state.setTransverseVisible);
 
   const [menu, setMenu] = useState(null);
   const [popup, setPopup] = useState(null);
@@ -176,7 +177,10 @@ function FeatureModelEditor({ isReadOnly = false }) {
         onConnect({ ...connectionWithId, data: { liaisonType: "simple", isMandatory: false }, style: EDGE_STYLES.optional });
         return;
       }
-
+      if (arcType === "inclusion" || arcType === "exclusion" || arcType === "compatibility" || arcType === "equivalence" || arcType === "difference")
+      {
+        setIsTransverseVisible(true);
+      } 
       if (arcType === "inclusion") {
         onConnect({ ...connectionWithId, data: { liaisonType: "transverse", isInclusion: true }, style: EDGE_STYLES.inclusion, ...MARKER_INCLUSION });
         return;
@@ -273,10 +277,16 @@ function FeatureModelEditor({ isReadOnly = false }) {
     const handleKeyDown = (event) => {
       if (event.key == 'Backspace') {
         const tag = document.activeElement?.tagName;
+
         if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
         const selectedNodes = nodes.filter(n => n.selected);
-        if (selectedNodes.length === 0) return;
-        onNodesChange(selectedNodes.map(n => ({ type: 'remove', id: n.id })));
+        const selectedEdges = edges.filter(e => e.selected);
+        
+        if (selectedNodes.length === 0 && selectedEdges === 0) return;
+
+        if (selectedNodes.length > 0) onNodesChange(selectedNodes.map(n => ({ type: 'remove', id: n.id })));
+        if (selectedEdges.length > 0) onEdgesChange(selectedEdges.map(e => ({ type: 'remove', id: e.id })));
       }
       else if (event.key === 'z' && (event.ctrlKey || event.metaKey)) {
         undo();
@@ -290,7 +300,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isReadOnly, nodes, onNodesChange]);
+  }, [isReadOnly, nodes, onNodesChange, edges, onEdgesChange]);
 
   const enrichedNodes = useMemo(() => {
     return nodes.map(n => ({
@@ -485,6 +495,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
               edgeStyle = s;
               edgeMarkers = m;
               edgeType = t;
+              setIsTransverseVisible(true);
             }
 
             // Modification via clic droit
