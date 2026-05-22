@@ -61,7 +61,6 @@ function Toolbar() {
         const flow = JSON.parse(e.target.result);
         setNodes([]);
         setEdges([]);
-        if (location.pathname !== "/creation") navigate("/creation");
         setTimeout(() => {
           if (flow.nodes) setNodes(flow.nodes);
           if (flow.edges) setEdges(flow.edges);

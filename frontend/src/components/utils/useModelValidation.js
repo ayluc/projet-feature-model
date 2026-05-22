@@ -12,7 +12,7 @@ export const validateGraph = (nodes, edges) => {
 	const isolatedNodes = nodes.filter(n => !parentIds.has(n.id) && !childIds.has(n.id));
 	if (isolatedNodes.length > 0) return "isolatedNode";
 
-	const roots = nodes.filter(n => !operatorTypes.includes(n.type) && !childIds.has(n.id));
+	const roots = nodes.filter(n => !childIds.has(n.id));
 	if (roots.length !== 1) return "noUniqueRoot";
 
 	const hasMultipleParents = [...childIds].some(childId => edges.filter(e => e.target === childId).length > 1);
