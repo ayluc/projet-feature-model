@@ -14,6 +14,7 @@ import FeatureCreationPopup from "../popups/FeatureCreationPopup";
 import CardinaliteCreationPopup from "../popups/CardinaliteCreationPopup";
 import LinkCreationPopup from "../popups/LinkCreationPopup";
 import ContextMenu from "../popups/ContextMenu";
+import CustomPopup from "../popups/CustomPopup";
 
 const nodeTypes = {
   feature: NodeFeature,
@@ -81,6 +82,8 @@ function FeatureModelEditor({ isReadOnly = false }) {
 
   const [menu, setMenu] = useState(null);
   const [popup, setPopup] = useState(null);
+  const [configCompleteDialog, setConfigCompleteDialog] = useState(null);
+  const configCompleteShown = useRef(false);
 
   const { screenToFlowPosition, getNode, getEdge } = useReactFlow();
   const [type] = useDnD();
@@ -263,6 +266,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
   useEffect(() => {
     if (isReadOnly) {
       setNodes(nds => nds.map(n => ({ ...n, selected: false })));
+      configCompleteShown.current = false;
     } else {
       setNodes(nds => nds.map(n => ({
         ...n,
@@ -271,6 +275,17 @@ function FeatureModelEditor({ isReadOnly = false }) {
       })));
     }
   }, [isReadOnly]);
+
+  useEffect(() => {
+    if (!isReadOnly || configCompleteShown.current) return;
+    const featureNodes = nodes.filter(n => n.type === 'feature');
+    if (featureNodes.length === 0) return;
+    const allConfigured = featureNodes.every(n => n.data.configStatus !== null);
+    if (allConfigured) {
+      configCompleteShown.current = true;
+      setConfigCompleteDialog({ type: 'info', message: 'Le modèle est entièrement configuré !' });
+    }
+  }, [nodes, isReadOnly]);
 
   useEffect(() => {
     if (isReadOnly) return;
@@ -519,6 +534,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
         />
       </div>
       <PanneauLateral isOpen={panelOpen} />
+      <CustomPopup dialog={configCompleteDialog} onClose={() => setConfigCompleteDialog(null)} />
     </div>
   );
 }

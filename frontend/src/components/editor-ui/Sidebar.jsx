@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useState } from 'react';
+import { CheckCircle, XCircle } from 'lucide-react';
 
 import { useDnD } from '@/components/utils/DnDContext';
 import { Button } from "@/components/shadcn-ui/button";
 import { getLayoutedElements } from '@/components/utils/layout';
 import { useGraphStore } from '@/components/store/GraphStore';
-import { useModelValidation } from '../utils/useModelValidation';
+import { useModelValidation, validateGraph } from '../utils/useModelValidation';
 import CustomPopup from '../popups/CustomPopup';
 
 export default ({ isReadOnly = false }) => {
@@ -47,6 +48,11 @@ export default ({ isReadOnly = false }) => {
 
   const { validate, customPopup, setCustomPopup } = useModelValidation(isReadOnly);
 
+  const isModelValid = useMemo(() => validateGraph(nodes, edges), [nodes, edges]);
+
+  const featureNodes = nodes.filter(n => n.type === 'feature');
+  const isConfigComplete = featureNodes.length > 0 && featureNodes.every(n => n.data.configStatus !== null);
+
   const toggleTransverse = (
     <div className="toggle-wrapper">
       <label className="toggle-label">Affichage des liaisons transverses</label>
@@ -81,6 +87,23 @@ export default ({ isReadOnly = false }) => {
   return (
     <>
       <aside>
+        {!isReadOnly && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            <h2 className="text-xs font-bold">VALIDITÉ DU MODÈLE</h2>
+            {isModelValid
+              ? <CheckCircle size={20} color="#22c55e" />
+              : <XCircle size={20} color="#ef4444" />}
+          </div>
+        )}
+        {isReadOnly && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            <h2 className="text-xs font-bold">CONFIGURATION COMPLÉTÉE</h2>
+            {isConfigComplete
+              ? <CheckCircle size={20} color="#22c55e" />
+              : <XCircle size={20} color="#ef4444" />}
+          </div>
+        )}
+
         {/* LÉGENDE */}
         <h2 className="text-lg font-bold mb-3">LÉGENDE</h2>
         <div className="legende mb-4">

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useGraphStore } from '@/components/store/GraphStore';
 import CustomPopup from '../popups/CustomPopup';
 
-const validateGraph = (nodes, edges) => {
+export const validateGraph = (nodes, edges) => {
 	const operatorTypes = ["or", "xor", "cardinalite"];
 
 	// Récupère les IDs de tous les noeuds enfants (qui ont un parent)
