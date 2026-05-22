@@ -84,6 +84,7 @@ const (
 	EndpointPing                  = "/ping"
 	EndpointValidateCreation      = "/validate-creation"
 	EndpointValidateConfiguration = "/validate-configuration"
+	EndpointAssemblage            = "/assemblage"
 )
 
 func extractOptimalSolution(output []byte) ([]byte, error) {
@@ -228,6 +229,10 @@ func SetupRouter() *gin.Engine {
 			"nodes":    req.Nodes,
 			"solution": solution,
 		})
+	})
+
+	router.POST(EndpointAssemblage, func(c *gin.Context) {
+
 	})
 
 	return router
