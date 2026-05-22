@@ -187,7 +187,10 @@ function FeatureModelEditor({ isReadOnly = false }) {
         });
         return;
       }
-      setIsTransverseVisible(true);
+      if (arcType === "inclusion" || arcType === "exclusion" || arcType === "compatibility" || arcType === "equivalence" || arcType === "difference")
+      {
+        setIsTransverseVisible(true);
+      } 
       if (arcType === "inclusion") {
         onConnect({
           ...connectionWithId,
