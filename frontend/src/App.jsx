@@ -9,7 +9,6 @@ import { useGraphStore } from '@/components/store/GraphStore';
 import Toolbar from "@/components/editor-ui/Toolbar";
 import Creation from './pages/Creation';
 import Configuration from './pages/Configuration';
-import Assemblage from './pages/Assemblage';
 
 import '@xyflow/react/dist/style.css';
 
@@ -28,7 +27,6 @@ function Page () {
         <Route path="/" element={<Navigate to="/creation" replace />}></Route>
         <Route path="/creation" element={<Creation/>}></Route>
         <Route path="/configuration" element={<Configuration/>}></Route>
-        <Route path="/assemblage" element={<Assemblage/>}></Route>
       </Routes>
     </div>
   );

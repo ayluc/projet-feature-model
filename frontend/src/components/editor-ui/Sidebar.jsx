@@ -119,11 +119,18 @@ export default ({ isReadOnly = false }) => {
           <span className="legende-label">Arc de différence (A ≠ B)</span>
           <hr className="difference-line-dotted" />
         </div>
+        <br/>
       </div>
 
       <hr style={{ border: "1px solid #e0e0e0", marginBottom: "16px" }} />
 
       {isReadOnly ? toggleTransverse : null}
+
+      {isReadOnly && (
+          <div>
+            <Button variant="outline" className="assemblage-button mb-4">Assemblage</Button>
+          </div>
+      )}
 
       {!isReadOnly && (
         <>
