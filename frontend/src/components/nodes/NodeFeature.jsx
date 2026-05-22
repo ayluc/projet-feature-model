@@ -7,13 +7,18 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
 
   const configStatus = data.configStatus; // 'included' | 'excluded' | null
   const configSource = data.configSource; // 'manual' | 'inferred' | null
+  const isColorblind = useGraphStore((state) => state.isColorblind);
 
-  const borderColor = configStatus === 'included' ? '#029C70'
-    : configStatus === 'excluded' ? '#FF667A'
+  const borderColor = configStatus === 'included'
+    ? (isColorblind ? '#3b82f6' : '#22c55e')
+    : configStatus === 'excluded'
+      ? (isColorblind ? '#eab308' : '#ef4444')
       : '#185fa5';
 
-  const bgColor = configStatus === 'included' ? '#dcfce7'
-    : configStatus === 'excluded' ? '#fee2e2'
+  const bgColor = configStatus === 'included'
+    ? (isColorblind ? '#dbeafe' : '#dcfce7')
+    : configStatus === 'excluded'
+      ? (isColorblind ? '#fef9c3' : '#fee2e2')
       : '#e6f1fb';
 
   const isReadOnly = data.isReadOnly;
@@ -50,7 +55,7 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
               borderRadius: '50%',
               border: 'none',
               cursor: 'pointer',
-              background: configStatus === 'included' ? '#d1d5db' : '#029C70',
+              background: configStatus === 'included' ? '#d1d5db' : (isColorblind ? '#3b82f6' : '#22c55e'),
             }}
             title="Inclure"
           >✓</button>
@@ -72,7 +77,7 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
             }}
             style={{
               width: 22, height: 22, borderRadius: '50%', border: 'none', cursor: 'pointer',
-              background: configStatus === 'excluded' ? '#d1d5db' : '#FF667A',
+              background: configStatus === 'excluded' ? '#d1d5db' : (isColorblind ? '#eab308' : '#ef4444'),
             }}
             title="Exclure"
           >✕</button>
