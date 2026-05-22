@@ -150,6 +150,10 @@ function Toolbar() {
           >
             Configuration
           </Button>
+          <Button variant={location.pathname === "/assemblage" ? "default" : "outline"}
+            onClick={() => navigate("/assemblage")}>
+            Assemblage
+          </Button>
         </div>
 
         <div className="ml-auto flex items-center gap-3">
