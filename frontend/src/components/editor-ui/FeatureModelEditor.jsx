@@ -80,7 +80,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
   const [menu, setMenu] = useState(null);
   const [popup, setPopup] = useState(null);
 
-  const { screenToFlowPosition, getNode, getEdge } = useReactFlow();
+  const { screenToFlowPosition, getNode, getEdge, getEdges } = useReactFlow();
   const [type] = useDnD();
   const isDragging = useRef(false);
 
@@ -312,10 +312,16 @@ function FeatureModelEditor({ isReadOnly = false }) {
     const handleKeyDown = (event) => {
       if (event.key == 'Backspace') {
         const tag = document.activeElement?.tagName;
+
         if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+        
         const selectedNodes = nodes.filter(n => n.selected);
-        if (selectedNodes.length === 0) return;
-        onNodesChange(selectedNodes.map(n => ({ type: 'remove', id: n.id })));
+        const selectedEdges = edges.filter(e => e.selected);
+        
+        if (selectedNodes.length === 0 && selectedEdges === 0) return;
+
+        if (selectedNodes.length > 0) onNodesChange(selectedNodes.map(n => ({ type: 'remove', id: n.id })));
+        if (selectedEdges.length > 0) onEdgesChange(selectedEdges.map(e => ({ type: 'remove', id: e.id })));
       }
       else if (event.key === 'z' && (event.ctrlKey || event.metaKey)) {
         undo();
@@ -329,7 +335,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isReadOnly, nodes, onNodesChange]);
+  }, [isReadOnly, nodes, onNodesChange, edges, onEdgesChange]);
 
   const enrichedNodes = useMemo(() => {
     return nodes.map(n => ({
