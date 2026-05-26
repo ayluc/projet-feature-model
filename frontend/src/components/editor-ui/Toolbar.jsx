@@ -29,6 +29,8 @@ function Toolbar() {
   const [modelName, setModelName] = useState("");
   const [showDownloadPopup, setShowDownloadPopup] = useState(false);
 
+  //// POPUPS ////
+
   const showAlert = (message) => {
     setCustomPopup({ type: "alert", message });
   };
@@ -36,7 +38,8 @@ function Toolbar() {
   const showConfirm = (message, onConfirm) => {
     setCustomPopup({ type: "confirm", message, onConfirm });
   };
-  const baseName = modelName.trim() || "feature-model";
+
+  //// IMPORT ////
 
   const handleImportClick = () => {
     setTimeout(() => {
@@ -44,15 +47,7 @@ function Toolbar() {
     }, 100);
   };
 
-  const handleClear = () => {
-    showConfirm("Êtes-vous sûr de vouloir supprimer votre feature model actuel ?", () => {
-      setNodes([]);
-      setEdges([]);
-      setViewport({ x: 0, y: 0, zoom: 1 });
-      if (location.pathname !== "/creation") navigate("/creation");
-    });
-  };
-
+  // Import d'un nouveau modèle
   const doImport = (event) => {
     const file = event.target.files[0];
     const reader = new FileReader();
@@ -75,6 +70,7 @@ function Toolbar() {
     event.target.value = "";
   };
 
+  // Popup de validation d'import de modèle par dessus le modèle déjà existant
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -85,14 +81,37 @@ function Toolbar() {
     }
   };
 
+  //// EXPORT ////
+
+  // Export du modèle avec comme nom de fichier le nom saisi par l'utilisateur
+  const handleDownload = useDownload(modelName);
+
+  //// SUPPRESSION ////
+
+  // Popup de validation de la suppression du modèle existant
+  const handleClear = () => {
+    showConfirm("Êtes-vous sûr de vouloir supprimer votre feature model actuel ?", () => {
+      setNodes([]);
+      setEdges([]);
+      setViewport({ x: 0, y: 0, zoom: 1 });
+      if (location.pathname !== "/creation") navigate("/creation");
+    });
+  };
+
+  //// VALIDATION DU MODÈLE AVANT DE PASSER EN MODE CONFIGURATION ////
+
+  // Validation du modèle
+  const { validate } = useModelValidation(true);
+
+  // Panneau latéral
   const setPanelOpen = useGraphStore((state) => state.setPanelOpen);
   const setPanelTab = useGraphStore((state) => state.setPanelTab);
 
+  //// MODE DALTONIEN ////
+
+  // Mode daltonien
   const isColorblind = useGraphStore((state) => state.isColorblind);
   const setColorblind = useGraphStore((state) => state.setColorblind);
-
-  const { validate } = useModelValidation(true);
-  const handleDownload = useDownload(modelName);
 
   return (
     <>
