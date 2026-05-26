@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useReactFlow } from "@xyflow/react";
 import { CheckCircle, XCircle } from 'lucide-react';
 import { useGraphStore } from "@/components/store/GraphStore";
-import { validateGraph } from "@/components/utils/useModelValidation";
+import { useModelValidation } from "@/components/utils/useModelValidation";
 
 function PanneauLateral({ isOpen }) {
     const setActiveTab = useGraphStore((state) => state.setPanelTab);
@@ -12,15 +12,7 @@ function PanneauLateral({ isOpen }) {
     const [jsonRepresentation, setJsonRepresentation] = useState("");
     const { toObject } = useReactFlow();
 
-    useEffect(() => {
-        if (!isOpen) return;
-        const timeoutId = setTimeout(() => {
-            setJsonRepresentation(JSON.stringify(toObject(), null, 2));
-        }, 300);
-        return () => clearTimeout(timeoutId);
-    }, [nodes, edges, isOpen, toObject]);
-
-    const tabStyle = (tab) => ({
+        const tabStyle = (tab) => ({
         flex: 1,
         padding: '12px 8px',
         background: activeTab === tab ? '#fff' : '#f9f9f9',
@@ -31,6 +23,19 @@ function PanneauLateral({ isOpen }) {
         color: activeTab === tab ? '#333' : '#777',
         transition: 'background 0.2s',
     });
+
+    //// ONGLET JSON ////
+
+    // Mise à jour du JSON du graphe lors de la mise à jour de la liste des nodes ou des edges, si le panneau latéral est ouvert
+    useEffect(() => {
+        if (!isOpen) return;
+        const timeoutId = setTimeout(() => {
+            setJsonRepresentation(JSON.stringify(toObject(), null, 2));
+        }, 300);
+        return () => clearTimeout(timeoutId);
+    }, [nodes, edges, isOpen, toObject]);
+
+    //// ONGLET CONTRAINTES TRANSVERSES ////
 
     const emptyMsg = (msg) => (
         <p style={{ fontSize: '12px', color: '#888', fontStyle: 'italic', margin: 0 }}>{msg}</p>
@@ -67,7 +72,9 @@ function PanneauLateral({ isOpen }) {
         }, {});
     }, [nodes]);
 
-    const validationError = useMemo(() => validateGraph(nodes, edges), [nodes, edges]);
+    //// ONGLET RÈGLES DE VALIDATION ////
+
+    const { validationError } = useModelValidation();
 
     const validationRules = [
         { code: 'selfLoop',                    label: 'Aucun nœud ne pointe vers lui-même' },
@@ -83,6 +90,7 @@ function PanneauLateral({ isOpen }) {
         { code: 'noEnoughChildren',            label: 'Le nombre d\'enfants d\'un parent doit être supérieur à sa cardinalité minimale' },
     ];
 
+    //// HTML ////
     return (
         <div style={{
             width: isOpen ? '320px' : '0px',

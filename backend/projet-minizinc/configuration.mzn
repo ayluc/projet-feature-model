@@ -24,21 +24,8 @@ include "FM.mzn";
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+constraint isActivated[12] == true;
+constraint isIncluded[12] == false;
 
 
 
