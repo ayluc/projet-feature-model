@@ -10,23 +10,61 @@ export const validateGraph = (nodes, edges) => {
 	const parentIds = new Set(structuralEdges.map(e => e.source));
 	const operators = nodes.filter(n => operatorTypes.includes(n.type));
 
+	// [I2-1] Un nœud ne peut pas être son propre parent
+	if (structuralEdges.some(e => e.source === e.target)) return "selfLoop";
+
+	// Aucun nœud sans parent ni enfant
 	const isolatedNodes = nodes.filter(n => !parentIds.has(n.id) && !childIds.has(n.id));
 	if (isolatedNodes.length > 0) return "isolatedNode";
 
+	// [I2-4] Exactement un nœud racine (sans parent)
 	const roots = nodes.filter(n => !childIds.has(n.id));
 	if (roots.length !== 1) return "noUniqueRoot";
 
+	// [I2-2] Chaque nœud a au plus un parent
 	const hasMultipleParents = [...childIds].some(childId => structuralEdges.filter(e => e.target === childId).length > 1);
 	if (hasMultipleParents) return "noSingleParent";
 
+	// [I2-3] Le graphe ne contient pas de cycle 
+	const adjList = {};
+	structuralEdges.forEach(e => { (adjList[e.source] ??= []).push(e.target); });
+	const visited = new Set(), inStack = new Set();
+	const hasCycleDFS = (id) => {
+		if (inStack.has(id)) return true;
+		if (visited.has(id)) return false;
+		visited.add(id); inStack.add(id);
+		for (const child of (adjList[id] || [])) { if (hasCycleDFS(child)) return true; }
+		inStack.delete(id);
+		return false;
+	};
+	if (nodes.some(n => hasCycleDFS(n.id))) return "hasCycle";
+
+	// Deux noeuds opérateurs ne peuvent être en affiliation directe
 	const edgesBetweenOperators = structuralEdges.filter(e => operators.some(o => o.id === e.source) && operators.some(o => o.id === e.target));
 	if (edgesBetweenOperators.length > 0) return "operatorsLink";
 
+	// [I4-4] Un nœud opérateur doit avoir au moins un enfant
 	const operatorsWithouChild = nodes.filter(n => operatorTypes.includes(n.type) && !parentIds.has(n.id));
 	if (operatorsWithouChild.length > 0) return "noChildOperator";
 
 	const childCountPerParent = {};
 	structuralEdges.forEach(e => { childCountPerParent[e.source] = (childCountPerParent[e.source] || 0) + 1; });
+
+	// [I4-1] La borne inférieure de cardinalité ne peut pas dépasser la borne supérieure
+	const hasInvalidBounds = nodes.some(n =>
+		n.type === "cardinalite" &&
+		parseInt(n.data.cardinaliteMin) > parseInt(n.data.cardinaliteMax)
+	);
+	if (hasInvalidBounds) return "invalidCardinalityBounds";
+
+	// [I4-2] La borne supérieure de cardinalité ne peut pas dépasser le nombre d'enfants
+	const hasMaxExceedsChildren = nodes.some(n =>
+		n.type === "cardinalite" &&
+		parseInt(n.data.cardinaliteMax) > (childCountPerParent[n.id] || 0)
+	);
+	if (hasMaxExceedsChildren) return "cardinalityMaxExceedsChildren";
+
+	// [I4-2] Le nombre d'enfants doit être au moins égal à la borne inférieure de cardinalité
 	const hasTooFewChildren = nodes.some(n => n.data.cardinaliteMin > (childCountPerParent[n.id] || 0));
 	if (hasTooFewChildren) return "noEnoughChildren";
 

@@ -70,12 +70,16 @@ function PanneauLateral({ isOpen }) {
     const validationError = useMemo(() => validateGraph(nodes, edges), [nodes, edges]);
 
     const validationRules = [
-        { code: 'isolatedNode',     label: 'Aucun nœud ne doit être isolé (sans enfant ni parent)' },
-        { code: 'noUniqueRoot',     label: 'Le modèle doit avoir exactement une racine (noeud sans parent)' },
-        { code: 'noSingleParent',   label: 'Chaque nœud a au plus un parent' },
-        { code: 'noChildOperator',  label: 'Tout nœud opérateur a au moins un enfant' },
-        { code: 'operatorsLink',    label: 'Pas de lien direct entre deux opérateurs' },
-        { code: 'noEnoughChildren', label: 'La cardinalité minimale doit être respectée (nb enfants ≥ cardMin)' },
+        { code: 'selfLoop',                    label: 'Aucun nœud ne pointe vers lui-même' },
+        { code: 'noUniqueRoot',                label: 'Le modèle a exactement une racine (nœud sans parent)' },
+        { code: 'noSingleParent',              label: 'Chaque nœud a au plus un parent' },
+        { code: 'hasCycle',                    label: 'Le graphe ne contient pas de cycle' },
+        { code: 'isolatedNode',                label: 'Aucun nœud isolé (sans enfant ni parent)' },
+        { code: 'noChildOperator',             label: 'Tout nœud opérateur a au moins un enfant' },
+        { code: 'operatorsLink',               label: 'Pas de lien direct entre deux opérateurs' },
+        { code: 'invalidCardinalityBounds',    label: 'La cardinalité minimale d\'un noeud doit être inférieure à sa cardinalité supérieur' },
+        { code: 'cardinalityMaxExceedsChildren', label: 'Le nombre d\'enfants d\'un parent doit être inférieur à sa cardinalité maximale' },
+        { code: 'noEnoughChildren',            label: 'Le nombre d\'enfants d\'un parent doit être supérieur à sa cardinalité minimale' },
     ];
 
     return (
