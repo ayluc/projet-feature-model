@@ -100,10 +100,10 @@ function Toolbar() {
 
   //// VALIDATION DU MODÈLE AVANT DE PASSER EN MODE CONFIGURATION ////
 
-  // Validation du modèle
+  // Validation  du modèle et conversion en JSON simplifié pour l'envoyer au backend
   const { validate } = useModelValidation(true);
 
-  // Panneau latéral
+  // Panneau latéral pour voir les règles de validation
   const setPanelOpen = useGraphStore((state) => state.setPanelOpen);
   const setPanelTab = useGraphStore((state) => state.setPanelTab);
 
@@ -112,6 +112,8 @@ function Toolbar() {
   // Mode daltonien
   const isColorblind = useGraphStore((state) => state.isColorblind);
   const setColorblind = useGraphStore((state) => state.setColorblind);
+
+  //// HTML ////
 
   return (
     <>

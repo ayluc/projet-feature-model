@@ -13,8 +13,10 @@ const downloadBlob = (content, filename, mime) => {
     URL.revokeObjectURL(url);
 };
 
+// Export du graphe au format JSON
 export const useDownload = (modelName) => {
     const { toObject, getNodes, getNodesBounds } = useReactFlow();
+    // Nom du modèle appliqué au fichier : si non personnalisé, le nom par défaut est "feature-model" 
     const baseName = modelName.trim() || "feature-model";
 
     return (selected) => {

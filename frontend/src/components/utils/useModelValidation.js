@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useGraphStore } from '@/components/store/GraphStore';
-import CustomPopup from '../popups/CustomPopup';
 
-export const validateGraph = (nodes, edges) => {
+// Validation du modèle dans le front
+// Les règles reprennent les assertions du solveur
+const validateGraph = (nodes, edges) => {
+
 	const operatorTypes = ["or", "xor", "cardinalite"];
 	const structuralEdges = edges.filter(e => e.data?.liaisonType !== "transverse");
-
 	const childIds = new Set(structuralEdges.map(e => e.target));
 	const parentIds = new Set(structuralEdges.map(e => e.source));
 	const operators = nodes.filter(n => operatorTypes.includes(n.type));
@@ -76,36 +77,44 @@ export const validateGraph = (nodes, edges) => {
 	const hasTooFewChildren = nodes.some(n => n.data.cardinaliteMin > (childCountPerParent[n.id] || 0));
 	if (hasTooFewChildren) return "noEnoughChildren";
 
-	
+
 
 	return null;
 };
 
+// Conversion du modèle en un JSON simplifié pour l'envoyer au backend
+// Puis validation du modèle par le backend
 export const useModelValidation = (isReadOnly) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const [result, setResult] = useState(null);
 	const [customPopup, setCustomPopup] = useState(null);
 
+	const nodes = useGraphStore((state) => state.nodes);
+	const edges = useGraphStore((state) => state.edges);
 	const setNodes = useGraphStore((state) => state.setNodes);
+
+	// Pré-validation du modèle : si invalide, on s'arrête juste au début de validate et on met en évidence la règle qui invalide le modèle
+	const validationError = useMemo(() => validateGraph(nodes, edges), [nodes, edges]);
 
 	// Retourne true si la validation réussit, false sinon
 	const validate = async () => {
+		if (validationError !== null) return false;
+
 		const currentNodes = useGraphStore.getState().nodes;
 		const currentEdges = useGraphStore.getState().edges;
 
 		setIsLoading(true);
 		setError(null);
 
-		const graphError = validateGraph(currentNodes, currentEdges);
-		console.log("graphe valide ?", graphError ?? "oui");
-
 		try {
 
-			// ── Mode création ───────────────────────────────────────────
+			//// MODE CRÉATION ////
+			// Validation simple du modèle
+
 			console.log("Validation du modèle en mode création");
 
-			// Étape 1 : maps pour accès rapide
+			// Étape 1 : création de maps des noeuds et des edges du modèle
 			const edgeMap = {};
 			const parentMap = {};
 			currentEdges.forEach(e => {
@@ -117,7 +126,7 @@ export const useModelValidation = (isReadOnly) => {
 			const nodeMap = {};
 			currentNodes.forEach(n => nodeMap[n.id] = n);
 
-			// Étape 2 : cardinalité héritée des opérateurs
+			// Étape 2 : association des cardinalité des noeuds opérateurs à leur parent (puisque l'affichage des noeuds opérateurs n'est que symbolique)
 			const operatorTypes = ["or", "xor", "cardinalite"];
 			const operatorIds = new Set(
 				currentNodes.filter(n => operatorTypes.includes(n.type)).map(n => n.id)
@@ -139,9 +148,9 @@ export const useModelValidation = (isReadOnly) => {
 				inheritedOperator[parentId] = { type: op.type, min, max, operatorId: opId };
 			});
 
-			// Étape 3 : nœuds finaux (features uniquement)
+			// Étape 3 : création de la liste finale des noeuds avec leurs données
 			const formattedNodes = currentNodes
-				.filter(n => !operatorTypes.includes(n.type))
+				.filter(n => !operatorTypes.includes(n.type)) // on retire les noeuds opérateurs qui ne sont pas de vrais noeuds
 				.map(n => {
 					const numericId = parseInt(String(n.id).match(/\d+/)[0], 10);
 					const inherited = inheritedOperator[n.id];
@@ -154,9 +163,9 @@ export const useModelValidation = (isReadOnly) => {
 					return formattedNode;
 				});
 
-			// Étape 4 : arcs en court-circuitant les opérateurs
+			// Étape 4 : création de la liste des liaisons simples
 			const formattedArcs = currentEdges
-				.filter(e => "isMandatory" in e.data)
+				.filter(e => "isMandatory" in e.data) // ne prend que les liaisons simples
 				.reduce((acc, edge) => {
 					const { source: sourceId, target: targetId } = edge;
 					if (operatorIds.has(targetId)) return acc;
@@ -177,7 +186,7 @@ export const useModelValidation = (isReadOnly) => {
 
 			formattedArcs.forEach((a, i) => a.id = i + 1);
 
-			// Étape 5 : liens transverses
+			// Étape 5 : création de la liste des liaisons transverses
 			const formattedLinks = currentEdges
 				.filter(e => e.data?.liaisonType === "transverse")
 				.map((edge, i) => {
@@ -199,13 +208,14 @@ export const useModelValidation = (isReadOnly) => {
 				})
 				.filter(Boolean);
 
-			const payload = { nodes: formattedNodes, arcs: formattedArcs, links: formattedLinks };
-			console.log("Payload création :", JSON.stringify(payload));
+			const backendJSON = { nodes: formattedNodes, arcs: formattedArcs, links: formattedLinks };
+			console.log("Payload création :", JSON.stringify(backendJSON));
 
+			// Envoi du JSON au backend et réception de sa réponse après validation par le solveur Minizinc
 			const response = await fetch('http://localhost:8080/validate-creation', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(payload),
+				body: JSON.stringify(backendJSON),
 			});
 
 			const data = await response.json();
@@ -220,7 +230,10 @@ export const useModelValidation = (isReadOnly) => {
 
 			let configData = null;
 			if (isReadOnly) {
-				// ── Mode configuration ──────────────────────────────────────
+
+				//// MODE CONFIGURATION ////
+				// Validation du modèle + sa configuration pour validation et inférence
+
 				console.log("Validation du modèle en mode configuration");
 
 				// Préparation de la requête à envoyer au back-end
@@ -234,13 +247,13 @@ export const useModelValidation = (isReadOnly) => {
 						status: node.data?.configStatus || null,
 					}));
 
-				const payload = { nodes: formattedNodes };
+				const backendJSON = { nodes: formattedNodes };
 
-				// Envoi de la requête au back-end 
+				// Envoi de la requête au backend et réception de ses inférences ou de son erreur de validation
 				const response = await fetch('http://localhost:8080/validate-configuration', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(payload),
+					body: JSON.stringify(backendJSON),
 				});
 
 				configData = await response.json();
@@ -279,12 +292,15 @@ export const useModelValidation = (isReadOnly) => {
 				}
 				setResult(configData);
 			}
+
 			const finalData = configData ?? data;
+
 			// Si c'est UNSAT alors on prévient l'utilisateur avec une popup.
 			if (finalData.valid === false) {
 				setCustomPopup({ type: "alert", message: "Le feature model est insatisfiable. Veuillez le configurer autrement." });
 			}
-			return finalData.valid === true && graphError === null;
+			
+			return finalData.valid === true;
 
 		} catch (err) {
 			console.error("Erreur de validation :", err);
@@ -296,5 +312,5 @@ export const useModelValidation = (isReadOnly) => {
 		}
 	};
 
-	return { validate, isLoading, error, result, customPopup, setCustomPopup };
+	return { validate, isLoading, error, result, customPopup, setCustomPopup, validationError };
 };

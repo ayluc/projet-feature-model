@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useState } from 'react';
 import { CheckCircle, XCircle } from 'lucide-react';
 
@@ -6,7 +6,7 @@ import { useDnD } from '@/components/utils/DnDContext';
 import { Button } from "@/components/shadcn-ui/button";
 import { getLayoutedElements } from '@/components/utils/layout';
 import { useGraphStore } from '@/components/store/GraphStore';
-import { useModelValidation, validateGraph } from '../utils/useModelValidation';
+import { useModelValidation } from '../utils/useModelValidation';
 import CustomPopup from '../popups/CustomPopup';
 
 export default ({ isReadOnly = false }) => {
@@ -46,9 +46,7 @@ export default ({ isReadOnly = false }) => {
     })));
   }
 
-  const { validate, customPopup, setCustomPopup } = useModelValidation(isReadOnly);
-
-  const validationError = useMemo(() => validateGraph(nodes, edges), [nodes, edges]);
+  const { validationError, customPopup, setCustomPopup } = useModelValidation(isReadOnly);
 
   const featureNodes = nodes.filter(n => n.type === 'feature');
   const isConfigComplete = featureNodes.length > 0 && featureNodes.every(n => n.data.configStatus !== null);
