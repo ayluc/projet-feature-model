@@ -8,12 +8,14 @@ export const getLayoutedElements = (nodes, edges, direction = 'TB') => {
     (edge) => edge.data?.liaisonType === 'simple' || !edge.data?.liaisonType
   );
 
+  // Récupération des noeuds qui sont connectés à au moins un autre noeud 
   const connectedNodeIds = new Set();
   layoutEdges.forEach((edge) => {
     connectedNodeIds.add(edge.source);
     connectedNodeIds.add(edge.target);
   });
 
+  // Initialisation du graphe Diagre et de son format
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
 
@@ -23,6 +25,7 @@ export const getLayoutedElements = (nodes, edges, direction = 'TB') => {
     ranksep: 100, // espace vertical entre les noeuds
   });
 
+  // On fournit au graphe Dagre les tailles et ids de nos noeuds React-flow
   nodes.forEach((node) => {
     if (connectedNodeIds.has(node.id)) {
       const width = node.measured?.width ?? node.width ?? 150;
@@ -31,14 +34,18 @@ export const getLayoutedElements = (nodes, edges, direction = 'TB') => {
     }
   });
 
+  // On fournit au graphe Dagre nos arcs React-flow
   layoutEdges.forEach((edge) => {
     dagreGraph.setEdge(edge.source, edge.target);
   });
 
+  // Calcul des nouvelles positions
   if (layoutEdges.length > 0) {
     dagre.layout(dagreGraph);
   }
 
+
+  // Cette partie permet de calculer un "offset" pour que le graphe soit remis là où il était avant, et pas qu'il soit "téléporté" à l'autre bout du graphe
   let deltaX = 0;
   let deltaY = 0;
 
@@ -52,6 +59,8 @@ export const getLayoutedElements = (nodes, edges, direction = 'TB') => {
     deltaY = oldPosition.y - (newDagrePosition.y - (firstConnectedNode.measured?.height ?? 80) / 2);
   }
 
+
+  // Disposition des noeuds react-flow avec leurs nouvelles positions
   const layoutedNodes = nodes.map((node) => {
     if (!connectedNodeIds.has(node.id)) {
       return node;
