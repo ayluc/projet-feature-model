@@ -70,6 +70,7 @@ type Configuration struct {
 	Nodes []NodeConfig
 }
 
+// Template pour créer le fichier de configuration MiniZinc
 const minizincTemplate = `
 include "FM.mzn";
 {{ range .Nodes }}
@@ -107,25 +108,32 @@ func SetupRouter() *gin.Engine {
 		c.Data(http.StatusOK, "text/plain", nil)
 	})
 
+	// Validate-creation
 	router.POST(EndpointValidateCreation, func(c *gin.Context) {
 		var req FeatureModel
+		// Vérification du respect par le JSON fourni des struct définies plus haut
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
+		// Création du fichier de données MiniZinc (.dzn) à partir du JSON fourni
 		resultDzn := Convert(req)
 		if err := os.WriteFile("projet-minizinc/feature-model.dzn", []byte(resultDzn), 0644); err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "impossible d'écrire feature-model.dzn"})
 			return
 		}
 
+		// Exécution de la commande MiniZinc pour appeler le solver avec tous les fichiers nécessaires (modèle MiniZinc + données du modèle)
 		cmd := exec.Command("minizinc", "--solver", "Gecode", "--output-mode", "json", "projet-minizinc/FM.mzn", "projet-minizinc/feature-model.dzn")
 		var outBuf, errBuf bytes.Buffer
 		cmd.Stdout = &outBuf
 		cmd.Stderr = &errBuf
 		_ = cmd.Run()
 
+		// ============================
+		// La commande est exécutée une deuxième fois pour pouvoir afficher toutes les erreurs
+		// du solver sans le format JSON et ainsi pouvoir débugger plus facilement pendant le développement.
 		cmd1 := exec.Command("minizinc", "--solver", "Gecode", "projet-minizinc/FM.mzn", "projet-minizinc/feature-model.dzn")
 		var outBuf1, errBuf1 bytes.Buffer
 		cmd1.Stdout = &outBuf1
@@ -134,7 +142,9 @@ func SetupRouter() *gin.Engine {
 
 		fmt.Println(outBuf1.String())
 		fmt.Println(errBuf1.String())
+		// ============================
 
+		// Cas où c'est UNSAT alors on renvoie que le modèle n'est pas valide au front
 		if bytes.Contains(outBuf.Bytes(), []byte("UNSATISFIABLE")) {
 			c.IndentedJSON(http.StatusOK, gin.H{
 				"valid":     false,
@@ -144,6 +154,7 @@ func SetupRouter() *gin.Engine {
 			return
 		}
 
+		// Cas où la lecture du JSON de retour du MiniZinc ne fonctionne pas
 		jsonBytes, err := extractOptimalSolution(outBuf.Bytes())
 		if err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, gin.H{
@@ -153,6 +164,7 @@ func SetupRouter() *gin.Engine {
 			return
 		}
 
+		// Cas où c'est SAT alors on renvoie que le modèle est valide et la solution trouvée par le solver
 		var solution map[string]interface{}
 		json.Unmarshal(jsonBytes, &solution)
 
@@ -164,13 +176,16 @@ func SetupRouter() *gin.Engine {
 		})
 	})
 
+	// Validate-configuration
 	router.POST(EndpointValidateConfiguration, func(c *gin.Context) {
 		var req Configuration
+		// Vérification du respect par le JSON fourni des struct définies plus haut
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
+		// Génération de la configuration MiniZinc (via le template), puis écriture dans le fichier configuration.mzn
 		tmpl, err := template.New("mzn").Parse(minizincTemplate)
 		if err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -189,12 +204,16 @@ func SetupRouter() *gin.Engine {
 			return
 		}
 
+		// Exécution de la commande MiniZinc pour appeler le solver avec tous les fichiers nécessaires (configuration + données du modèle)
 		cmd := exec.Command("minizinc", "--solver", "Gecode", "--output-mode", "json", "projet-minizinc/configuration.mzn", "projet-minizinc/feature-model.dzn")
 		var outBuf, errBuf bytes.Buffer
 		cmd.Stdout = &outBuf
 		cmd.Stderr = &errBuf
 		_ = cmd.Run()
 
+		// ============================
+		// La commande est exécutée une deuxième fois pour pouvoir afficher toutes les erreurs
+		// du solver sans le format JSON et ainsi pouvoir débugger plus facilement pendant le développement.
 		cmd1 := exec.Command("minizinc", "--solver", "Gecode", "projet-minizinc/configuration.mzn", "projet-minizinc/feature-model.dzn")
 		var outBuf1, errBuf1 bytes.Buffer
 		cmd1.Stdout = &outBuf1
@@ -203,7 +222,9 @@ func SetupRouter() *gin.Engine {
 
 		fmt.Println(outBuf1.String())
 		fmt.Println(errBuf1.String())
+		// ============================
 
+		// Cas où c'est UNSAT alors on renvoie que le modèle n'est pas valide au front
 		if bytes.Contains(outBuf.Bytes(), []byte("UNSATISFIABLE")) {
 			c.IndentedJSON(http.StatusOK, gin.H{
 				"valid": false,
@@ -212,6 +233,7 @@ func SetupRouter() *gin.Engine {
 			return
 		}
 
+		// Cas où la lecture du JSON de retour du MiniZinc ne fonctionne pas
 		jsonBytes, err := extractOptimalSolution(outBuf.Bytes())
 		if err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, gin.H{
@@ -221,6 +243,7 @@ func SetupRouter() *gin.Engine {
 			return
 		}
 
+		// Cas où c'est SAT alors on renvoie que le modèle est valide et la solution trouvée par le solver
 		var solution map[string]interface{}
 		json.Unmarshal(jsonBytes, &solution)
 
@@ -231,8 +254,9 @@ func SetupRouter() *gin.Engine {
 		})
 	})
 
+	// Assemblage
 	router.POST(EndpointAssemblage, func(c *gin.Context) {
-
+		// TODO
 	})
 
 	return router

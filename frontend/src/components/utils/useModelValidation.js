@@ -223,6 +223,8 @@ export const useModelValidation = (isReadOnly) => {
 				// ── Mode configuration ──────────────────────────────────────
 				console.log("Validation du modèle en mode configuration");
 
+				// Préparation de la requête à envoyer au back-end
+				// Formattage des noeuds : on garde que le nombre de l'id (feature-1 devient 1), et on garde le status (null, included ou excluded)
 				const formattedNodes = currentNodes
 					.filter(node => node.type === "feature")
 					.map(node => ({
@@ -233,8 +235,8 @@ export const useModelValidation = (isReadOnly) => {
 					}));
 
 				const payload = { nodes: formattedNodes };
-				console.log("Payload configuration :", payload);
 
+				// Envoi de la requête au back-end 
 				const response = await fetch('http://localhost:8080/validate-configuration', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
@@ -249,6 +251,8 @@ export const useModelValidation = (isReadOnly) => {
 
 				console.log("Réponse configuration :", configData);
 
+				// Application de la solution du solver sur les noeuds : activation des noeuds inférés, et inclusion ou exclusion selon la réponse du solver
+				// (On distingue également si un noeud a été inféré ou activé manuellement, pour différencier l'affichage dans le front)
 				if (configData.valid && configData.solution) {
 					const { isIncluded, isActivated } = configData.solution;
 
@@ -276,6 +280,7 @@ export const useModelValidation = (isReadOnly) => {
 				setResult(configData);
 			}
 			const finalData = configData ?? data;
+			// Si c'est UNSAT alors on prévient l'utilisateur avec une popup.
 			if (finalData.valid === false) {
 				setCustomPopup({ type: "alert", message: "Le feature model est insatisfiable. Veuillez le configurer autrement." });
 			}
