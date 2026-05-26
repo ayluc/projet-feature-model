@@ -397,6 +397,7 @@ function FeatureModelEditor({ isReadOnly = false }) {
           multiSelectionKeyCode={null}
           deselectOnClick={true}
           deleteKeyCode={null}
+          selectionKeyCode={null}
         >
           <Controls position="top-right" showInteractive={!isReadOnly}>
             <ControlButton
