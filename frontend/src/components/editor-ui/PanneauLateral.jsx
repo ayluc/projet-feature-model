@@ -77,6 +77,7 @@ function PanneauLateral({ isOpen }) {
         { code: 'isolatedNode',                label: 'Aucun nœud isolé (sans enfant ni parent)' },
         { code: 'noChildOperator',             label: 'Tout nœud opérateur a au moins un enfant' },
         { code: 'operatorsLink',               label: 'Pas de lien direct entre deux opérateurs' },
+        { code: 'operatorNotUniqueChild',      label: 'Un nœud ayant un enfant opérateur ne peut avoir aucun autre enfant' },
         { code: 'invalidCardinalityBounds',    label: 'La cardinalité minimale d\'un noeud doit être inférieure à sa cardinalité supérieur' },
         { code: 'cardinalityMaxExceedsChildren', label: 'Le nombre d\'enfants d\'un parent doit être inférieur à sa cardinalité maximale' },
         { code: 'noEnoughChildren',            label: 'Le nombre d\'enfants d\'un parent doit être supérieur à sa cardinalité minimale' },

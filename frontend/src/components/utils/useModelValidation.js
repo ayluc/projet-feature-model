@@ -43,6 +43,14 @@ export const validateGraph = (nodes, edges) => {
 	const edgesBetweenOperators = structuralEdges.filter(e => operators.some(o => o.id === e.source) && operators.some(o => o.id === e.target));
 	if (edgesBetweenOperators.length > 0) return "operatorsLink";
 
+	// Si un nœud a un enfant opérateur, c'est son seul et unique enfant
+	const operatorIds = new Set(operators.map(o => o.id));
+	const hasOperatorAndOtherChildren = nodes.some(n => {
+		const childrenOfN = structuralEdges.filter(e => e.source === n.id).map(e => e.target);
+		return childrenOfN.some(c => operatorIds.has(c)) && childrenOfN.length > 1;
+	});
+	if (hasOperatorAndOtherChildren) return "operatorNotUniqueChild";
+
 	// [I4-4] Un nœud opérateur doit avoir au moins un enfant
 	const operatorsWithouChild = nodes.filter(n => operatorTypes.includes(n.type) && !parentIds.has(n.id));
 	if (operatorsWithouChild.length > 0) return "noChildOperator";
@@ -67,6 +75,8 @@ export const validateGraph = (nodes, edges) => {
 	// [I4-2] Le nombre d'enfants doit être au moins égal à la borne inférieure de cardinalité
 	const hasTooFewChildren = nodes.some(n => n.data.cardinaliteMin > (childCountPerParent[n.id] || 0));
 	if (hasTooFewChildren) return "noEnoughChildren";
+
+	
 
 	return null;
 };
