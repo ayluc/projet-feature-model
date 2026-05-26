@@ -34,16 +34,16 @@ const reindexGraph = (nodes, edges) => {
 // Structure permettant de gérer les différents états de l'interface et du graphe.
 // On crée un store "vanilla" zustand puis on lui ajoute des capacités temporelles avec zundo pour avoir accès aux undo/redo
 export const useGraphStore = create()(
-  temporal(
+  temporal( // Permet d'en faire un store temporel de zundo
     (set, get) => ({
       nodes: [], // liste des noeuds du graphe
       edges: [], // liste des arcs du graphe
       isLayoutAuto: true, // disposition automatique des noeuds du graphe activée ou non
       isTransverseVisible: true, // affichage des liens transverses ou non
-      isColorblind: false,
-      arcType: null,
-      panelOpen: false,
-      panelTab: "json",
+      isColorblind: false, // mode daltonien activé ou non
+      arcType: null, // type d'arc choisi automatiquement
+      panelOpen: false, // panneau droit ouvert ou non
+      panelTab: "json", // onglet du panneau droit  choisi : json, rules, ou validation
 
       setArcType: (val) => set({ arcType: val }),
       setPanelOpen: (val) => set({ panelOpen: val }),
@@ -68,6 +68,7 @@ export const useGraphStore = create()(
         const hasRemoves = changes.some(c => c.type === 'remove');
         const nextNodes = applyNodeChanges(changes, state.nodes);
 
+        // s'il y a des noeuds qui ont été supprimés, on réindexe les noeuds du graphe et on réadapte les source/target
         if (hasRemoves) {
           const removedIds = changes.filter(c => c.type === 'remove').map(c => c.id);
           const remainingEdges = state.edges.filter(e => !removedIds.includes(e.source) && !removedIds.includes(e.target));
