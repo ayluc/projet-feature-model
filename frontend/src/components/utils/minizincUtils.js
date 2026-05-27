@@ -1,5 +1,3 @@
-// Port of backend/parser.go Convert() function
-
 export function buildMinizincPayload(nodes, edges) {
   const operatorTypes = ["or", "xor", "cardinalite"];
   const operatorIds = new Set(

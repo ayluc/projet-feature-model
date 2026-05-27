@@ -9,7 +9,7 @@ import {
   DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger
 } from "@/components/shadcn-ui/dropdown-menu";
 import { Menu, ArrowDownToLine, Trash2, FileUp, FileDown } from "lucide-react";
-import { useModelValidation } from '../utils/useModelValidation';
+import { modelValidation } from '../utils/modelValidation';
 import CustomPopup from '../popups/CustomPopup';
 import CustomToast from "../popups/CustomToast";
 import DownloadPopup from "../popups/DownloadPopup";
@@ -101,7 +101,7 @@ function Toolbar() {
   //// VALIDATION DU MODÈLE AVANT DE PASSER EN MODE CONFIGURATION ////
 
   // Validation  du modèle et conversion en JSON simplifié pour l'envoyer au backend
-  const { validate } = useModelValidation(true);
+  const { validate } = modelValidation(true);
 
   // Panneau latéral pour voir les règles de validation
   const setPanelOpen = useGraphStore((state) => state.setPanelOpen);

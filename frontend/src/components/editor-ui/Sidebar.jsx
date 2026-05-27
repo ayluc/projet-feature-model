@@ -6,7 +6,7 @@ import { useDnD } from '@/components/utils/DnDContext';
 import { Button } from "@/components/shadcn-ui/button";
 import { getLayoutedElements } from '@/components/utils/layout';
 import { useGraphStore } from '@/components/store/GraphStore';
-import { useModelValidation } from '../utils/useModelValidation';
+import { modelValidation } from '../utils/modelValidation';
 import CustomPopup from '../popups/CustomPopup';
 
 export default ({ isReadOnly = false }) => {
@@ -46,7 +46,7 @@ export default ({ isReadOnly = false }) => {
     })));
   }
 
-  const { validationError, customPopup, setCustomPopup } = useModelValidation(isReadOnly);
+  const { validationError, customPopup, setCustomPopup } = modelValidation(isReadOnly);
 
   const featureNodes = nodes.filter(n => n.type === 'feature');
   const isConfigComplete = featureNodes.length > 0 && featureNodes.every(n => n.data.configStatus !== null);

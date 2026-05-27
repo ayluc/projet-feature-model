@@ -20,7 +20,7 @@ const validateGraph = (nodes, edges) => {
 
 	// [I2-4] Exactement un nœud racine (sans parent)
 	const roots = nodes.filter(n => !childIds.has(n.id));
-	if (roots.length !== 1) return "noUniqueRoot";
+	if (nodes.length > 0 && roots.length !== 1) return "noUniqueRoot";
 
 	// [I2-2] Chaque nœud a au plus un parent
 	const hasMultipleParents = [...childIds].some(childId => structuralEdges.filter(e => e.target === childId).length > 1);
@@ -84,7 +84,7 @@ const validateGraph = (nodes, edges) => {
 
 // Conversion du modèle en un JSON simplifié pour l'envoyer au backend
 // Puis validation du modèle par le backend
-export const useModelValidation = (isReadOnly) => {
+export const modelValidation = (isReadOnly) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const [result, setResult] = useState(null);
@@ -99,6 +99,8 @@ export const useModelValidation = (isReadOnly) => {
 
 	// Retourne true si la validation réussit, false sinon
 	const validate = async () => {
+
+		if(nodes.length == 0) return true;
 		if (validationError !== null) return false;
 
 		const currentNodes = useGraphStore.getState().nodes;
@@ -209,7 +211,7 @@ export const useModelValidation = (isReadOnly) => {
 				.filter(Boolean);
 
 			const backendJSON = { nodes: formattedNodes, arcs: formattedArcs, links: formattedLinks };
-			console.log("Payload création :", JSON.stringify(backendJSON));
+			console.log("JSON à envoyer au backend :", JSON.stringify(backendJSON));
 
 			// Envoi du JSON au backend et réception de sa réponse après validation par le solveur Minizinc
 			const response = await fetch('http://localhost:8080/validate-creation', {

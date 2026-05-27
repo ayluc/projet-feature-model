@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useReactFlow } from "@xyflow/react";
 import { CheckCircle, XCircle } from 'lucide-react';
 import { useGraphStore } from "@/components/store/GraphStore";
-import { useModelValidation } from "@/components/utils/useModelValidation";
+import { modelValidation } from "@/components/utils/modelValidation";
 
 function PanneauLateral({ isOpen }) {
     const setActiveTab = useGraphStore((state) => state.setPanelTab);
@@ -74,7 +74,7 @@ function PanneauLateral({ isOpen }) {
 
     //// ONGLET RÈGLES DE VALIDATION ////
 
-    const { validationError } = useModelValidation();
+    const { validationError } = modelValidation();
 
     const validationRules = [
         { code: 'selfLoop',                    label: 'Aucun nœud ne pointe vers lui-même' },

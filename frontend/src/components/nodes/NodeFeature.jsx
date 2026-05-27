@@ -1,5 +1,5 @@
 import { Position, Handle, NodeToolbar } from '@xyflow/react';
-import { useModelValidation } from '../utils/useModelValidation';
+import { modelValidation } from '../utils/modelValidation';
 import { useGraphStore } from '../store/GraphStore';
 import CustomPopup from '../popups/CustomPopup';
 
@@ -23,7 +23,7 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
 
   const isReadOnly = data.isReadOnly;
 
-  const { validate, customPopup, setCustomPopup } = useModelValidation(isReadOnly);
+  const { validate, customPopup, setCustomPopup } = modelValidation(isReadOnly);
   const setNodes = useGraphStore((state) => state.setNodes);
 
   return (
