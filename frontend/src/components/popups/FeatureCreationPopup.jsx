@@ -3,7 +3,6 @@ import { useGraphStore } from "@/components/store/GraphStore";
 
 export default function FeatureCreationPopup({ popup, onClose, onConfirm }) {
   const isColorblind = useGraphStore((state) => state.isColorblind);
-  // const [isMandatory, setIsMandatory] = useState(null);
   const [nodeName, setNodeName] = useState("");
   const [error, setError] = useState("");
 
@@ -12,11 +11,9 @@ export default function FeatureCreationPopup({ popup, onClose, onConfirm }) {
       // Mode modification : pré-remplir avec les données existantes
       if (popup.nodeId) {
         setNodeName(popup.label || "");
-        // setIsMandatory(popup.isMandatory !== undefined ? String(popup.isMandatory) : null);
       } else {
         // Mode création : champs vides
         setNodeName("");
-        // setIsMandatory(null);
       }
       setError("");
     }
@@ -26,12 +23,12 @@ export default function FeatureCreationPopup({ popup, onClose, onConfirm }) {
   if (!popup) return null;
 
   const handleSubmit = () => {
-    if (!nodeName.trim() /*|| isMandatory === null*/) {
+    if (!nodeName.trim() ) {
       setError("Veuillez remplir tous les champs avant de valider.");
       return;
     }
     setError("");
-    onConfirm({ nodeName/*, isMandatory*/ });
+    onConfirm({ nodeName });
     onClose();
   };
 
@@ -89,23 +86,6 @@ export default function FeatureCreationPopup({ popup, onClose, onConfirm }) {
               flex: 1
             }}
           />
-
-
-
-          {/* <div style={{ display: 'flex', gap: '4px', flexDirection: 'column' }}>
-            <label>
-              <input type="radio" name="isMandatory" value="true"
-                checked={isMandatory === "true"}
-                onChange={(e) => setIsMandatory(e.target.value)} />
-              {" "}Obligatoire
-            </label>
-            <label>
-              <input type="radio" name="isMandatory" value="false"
-                checked={isMandatory === "false"}
-                onChange={(e) => setIsMandatory(e.target.value)} />
-              {" "}Optionnel
-            </label>
-          </div> */}
 
           {error && (
             <p style={{ color: isColorblind ? "#a16207" : "red", fontSize: "0.85rem", marginTop: "-8px" }}>

@@ -97,7 +97,6 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
           </span>
         )} // Mode daltonien */} 
       </div>
-      {/* <input type="checkbox"/> */}
       <Handle type="source" position={Position.Bottom} isConnectable={isConnectable} style={{width: '0.70em',height: '0.70em', background:"#5a5858ff"}}/>
       <Handle type="target" position={Position.Top} isConnectable={isConnectable} style={{width: '0.70em',height: '0.70em', background:"#5a5858ff"}}/>
       <CustomPopup dialog={customPopup} onClose={() => setCustomPopup(null)} />

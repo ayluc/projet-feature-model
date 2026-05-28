@@ -19,71 +19,7 @@ constraint isIncluded[3] == true;
 
 
 
-
-
-constraint isActivated[6] == true;
-constraint isIncluded[6] == true;
-
-
-
-constraint isActivated[7] == true;
-constraint isIncluded[7] == true;
-
-
-
-constraint isActivated[8] == true;
-constraint isIncluded[8] == false;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-constraint isActivated[15] == true;
-constraint isIncluded[15] == false;
-
-
-
-constraint isActivated[16] == true;
-constraint isIncluded[16] == true;
-
-
-
-constraint isActivated[17] == true;
-constraint isIncluded[17] == false;
-
-
-
-constraint isActivated[18] == true;
-constraint isIncluded[18] == true;
-
-
-
-constraint isActivated[19] == true;
-constraint isIncluded[19] == false;
-
-
-
-constraint isActivated[20] == true;
-constraint isIncluded[20] == false;
-
-
-
-
-
-
-
-
-
-
+constraint isActivated[5] == true;
+constraint isIncluded[5] == true;
 
 
