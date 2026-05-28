@@ -19,23 +19,20 @@ constraint isIncluded[3] == true;
 
 
 
-constraint isActivated[5] == true;
-constraint isIncluded[5] == false;
-
 
 
 constraint isActivated[6] == true;
-constraint isIncluded[6] == false;
+constraint isIncluded[6] == true;
 
 
 
 constraint isActivated[7] == true;
-constraint isIncluded[7] == false;
+constraint isIncluded[7] == true;
 
 
 
 constraint isActivated[8] == true;
-constraint isIncluded[8] == true;
+constraint isIncluded[8] == false;
 
 
 
@@ -45,18 +42,9 @@ constraint isIncluded[8] == true;
 
 
 
-constraint isActivated[12] == true;
-constraint isIncluded[12] == false;
 
 
 
-constraint isActivated[13] == true;
-constraint isIncluded[13] == false;
-
-
-
-constraint isActivated[14] == true;
-constraint isIncluded[14] == false;
 
 
 
@@ -65,7 +53,13 @@ constraint isIncluded[15] == false;
 
 
 
+constraint isActivated[16] == true;
+constraint isIncluded[16] == true;
 
+
+
+constraint isActivated[17] == true;
+constraint isIncluded[17] == false;
 
 
 
@@ -75,7 +69,20 @@ constraint isIncluded[18] == true;
 
 
 constraint isActivated[19] == true;
-constraint isIncluded[19] == true;
+constraint isIncluded[19] == false;
+
+
+
+constraint isActivated[20] == true;
+constraint isIncluded[20] == false;
+
+
+
+
+
+
+
+
 
 
 

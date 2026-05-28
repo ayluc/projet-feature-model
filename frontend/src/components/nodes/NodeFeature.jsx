@@ -84,7 +84,19 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
         </div>
       </NodeToolbar>
       <label style={{ fontSize: "6px", fontWeight: "bold" }}>FEATURE</label>
-      <label>{data?.label ?? 'Feature'}</label>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+        <label>{data?.label ?? 'Feature'}</label>
+        {/* {configStatus && (
+          <span style={{
+            fontSize: '20px',
+            fontWeight: 'bold',
+            color: borderColor,
+            lineHeight: 1,
+          }}>
+            {configStatus === 'included' ? '✓' : '✕'}
+          </span>
+        )} */} // Mode daltonien 
+      </div>
       {/* <input type="checkbox"/> */}
       <Handle type="source" position={Position.Bottom} isConnectable={isConnectable} style={{width: '0.70em',height: '0.70em', background:"#5a5858ff"}}/>
       <Handle type="target" position={Position.Top} isConnectable={isConnectable} style={{width: '0.70em',height: '0.70em', background:"#5a5858ff"}}/>
