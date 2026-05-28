@@ -95,7 +95,7 @@ export function NodeFeature({ id, data, isConnectable, selected }) {
           }}>
             {configStatus === 'included' ? '✓' : '✕'}
           </span>
-        )} */} // Mode daltonien 
+        )} // Mode daltonien */} 
       </div>
       {/* <input type="checkbox"/> */}
       <Handle type="source" position={Position.Bottom} isConnectable={isConnectable} style={{width: '0.70em',height: '0.70em', background:"#5a5858ff"}}/>
